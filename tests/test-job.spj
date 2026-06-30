@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job xmlns="http://www.ibm.com/software/analytics/spss/xml/production"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     print="false"
+     syntaxErrorHandling="continue"
+     syntaxFormat="interactive"
+     unicode="true"
+     xsi:schemaLocation="http://www.ibm.com/software/analytics/spss/xml/production 
+     http://www.ibm.com/software/analytics/spss/xml/production/production-1.4.xsd">
+  <locale charset="UTF-8" country="CN" language="zh"/>
+  <output outputFormat="viewer" outputPath="output.spv"/>
+  <syntax syntaxPath="C:\Users\Wintone\.workbuddy\skills\statsoft-cli\tests\test-syntax.sps"/>
+</job>

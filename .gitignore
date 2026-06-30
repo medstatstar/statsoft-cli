@@ -1,0 +1,18 @@
+# OS and IDE files
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# WorkBuddy specific
+_user_meta.json
+config.json
+*.pyc
+__pycache__/
+
+# Backup files
+*.bak
+*.zip
+*.tar.gz
