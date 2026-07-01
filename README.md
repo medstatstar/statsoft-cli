@@ -4,7 +4,7 @@
 
 ---
 
-Cross-platform statistical software CLI integration for AI Agent (OpenClaw / ClawHub).
+Cross-platform statistical software CLI integration for AI Agent (such as WorkBuddy / OpenClaw).
 
 Supports 13 statistical software packages: SPSS, R, Stata, SAS, JMP, GraphPad Prism, EViews, Statistica, Stat/Transfer, Gretl, Minitab, Matlab, Julia.
 
