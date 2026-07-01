@@ -79,13 +79,24 @@ install_r() {
             local r_url="https://cran.r-project.org/bin/windows/base/R-4.5.1-win.exe"
             local installer="${TEMP:-/tmp}/R-installer.exe"
 
+            echo ""
+            echo "============================================"
+            echo "  WARNING: 将从 CRAN 下载 R 安装包"
+            echo "  URL: $r_url"
+            echo "============================================"
+            read -p "确认下载? (y/N): " dl_confirm
+            if [[ ! "$dl_confirm" =~ ^[Yy]$ ]]; then
+                log_error "已取消下载"
+                return 1
+            fi
+
             log_info "Downloading R installer from CRAN..."
             if command -v curl &>/dev/null; then
                 curl -fsSL -o "$installer" "$r_url"
             elif command -v wget &>/dev/null; then
                 wget -q -O "$installer" "$r_url"
             else
-                log_error "Neither curl nor wget found. Please install R manually from https://cran.r-project.org/bin/windows/base/"
+                log_error "curl or wget required"
                 return 1
             fi
 
@@ -95,6 +106,11 @@ install_r() {
             fi
 
             log_info "Download complete. Installing silently..."
+            echo "============================================"
+            echo "  WARNING: 将静默安装 R"
+            echo "  安装路径: $install_path"
+            echo "  标志: /SILENT /COMPONENTS=main,x64,translations"
+            echo "============================================"
             # Silent install with /SILENT flag (Inno Setup), add to PATH
             "$installer" /SILENT /COMPONENTS="main,x64,translations"
 
@@ -124,8 +140,19 @@ install_r() {
             fi
             ;;
         linux)
+            echo ""
+            echo "============================================"
+            echo "  WARNING: 将使用 sudo 安装 R"
+            echo "  需要管理员权限"
+            echo "============================================"
+            read -p "确认继续? (y/N): " sudo_confirm
+            if [[ ! "$sudo_confirm" =~ ^[Yy]$ ]]; then
+                log_error "已取消安装"
+                return 1
+            fi
             if command -v apt &>/dev/null; then
                 sudo apt update
+
                 sudo apt install -y r-base
             elif command -v yum &>/dev/null; then
                 sudo yum install -y R
@@ -157,23 +184,91 @@ scan_packages() {
         return 1
     fi
 
-    log_info "Scanning installed R packages..."
-    local packages
-    packages="$("$R_CMD" -e "cat(installed.packages()[,'Package'], sep='\n')" 2>/dev/null)"
+    log_info "Scanning installed R packages / 扫描已安装 R 包..."
 
-    echo "$packages"
+    local pkg_list_file="${WORKSPACE_DIR:-/tmp}/r_packages_$(date +%Y%m%d_%H%M%S).txt"
+
+    # Get full package list and save to file
+    "$R_CMD" -e "cat(installed.packages()[,'Package'], sep='\n')" 2>/dev/null > "$pkg_list_file"
+
+    local total_count
+    total_count=$(wc -l < "$pkg_list_file" | tr -d ' ')
+
+    echo ""
+    echo "============================================"
+    echo "  R Statistical Package Summary / R 统计分析包汇总"
+    echo "  总计 / Total: ${total_count} packages"
+    echo "============================================"
+    echo ""
+
+    # Define statistical categories with their packages
+    declare -A stat_categories
+    stat_categories["描述统计 / Descriptive Statistics"]="psych pastecs DescTools summarizeR"
+    stat_categories["假设检验 / Hypothesis Testing"]="stats car lmtest nortest"
+    stat_categories["回归分析 / Regression"]="stats car MASS lme4 nlme survival rms"
+    stat_categories["多变量分析 / Multivariate Analysis"]="stats MASS psych FactoMineR factoextra"
+    stat_categories["贝叶斯统计 / Bayesian"]="rjags coda bayesrunjags"
+    stat_categories["Meta 分析 / Meta Analysis"]="metafor meta"
+    stat_categories["问卷与心理测量 / Psychometrics"]="psych lavaan semPlot mirt"
+    stat_categories["数据操作 / Data Manipulation"]="dplyr tidyr data.table reshape2"
+    stat_categories["数据可视化 / Data Visualization"]="ggplot2 plotly shiny lattice"
+    stat_categories["机器学习 / Machine Learning"]="caret randomForest xgboost mlr3"
+    stat_categories["时间序列 / Time Series"]="forecast tseries zoo xts"
+    stat_categories["空间统计 / Spatial Statistics"]="spdep raster sf"
+    stat_categories["生存分析 / Survival Analysis"]="survival cmprsk survminer"
+    stat_categories["流行病学 / Epidemiology"]="Epi epitools"
+    stat_categories["样本量计算 / Sample Size"]="pwr samplesize"
+    stat_categories["结构方程 / SEM"]="lavaan semPlot OpenMx"
+
+    for cat in "${!stat_categories[@]}"; do
+        local found_pkgs=()
+        for pkg in ${stat_categories[$cat]}; do
+            if grep -qw "^${pkg}$" "$pkg_list_file" 2>/dev/null; then
+                found_pkgs+=("$pkg")
+            fi
+        done
+        if [[ ${#found_pkgs[@]} -gt 0 ]]; then
+            echo "✅ ${cat}: ${found_pkgs[*]}"
+        fi
+    done
+
+    echo ""
+    echo "Full list / 完整列表: ${pkg_list_file}"
+    echo "============================================"
+
+    # Return total count for caller
+    export R_PACKAGE_COUNT=$total_count
 }
 
 save_config() {
     local config_file="${1:-$ROOT_DIR/../config.json}"
     local r_path="${R_CMD:-not installed}"
 
-    # Create or update config
     if [[ -f "$config_file" ]]; then
-        # Update existing config (simple JSON manipulation)
+        # Backup existing config
+        cp "$config_file" "${config_file}.bak.$(date +%Y%m%d_%H%M%S)"
+        log_info "Config backed up / 配置已备份: ${config_file}.bak.*"
         log_info "Updating existing config: $config_file"
+        
+        # Update R section in existing config using python if available
+        if command -v python &>/dev/null; then
+            python -c "
+import json, sys
+with open('$config_file', 'r') as f:
+    config = json.load(f)
+config['R'] = {
+    'installed': True,
+    'path': '$r_path',
+    'version': '$R_VERSION',
+    'platform': '$WB_OS',
+    'mode': 'simple',
+    'package_count': ${R_PACKAGE_COUNT:-0}
+}
+with open('$config_file', 'w') as f:
+    json.dump(config, f, indent=2)
+"
+        fi
     else
-        # Create new config
         cat > "$config_file" << EOF
 {
   "R": {
@@ -181,152 +276,13 @@ save_config() {
     "path": "$r_path",
     "version": "$R_VERSION",
     "platform": "$WB_OS",
-    "mode": "simple"
+    "mode": "simple",
+    "package_count": ${R_PACKAGE_COUNT:-0}
   }
 }
 EOF
         log_success "Created config: $config_file"
     fi
-}
-
-detect_anaconda() {
-    # Check for conda
-    if command -v conda &>/dev/null; then
-        local conda_path="$(command -v conda)"
-        log_success "Detected Conda: $conda_path"
-        return 0
-    fi
-
-    # Check common Anaconda/Miniconda paths
-    local conda_paths=()
-    case "$WB_OS" in
-        windows)
-            conda_paths=(
-                "$HOME/anaconda3/Scripts/conda.exe"
-                "$HOME/miniconda3/Scripts/conda.exe"
-                "C:/ProgramData/anaconda3/Scripts/conda.exe"
-                "C:/ProgramData/miniconda3/Scripts/conda.exe"
-            )
-            ;;
-        mac)
-            conda_paths=(
-                "$HOME/anaconda3/bin/conda"
-                "$HOME/miniconda3/bin/conda"
-                "/opt/anaconda3/bin/conda"
-                "/opt/miniconda3/bin/conda"
-            )
-            ;;
-        linux)
-            conda_paths=(
-                "$HOME/anaconda3/bin/conda"
-                "$HOME/miniconda3/bin/conda"
-                "/opt/anaconda3/bin/conda"
-                "/opt/miniconda3/bin/conda"
-            )
-            ;;
-    esac
-
-    for cp in "${conda_paths[@]}"; do
-        if [[ -x "$cp" ]]; then
-            log_success "Detected Conda: $cp"
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-suggest_anaconda() {
-    echo ""
-    echo "============================================"
-    echo "  ALTERNATIVE: Use Anaconda Python Environment"
-    echo "  替代方案：使用 Anaconda Python 环境"
-    echo "============================================"
-    echo ""
-    echo "R is not installed and you declined to install it."
-    echo "R 未安装，且您选择不安装 R。"
-    echo ""
-    echo "As an alternative, Anaconda Python provides statistical analysis capabilities:"
-    echo "作为替代方案，Anaconda Python 提供统计分析能力："
-    echo ""
-    echo "  · scipy, statsmodels — statistical tests & modeling"
-    echo "  · pandas — data manipulation (like dplyr/tidyr)"
-    echo "  · scikit-learn — machine learning (like caret/xgboost)"
-    echo "  · matplotlib, seaborn — visualization (like ggplot2)"
-    echo "  · lifelines — survival analysis (like survival)"
-    echo "  · PyMC — Bayesian modeling"
-    echo ""
-    echo "Download Anaconda / 下载 Anaconda:"
-    echo "  https://www.anaconda.com/download"
-    echo ""
-    echo "Or install Miniconda (lighter) / 或安装 Miniconda (更轻量):"
-    echo "  https://docs.conda.io/en/latest/miniconda.html"
-    echo ""
-    echo "After install, activate with / 安装后激活:"
-    echo "  conda activate base"
-    echo ""
-    echo "Install stats packages / 安装统计包:"
-    echo "  conda install scipy statsmodels pandas scikit-learn matplotlib seaborn"
-    echo ""
-}
-
-install_anaconda() {
-    case "$WB_OS" in
-        windows)
-            log_info "Downloading Anaconda installer for Windows..."
-            local url="https://repo.anaconda.com/archive/Anaconda3-2024.02-1-Windows-x86_64.exe"
-            local installer="${TEMP:-/tmp}/Anaconda3-installer.exe"
-            if command -v curl &>/dev/null; then
-                curl -fsSL -o "$installer" "$url"
-            elif command -v wget &>/dev/null; then
-                wget -q -O "$installer" "$url"
-            else
-                log_error "Neither curl nor wget found. Please install Anaconda manually from https://www.anaconda.com/download"
-                return 1
-            fi
-            if [[ -f "$installer" ]]; then
-                log_info "Download complete. Running installer silently..."
-                "$installer" /S /D="$HOME/anaconda3"
-                log_info "Anaconda installed. Please restart your terminal and run 'conda activate base'."
-            fi
-            ;;
-        mac)
-            log_info "Downloading Anaconda installer for macOS..."
-            local url="https://repo.anaconda.com/archive/Anaconda3-2024.02-1-MacOSX-x86_64.sh"
-            local installer="/tmp/Anaconda3-installer.sh"
-            if command -v curl &>/dev/null; then
-                curl -fsSL -o "$installer" "$url"
-            elif command -v wget &>/dev/null; then
-                wget -q -O "$installer" "$url"
-            else
-                log_error "Neither curl nor wget found. Please install Anaconda manually from https://www.anaconda.com/download"
-                return 1
-            fi
-            if [[ -f "$installer" ]]; then
-                log_info "Download complete. Running installer..."
-                bash "$installer" -b -p "$HOME/anaconda3"
-                log_info "Anaconda installed. Please restart your terminal and run 'conda activate base'."
-            fi
-            ;;
-        linux)
-            log_info "Downloading Anaconda installer for Linux..."
-            local url="https://repo.anaconda.com/archive/Anaconda3-2024.02-1-Linux-x86_64.sh"
-            local installer="/tmp/Anaconda3-installer.sh"
-            if command -v curl &>/dev/null; then
-                curl -fsSL -o "$installer" "$url"
-            elif command -v wget &>/dev/null; then
-                wget -q -O "$installer" "$url"
-            else
-                log_error "Neither curl nor wget found. Please install Anaconda manually from https://www.anaconda.com/download"
-                return 1
-            fi
-            if [[ -f "$installer" ]]; then
-                log_info "Download complete. Running installer..."
-                bash "$installer" -b -p "$HOME/anaconda3"
-                log_info "Anaconda installed. Please restart your terminal and run 'conda activate base'."
-            fi
-            ;;
-    esac
 }
 
 Main() {
@@ -337,6 +293,7 @@ Main() {
     if detect_r; then
         verify_r
         save_config
+        scan_packages
         return 0
     fi
 
@@ -346,29 +303,11 @@ Main() {
         read -p "Custom install path (leave empty for default): " custom_path
         install_r "$custom_path"
         detect_r && verify_r && save_config
+        scan_packages
         return $?
     fi
 
-    # R not found and user declined — check for Anaconda
-    echo ""
-    log_info "Checking for Anaconda Python as alternative..."
-    if detect_anaconda; then
-        log_success "Anaconda/Conda already installed — you can use Python for statistical analysis"
-        log_success "已安装 Anaconda/Conda — 可使用 Python 进行统计分析"
-        return 2  # Special code: R not found but Anaconda available
-    fi
-
-    # Neither R nor Anaconda — suggest Anaconda
-    suggest_anaconda
-
-    echo ""
-    read -p "Install Anaconda now? (y/N): " anaconda_answer
-    if [[ "$anaconda_answer" =~ ^[Yy]$ ]]; then
-        install_anaconda
-        return $?
-    fi
-
-    log_error "Neither R nor Anaconda available. Statistical analysis capabilities will be limited."
+    log_error "R is not available. Statistical analysis capabilities will be limited."
     return 1
 }
 

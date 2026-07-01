@@ -9,5 +9,5 @@
      http://www.ibm.com/software/analytics/spss/xml/production/production-1.4.xsd">
   <locale charset="UTF-8" country="CN" language="zh"/>
   <output outputFormat="viewer" outputPath="output.spv"/>
-  <syntax syntaxPath="C:\Users\Wintone\.workbuddy\skills\statsoft-cli\tests\test-syntax.sps"/>
+  <syntax syntaxPath="[SKILL_DIR]/tests/test-syntax.sps"/>
 </job>

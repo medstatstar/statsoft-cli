@@ -18,7 +18,7 @@ param(
 # 读取配置
 $configPath = "$PSScriptRoot\..\config.json"
 if (-not (Test-Path $configPath)) {
-    Write-Error "配置文件不存在: $configPath。请先运行 setup_sas.ps1"
+    Write-Error "[CN] 配置文件不存在: $configPath。请先运行 setup_sas.ps1 / [EN] Config file not found: $configPath. Please run setup_sas.ps1 first."
     exit 1
 }
 
@@ -26,7 +26,7 @@ $config = Get-Content $configPath | ConvertFrom-Json
 $sasPath = $config.SAS.Path
 
 if (-not (Test-Path $sasPath)) {
-    Write-Error "SAS 可执行文件不存在: $sasPath"
+    Write-Error "[CN] SAS 可执行文件不存在: $sasPath / [EN] SAS executable not found: $sasPath"
     exit 1
 }
 
@@ -34,30 +34,34 @@ switch ($Command) {
     "run" {
         $sasFile = $Args[0]
         if (-not (Test-Path $sasFile)) {
-            Write-Error "SAS 程序不存在: $sasFile"
+            Write-Error "[CN] SAS 程序不存在: $sasFile / [EN] SAS program not found: $sasFile"
             exit 1
         }
         
         $logPath = if ($LogFile) { $LogFile } else { Join-Path $PWD "sas-log.log" }
         $printPath = if ($LogFile) { $LogFile -replace '\.log$', '.lst' } else { Join-Path $PWD "sas-output.lst" }
         
-        Write-Host "执行 SAS 程序: $sasFile" -ForegroundColor Cyan
-        Write-Host "日志输出: $logPath" -ForegroundColor Cyan
+        Write-Host "[CN] 执行 SAS 程序: $sasFile" -ForegroundColor Cyan
+        Write-Host "[EN] Executing SAS program: $sasFile" -ForegroundColor Cyan
+        Write-Host "[CN] 日志输出: $logPath" -ForegroundColor Gray
+        Write-Host "[EN] Log output: $logPath" -ForegroundColor Gray
         
         # 执行 SAS 批处理
         & $sasPath -batch -nosplash -sysin $sasFile -log $logPath -print $printPath
         
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "SAS 执行完成" -ForegroundColor Green
+            Write-Host "[CN] SAS 执行完成" -ForegroundColor Green
+            Write-Host "[EN] SAS execution complete" -ForegroundColor Green
         } else {
-            Write-Warning "SAS 退出码: $LASTEXITCODE"
+            Write-Warning "[CN] SAS 退出码: $LASTEXITCODE"
+            Write-Warning "[EN] SAS exit code: $LASTEXITCODE"
         }
     }
     
     "data-info" {
         $sasFile = $Args[0]
         if (-not (Test-Path $sasFile)) {
-            Write-Error "SAS 程序不存在: $sasFile"
+            Write-Error "[CN] SAS 程序不存在: $sasFile / [EN] SAS program not found: $sasFile"
             exit 1
         }
         
@@ -75,7 +79,7 @@ run;
     "read-log" {
         $logPath = $Args[0]
         if (-not (Test-Path $logPath)) {
-            Write-Error "日志文件不存在: $logPath"
+            Write-Error "[CN] 日志文件不存在: $logPath / [EN] Log file not found: $logPath"
             exit 1
         }
         

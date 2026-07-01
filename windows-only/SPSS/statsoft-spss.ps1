@@ -65,38 +65,30 @@ if (-not $statsExe) {
 }
 
 if (-not $statsPython -and -not $statsExe) {
-    Write-Error "找不到 SPSS。请先运行 setup_spss.ps1 配置 SPSS。"
+    Write-Error "[CN] 找不到 SPSS。请先运行 setup_spss.ps1 配置 SPSS。"
+    Write-Error "[EN] SPSS not found. Please run setup_spss.ps1 to configure SPSS first."
     exit 1
 }
 
-Write-Host "SPSS 内置 Python : $statsPython" -ForegroundColor Cyan
-Write-Host "SPSS stats.exe   : $statsExe" -ForegroundColor Cyan
+Write-Host "[CN] SPSS 内置 Python : $statsPython" -ForegroundColor Cyan
+Write-Host "[EN] SPSS Built-in Python : $statsPython" -ForegroundColor Cyan
+Write-Host "[CN] SPSS stats.exe   : $statsExe" -ForegroundColor Cyan
+Write-Host "[EN] SPSS stats.exe   : $statsExe" -ForegroundColor Cyan
 
 # ============================================================
 # 首选调用方式：通过内置 Python 的 spss 模块（完全无 GUI）
 # ============================================================
 function Invoke-SPSSInternal {
     param( [string]$SpsFile )
-    Write-Host "`n调用 SPSS（首选方式：内置 Python，完全无 GUI）..." -ForegroundColor Yellow
+    Write-Host "`n[CN] 调用 SPSS（首选方式：内置 Python，完全无 GUI）..." -ForegroundColor Yellow
+    Write-Host "[EN] Calling SPSS (preferred method: built-in Python, no GUI)..." -ForegroundColor Yellow
     
     $pythonExe = $statsPython
     if (-not $pythonExe -or -not (Test-Path $pythonExe)) {
-        Write-Warning "未找到 SPSS 内置 Python，改用 Production Facility 方式"
+        Write-Warning "[CN] 未找到 SPSS 内置 Python，改用 Production Facility 方式 / [EN] SPSS built-in Python not found, switching to Production Facility"
         return (Invoke-SPSSProduction $SpsFile)
     }
     
-    $tmpOut = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.txt'
-    $tmpErr = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.txt'
-    
-    # 通过 CREATE_NO_WINDOW 调用内置 Python
-    $psi = @{
-        FilePath   = $pythonExe
-        ArgumentList = "$helperPy", "run-internal", "`"$SpsFile`""
-        UseShellExecute = $false
-        RedirectStandardOutput = $true
-        RedirectStandardError = $true
-        CreateNoWindow = $true
-    }
     $p = New-Object System.Diagnostics.Process
     $p.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
     $p.StartInfo.FileName = $pythonExe
@@ -106,18 +98,20 @@ function Invoke-SPSSInternal {
     $p.StartInfo.RedirectStandardError = $true
     $p.StartInfo.CreateNoWindow = $true
     
-    Write-Host "启动 SPSS 处理器（无 GUI）..." -ForegroundColor Gray
+    Write-Host "[CN] 启动 SPSS 处理器（无 GUI）..." -ForegroundColor Gray
+    Write-Host "[EN] Starting SPSS processor (no GUI)..." -ForegroundColor Gray
     $started = $p.Start()
     if ($started) {
         $stdout = $p.StandardOutput.ReadToEnd()
         $stderr = $p.StandardError.ReadToEnd()
         $p.WaitForExit(300000)  # 等待最多 5 分钟
-        Write-Host "SPSS 执行完成，退出码: $($p.ExitCode)" -ForegroundColor Green
+        Write-Host "[CN] SPSS 执行完成，退出码: $($p.ExitCode)" -ForegroundColor Green
+        Write-Host "[EN] SPSS execution complete, exit code: $($p.ExitCode)" -ForegroundColor Green
         if ($stdout) { Write-Host $stdout }
         if ($stderr) { Write-Warning $stderr }
         return $p.ExitCode
     } else {
-        Write-Error "无法启动 SPSS Python 进程"
+        Write-Error "[CN] 无法启动 SPSS Python 进程 / [EN] Failed to start SPSS Python process"
         return 1
     }
 }
@@ -127,17 +121,10 @@ function Invoke-SPSSInternal {
 # ============================================================
 function Invoke-SPSSProduction {
     param( [string]$SpjFile )
-    Write-Host "`n调用 SPSS Production Facility（备用方式，可能有闪屏）..." -ForegroundColor Yellow
-    Write-Warning "此方式可能显示闪屏。建议使用首选方式（内置 Python）。"
+    Write-Host "`n[CN] 调用 SPSS Production Facility（备用方式，可能有闪屏）..." -ForegroundColor Yellow
+    Write-Host "[EN] Calling SPSS Production Facility (alternative method, may show flash screen)..." -ForegroundColor Yellow
+    Write-Warning "[CN] 此方式可能显示闪屏。建议使用首选方式（内置 Python）。"
     
-    $psi = @{
-        FilePath   = $statsExe
-        ArgumentList = "--production", "`"$SpjFile`""
-        UseShellExecute = $false
-        RedirectStandardOutput = $true
-        RedirectStandardError = $true
-        CreateNoWindow = $true
-    }
     $p = New-Object System.Diagnostics.Process
     $p.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
     $p.StartInfo.FileName = $statsExe
@@ -147,18 +134,20 @@ function Invoke-SPSSProduction {
     $p.StartInfo.RedirectStandardError = $true
     $p.StartInfo.CreateNoWindow = $true
     
-    Write-Host "启动 SPSS Production Facility..." -ForegroundColor Gray
+    Write-Host "[CN] 启动 SPSS Production Facility..." -ForegroundColor Gray
+    Write-Host "[EN] Starting SPSS Production Facility..." -ForegroundColor Gray
     $started = $p.Start()
     if ($started) {
         $stdout = $p.StandardOutput.ReadToEnd()
         $stderr = $p.StandardError.ReadToEnd()
         $p.WaitForExit(300000)
-        Write-Host "SPSS 执行完成，退出码: $($p.ExitCode)" -ForegroundColor Green
+        Write-Host "[CN] SPSS 执行完成，退出码: $($p.ExitCode)" -ForegroundColor Green
+        Write-Host "[EN] SPSS execution complete, exit code: $($p.ExitCode)" -ForegroundColor Green
         if ($stdout) { Write-Host $stdout }
         if ($stderr) { Write-Warning $stderr }
         return $p.ExitCode
     } else {
-        Write-Error "无法启动 SPSS 进程"
+        Write-Error "[CN] 无法启动 SPSS 进程 / [EN] Failed to start SPSS process"
         return 1
     }
 }
@@ -198,7 +187,8 @@ switch ($Command) {
     "run" {
         $spsFile = $Args[0]
         if (-not $spsFile -or -not (Test-Path $spsFile)) {
-            Write-Error "语法文件不存在: $spsFile"
+            Write-Error "[CN] 语法文件不存在: $spsFile"
+            Write-Error "[EN] Syntax file not found: $spsFile"
             exit 1
         }
         $workDir = $PWD
@@ -209,7 +199,7 @@ switch ($Command) {
 
     "run-batch" {
         if ($Args.Count -eq 0) {
-            Write-Error "请提供至少一个语法文件路径"
+            Write-Error "[CN] 请提供至少一个语法文件路径 / [EN] Please provide at least one syntax file path"
             exit 1
         }
         $workDir   = $PWD
@@ -238,10 +228,15 @@ switch ($Command) {
     "data-info" {
         $savFile = $Args[0]
         if (-not $savFile -or -not (Test-Path $savFile)) {
-            Write-Error "数据文件不存在: $savFile"
+            Write-Error "[CN] 数据文件不存在: $savFile"
+            Write-Error "[EN] Data file not found: $savFile"
             exit 1
         }
-        Write-Host "读取 .sav 文件: $savFile" -ForegroundColor Cyan
+        Write-Host "[CN] 读取 .sav 文件: $savFile" -ForegroundColor Cyan
+        Write-Host "[EN] Reading .sav file: $savFile" -ForegroundColor Cyan
+        Write-Host "[CN] ⚠️  将临时创建 Python 脚本调用 pyreadstat 解析文件" -ForegroundColor Yellow
+        Write-Host "[EN] ⚠️  A temporary Python script will use pyreadstat to parse the file" -ForegroundColor Yellow
+        Write-Host "    临时脚本路径 / Temp script path: $env:TEMP\statsoft_tmp_*.py" -ForegroundColor Gray
         $pyCode = @"
 import sys
 try:
@@ -252,11 +247,13 @@ try:
     print('变量名: ' + str(list(df.columns)))
     print()
     print(df.head(20).to_string())
+except ImportError:
+    print('ERROR: 未安装 pyreadstat 包，请运行: pip install pyreadstat')
 except Exception as e:
     print('ERROR: ' + str(e))
     sys.exit(1)
 "@
-        $tmpPy = New-TemporaryFile -WhatIf:$false
+        $tmpPy = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.py'
         $pyCode | Set-Content $tmpPy -Encoding UTF8
         & python.exe $tmpPy
         Remove-Item $tmpPy -ErrorAction SilentlyContinue
@@ -265,14 +262,15 @@ except Exception as e:
     "read-log" {
         $logPath = $Args[0]
         if (-not (Test-Path $logPath)) {
-            Write-Error "日志文件不存在: $logPath"
+            Write-Error "[CN] 日志文件不存在: $logPath"
+            Write-Error "[EN] Log file not found: $logPath"
             exit 1
         }
         Get-Content $logPath
     }
 
     "install-plugin" {
-        Write-Host "请通过 SPSS 安装包添加 Python 插件（Integration Plug-in for Python）" -ForegroundColor Yellow
+        Write-Host "[CN] 请通过 SPSS 安装包添加 Python 插件 / [EN] Please install Python plugin via SPSS installer" -ForegroundColor Yellow
         Write-Host "stats.exe 路径: $statsExe" -ForegroundColor Cyan
     }
 }

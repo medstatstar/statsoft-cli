@@ -1,32 +1,23 @@
 {
   "R": {
     "installed": true,
-    "path": "C:\\Program Files\\R\\R-4.3.1\\bin\\Rscript.exe",
-    "version": "4.3.1",
-    "install_path": "C:\\Program Files\\R\\",
-    "mode": "simple",
-    "capability_profile": {
-      "statistical_modeling": ["lme4", "nlme", "car", "MASS", "survival"],
-      "data_visualization": ["ggplot2", "plotly", "shiny"],
-      "machine_learning": ["caret", "randomForest", "xgboost"],
-      "meta_analysis": ["metafor", "meta"],
-      "questionnaire_psychometrics": ["psych", "lavaan", "semPlot"],
-      "data_manipulation": ["dplyr", "tidyr", "data.table"]
-    }
+    "path": "[R_INSTALL_PATH]/bin/Rscript.exe",
+    "version": "[R_VERSION]",
+    "install_path": "[R_INSTALL_PATH]/",
+    "mode": "simple"
   },
   "SPSS": {
     "installed": true,
-    "version": "28",
-    "path": "C:\\Program Files\\IBM\\SPSS\\Statistics\\28\\spsswin.exe",
+    "version": "[SPSS_VERSION]",
+    "path": "[SPSS_INSTALL_DIR]/stats.exe",
     "python_plugin": true,
-    "doc_base": "https://www.ibm.com/docs/zh/spss-statistics/28.0.0",
     "mode": "simple"
   },
   "Stata": {
     "installed": true,
-    "path": "C:\\Program Files\\Stata17\\StataMP-64.exe",
-    "edition": "MP",
-    "version": "17",
+    "path": "[STATA_INSTALL_PATH]",
+    "edition": "[MP|SE|BE]",
+    "version": "[STATA_VERSION]",
     "mode": "simple"
   }
 }

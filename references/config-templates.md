@@ -123,7 +123,7 @@
 | SPSS | UnicodeDecodeError | Non-UTF-8 output | Use `cp1252` or `errors='replace'` |
 | SPSS | K=1 result | High variable dimensionality | Reduce noise variables |
 | SPSS | F-string error | Python 3.4 limitation | Use `%s` formatting |
-| Stata | Confirmation dialog | Wrong batch flag | Use `/b` (Win) or `-b` (Mac/Linux) |
+| Stata | Confirmation dialog | Wrong batch flag | Stata ≤12: `/e` (Win) or `-e` (Mac/Linux); Stata ≥13: `/b` (Win) or `-b` (Mac/Linux) |
 | Stata | File not found | Spaces in path | Wrap path in quotes |
 | R | Package not found | Package not installed | `install.packages()` |
 | R | Encoding issue | Non-UTF-8 file | Use `fileEncoding="UTF-8"` |

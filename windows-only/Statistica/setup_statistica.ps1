@@ -4,22 +4,25 @@
 # 颜色函数
 function Write-Info {
     param([string]$Message)
-    Write-Host "[INFO] $Message" -ForegroundColor Green
+    Write-Host "[INFO] [CN] $Message" -ForegroundColor Green
+    Write-Host "[INFO] [EN] $Message" -ForegroundColor Green
 }
 
 function Write-Warn {
     param([string]$Message)
-    Write-Host "[WARN] $Message" -ForegroundColor Yellow
+    Write-Host "[WARN] [CN] $Message" -ForegroundColor Yellow
+    Write-Host "[WARN] [EN] $Message" -ForegroundColor Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "[ERROR] $Message" -ForegroundColor Red
+    Write-Host "[ERROR] [CN] $Message" -ForegroundColor Red
+    Write-Host "[ERROR] [EN] $Message" -ForegroundColor Red
 }
 
 # 检测 Statistica
 function Detect-Statistica {
-    Write-Info "检测 Statistica..."
+    Write-Info "检测 Statistica... / Detecting Statistica..."
     
     # 检查常见安装路径
     $possiblePaths = @(
@@ -29,7 +32,7 @@ function Detect-Statistica {
     
     foreach ($path in $possiblePaths) {
         if (Test-Path $path) {
-            Write-Info "找到 Statistica: $path"
+            Write-Info "找到 Statistica: $path / Found Statistica: $path"
             return $path
         }
     }
@@ -37,11 +40,11 @@ function Detect-Statistica {
     # 检查 PATH
     $statisticaInPath = Get-Command "Statistica.exe" -ErrorAction SilentlyContinue
     if ($statisticaInPath) {
-        Write-Info "在 PATH 中找到 Statistica: $($statisticaInPath.Source)"
+        Write-Info "在 PATH 中找到 Statistica: $($statisticaInPath.Source) / Found Statistica in PATH: $($statisticaInPath.Source)"
         return $statisticaInPath.Source
     }
     
-    Write-Warn "未找到 Statistica"
+    Write-Warn "未找到 Statistica / Statistica not found"
     return $null
 }
 
@@ -49,22 +52,22 @@ function Detect-Statistica {
 function Verify-Statistica {
     param([string]$StatisticaPath)
     
-    Write-Info "验证 Statistica..."
+    Write-Info "验证 Statistica... / Verifying Statistica..."
     
     if (-not (Test-Path $StatisticaPath)) {
-        Write-Error "Statistica 可执行文件不存在: $StatisticaPath"
+        Write-Error "Statistica 可执行文件不存在: $StatisticaPath / Statistica executable not found: $StatisticaPath"
         return $false
     }
     
     # 尝试运行 Statistica 获取版本信息
     try {
         $versionInfo = (Get-Item $StatisticaPath).VersionInfo
-        Write-Info "Statistica 版本: $($versionInfo.ProductVersion)"
-        Write-Info "Statistica 验证成功"
+        Write-Info "Statistica 版本: $($versionInfo.ProductVersion) / Statistica version: $($versionInfo.ProductVersion)"
+        Write-Info "Statistica 验证成功 / Statistica verification successful"
         return $true
     }
     catch {
-        Write-Warn "无法获取 Statistica 版本信息: $_"
+        Write-Warn "无法获取 Statistica 版本信息: $_ / Unable to get Statistica version info: $_"
         return $false
     }
 }
@@ -73,9 +76,9 @@ function Verify-Statistica {
 function Configure-Statistica {
     param([string]$StatisticaPath)
     
-    Write-Info "配置 Statistica..."
+    Write-Info "配置 Statistica... / Configuring Statistica..."
     
-    $configFile = "$HOME\.workbuddy\skills\statsoft-cli\config.json"
+    $configFile = Join-Path $PSScriptRoot "..\config.json"
     
     # 创建配置目录
     $configDir = Split-Path $configFile -Parent
@@ -100,53 +103,58 @@ function Configure-Statistica {
     # 保存配置
     $config | ConvertTo-Json -Depth 10 | Set-Content $configFile
     
-    Write-Info "Statistica 配置已保存到: $configFile"
+    Write-Info "Statistica 配置已保存到: $configFile / Statistica config saved to: $configFile"
     return $true
 }
 
 # 主函数
 function Main {
-    Write-Info "开始 Statistica 检测与配置..."
+    Write-Info "开始 Statistica 检测与配置... / Starting Statistica detection & configuration..."
     
     # 检测 Statistica
     $statisticaPath = Detect-Statistica
     
     if (-not $statisticaPath) {
-        Write-Warn "未找到 Statistica，请手动指定路径"
+        Write-Warn "未找到 Statistica，请手动指定路径 / Statistica not found, please specify path manually"
         
-        # 提示用户输入路径
-        $userPath = Read-Host "请输入 Statistica 安装路径（按 Enter 跳过）"
+        # L-5: 非交互回退 — Read-Host 带超时
+        $userPath = $null
+        try {
+            $userPath = Read-Host "[CN] 请输入 Statistica 安装路径（按 Enter 跳过）/ [EN] Enter Statistica installation path (press Enter to skip)"
+        } catch {
+            Write-Host "[!] [CN] 非交互模式，跳过手动输入 / [EN] Non-interactive mode, skipping manual input" -ForegroundColor Yellow
+        }
         
         if ($userPath) {
             $statisticaPath = $userPath
         }
         else {
-            Write-Error "未配置 Statistica"
+            Write-Error "未配置 Statistica / Statistica not configured"
             exit 1
         }
     }
     
     # 验证 Statistica
     if (-not (Verify-Statistica $statisticaPath)) {
-        Write-Error "Statistica 验证失败"
+        Write-Error "Statistica 验证失败 / Statistica verification failed"
         exit 1
     }
     
     # 配置 Statistica
     if (-not (Configure-Statistica $statisticaPath)) {
-        Write-Error "Statistica 配置失败"
+        Write-Error "Statistica 配置失败 / Statistica configuration failed"
         exit 1
     }
     
-    Write-Info "✅ Statistica 配置完成！"
+    Write-Info "✅ Statistica 配置完成！/ ✅ Statistica configuration complete!"
     Write-Info ""
-    Write-Info "⚠️ 配置完成提示:"
-    Write-Info "  - ⚠️ Statistica 批处理模式可能有闪屏"
-    Write-Info "  - ⚠️ Windows-only，不支持 macOS 和 Linux"
-    Write-Info "  - 💡 适合数据挖掘、机器学习和统计分析"
+    Write-Info "⚠️ 配置完成提示 / Configuration notes:"
+    Write-Info "  - ⚠️ Statistica 批处理模式可能有闪屏 / Statistica batch mode may flash screen"
+    Write-Info "  - ⚠️ Windows-only，不支持 macOS 和 Linux / Windows-only, not supporting macOS and Linux"
+    Write-Info "  - 💡 适合数据挖掘、机器学习和统计分析 / Suitable for data mining, machine learning, and statistical analysis"
     Write-Info ""
-    Write-Info "📋 推荐使用方式:"
-    Write-Info "  # 运行 SVB 脚本"
+    Write-Info "📋 推荐使用方式 / Recommended usage:"
+    Write-Info "  # 运行 SVB 脚本 / Run SVB script"
     Write-Info "  `"$statisticaPath`" /run `"script.svb`""
     
     return 0

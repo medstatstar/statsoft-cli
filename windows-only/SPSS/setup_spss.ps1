@@ -5,7 +5,8 @@ param(
     [string]$Version = "26"
 )
 
-Write-Host "=== SPSS Statistics 检测与配置 ===" -ForegroundColor Cyan
+Write-Host "[CN] === SPSS Statistics 检测与配置 ===" -ForegroundColor Cyan
+Write-Host "[EN] === SPSS Statistics Detection & Configuration ===" -ForegroundColor Cyan
 
 # 1. 检测 SPSS 安装
 $spssInstalled = $false
@@ -30,14 +31,16 @@ foreach ($dir in $commonPaths) {
         # 优先使用 stats.exe（26/29/30 版主程序），其次 spss.exe
         $spssPath = if (Test-Path $statsExe) { $statsExe } elseif (Test-Path $spssExe) { $spssExe } else { "N/A" }
         $spsswinPath = if (Test-Path $spsswinExe) { $spsswinExe } else { "N/A" }
-        Write-Host "[OK] 检测到 SPSS Statistics $Version : $dir" -ForegroundColor Green
+        Write-Host "[OK] [CN] 检测到 SPSS Statistics $Version : $dir" -ForegroundColor Green
+        Write-Host "[OK] [EN] SPSS Statistics $Version detected: $dir" -ForegroundColor Green
         break
     }
 }
 
 # 2. 如果未找到，尝试从注册表查找
 if (-not $spssInstalled) {
-    Write-Host "[!] 在常见路径未找到 SPSS，尝试注册表..." -ForegroundColor Yellow
+    Write-Host "[!] [CN] 在常见路径未找到 SPSS，尝试注册表..." -ForegroundColor Yellow
+    Write-Host "[!] [EN] SPSS not found in common paths, trying registry..." -ForegroundColor Yellow
     
     $regPaths = @(
         "HKLM:\SOFTWARE\IBM\SPSS Statistics",
@@ -54,26 +57,36 @@ if (-not $spssInstalled) {
                 $spsswinExe = Join-Path $installDir "spsswin.exe"
                 $spssPath = if (Test-Path $statsExe) { $statsExe } elseif (Test-Path $spssExe) { $spssExe } else { "N/A" }
                 $spsswinPath = if (Test-Path $spsswinExe) { $spsswinExe } else { "N/A" }
-                Write-Host "[OK] 从注册表找到 SPSS : $installDir" -ForegroundColor Green
+                Write-Host "[OK] [CN] 从注册表找到 SPSS : $installDir" -ForegroundColor Green
+                Write-Host "[OK] [EN] Found SPSS from registry: $installDir" -ForegroundColor Green
                 break
             }
         }
     }
 }
 
-# 3. 如果仍未找到，提示用户
+# 3. 如果仍未找到，提示用户（支持非交互回退）
 if (-not $spssInstalled) {
-    Write-Host "[!] 未检测到 SPSS Statistics" -ForegroundColor Yellow
-    Write-Host "请确认以下信息:" -ForegroundColor Yellow
-    Write-Host "  1. SPSS Statistics 是否已安装？"
-    Write-Host "  2. 安装路径是什么？"
-    Write-Host "  3. 版本号是多少？（默认参考 26）"
+    Write-Host "[!] [CN] 未检测到 SPSS Statistics" -ForegroundColor Yellow
+    Write-Host "[!] [EN] SPSS Statistics not found" -ForegroundColor Yellow
+    Write-Host "[CN] 请确认以下信息:" -ForegroundColor Yellow
+    Write-Host "[EN] Please confirm:" -ForegroundColor Yellow
+    Write-Host "  1. [CN] SPSS Statistics 是否已安装？/ [EN] Is SPSS installed?"
+    Write-Host "  2. [CN] 安装路径是什么？/ [EN] What is the installation path?"
+    Write-Host "  3. [CN] 版本号是多少？（默认参考 26）/ [EN] Version number? (default 26)"
     Write-Host ""
-    Write-Host "参考文档:" -ForegroundColor Cyan
+    Write-Host "[CN] 参考文档:" -ForegroundColor Cyan
+    Write-Host "[EN] Reference docs:" -ForegroundColor Cyan
     Write-Host "  - Python 编程接口: https://www.ibm.com/docs/zh/spss-statistics/26.0.0?topic=facility-scripting-python-programming-language"
     Write-Host "  - Production Facility: https://www.ibm.com/docs/zh/spss-statistics/26.0.0?topic=system-production-jobs"
     
-    $manualPath = Read-Host "`n请输入 SPSS 安装路径（例如 C:\Program Files\IBM\SPSS\Statistics\26）"
+    # L-5: 非交互回退 — Read-Host 带超时
+    $manualPath = $null
+    try {
+        $manualPath = Read-Host -Prompt "`n[CN] 请输入 SPSS 安装路径 / [EN] Enter SPSS installation path"
+    } catch {
+        Write-Host "[!] [CN] 非交互模式，跳过手动输入 / [EN] Non-interactive mode, skipping manual input" -ForegroundColor Yellow
+    }
     
     if ($manualPath -and (Test-Path $manualPath)) {
         $statsExe = Join-Path $manualPath "stats.exe"
@@ -82,7 +95,8 @@ if (-not $spssInstalled) {
         $spssPath = if (Test-Path $statsExe) { $statsExe } elseif (Test-Path $spssExe) { $spssExe } else { "N/A" }
         $spsswinPath = if (Test-Path $spsswinExe) { $spsswinExe } else { "N/A" }
         $spssInstalled = $true
-        Write-Host "[OK] 已确认 SPSS 路径: $manualPath" -ForegroundColor Green
+        Write-Host "[OK] [CN] 已确认 SPSS 路径: $manualPath" -ForegroundColor Green
+        Write-Host "[OK] [EN] SPSS path confirmed: $manualPath" -ForegroundColor Green
     }
 }
 
@@ -110,7 +124,8 @@ if ($spssInstalled) {
     foreach ($pyPath in $pythonPaths) {
         if (Test-Path $pyPath) {
             $pythonPath = $pyPath
-            Write-Host "[OK] 检测到 SPSS 内置 Python: $pythonPath" -ForegroundColor Green
+            Write-Host "[OK] [CN] 检测到 SPSS 内置 Python: $pythonPath" -ForegroundColor Green
+            Write-Host "[OK] [EN] SPSS embedded Python detected: $pythonPath" -ForegroundColor Green
             
             # 获取 Python 版本
             try {
@@ -125,68 +140,95 @@ if ($spssInstalled) {
                     }
                 }
                 
-                Write-Host "    Python 版本: $pythonVersion" -ForegroundColor Cyan
-                Write-Host "    f-string 支持: $(if ($useFString) { '✅ 支持' } else { '❌ 不支持 (需用 %s 或 .format())' })" -ForegroundColor Cyan
+                Write-Host "    [CN] Python 版本: $pythonVersion / [EN] Python version: $pythonVersion" -ForegroundColor Cyan
+                Write-Host "    [CN] f-string 支持: $(if ($useFString) { '✅ 支持' } else { '❌ 不支持 (需用 %s 或 .format())' })" -ForegroundColor Cyan
+                Write-Host "    [EN] f-string support: $(if ($useFString) { '✅ supported' } else { '❌ not supported (use %s or .format())' })" -ForegroundColor Cyan
             } catch {
-                Write-Host "    [!] 无法获取 Python 版本" -ForegroundColor Yellow
+                Write-Host "    [!] [CN] 无法获取 Python 版本 / [EN] Unable to get Python version" -ForegroundColor Yellow
             }
             break
         }
     }
     
     if ($pythonPath -eq "N/A") {
-        Write-Host "[!] 未找到 SPSS 内置 Python" -ForegroundColor Yellow
-        Write-Host "   请确认 SPSS 安装时是否包含了 Python 插件" -ForegroundColor Yellow
+        Write-Host "[!] [CN] 未找到 SPSS 内置 Python" -ForegroundColor Yellow
+        Write-Host "[!] [EN] SPSS embedded Python not found" -ForegroundColor Yellow
+        Write-Host "    [CN] 请确认 SPSS 安装时是否包含了 Python 插件 / [EN] Please confirm Python plugin was installed with SPSS" -ForegroundColor Yellow
     }
 }
 
 # 5. 检查 Python 插件
 if ($spssInstalled) {
-    Write-Host "`n=== 检查 Python 插件 ===" -ForegroundColor Cyan
+    Write-Host "`n[CN] === 检查 Python 插件 ===" -ForegroundColor Cyan
+    Write-Host "[EN] === Checking Python Plugin ===" -ForegroundColor Cyan
     
     # 检查 Python 插件目录
     $pluginDir = Split-Path $spssPath -Parent
     $pythonPlugin = Join-Path $pluginDir "python"
     
     if (Test-Path $pythonPlugin) {
-        Write-Host "[OK] Python 插件目录存在: $pythonPlugin" -ForegroundColor Green
+        Write-Host "[OK] [CN] Python 插件目录存在: $pythonPlugin" -ForegroundColor Green
+        Write-Host "[OK] [EN] Python plugin directory exists: $pythonPlugin" -ForegroundColor Green
     } else {
-        Write-Host "[!] Python 插件可能未安装" -ForegroundColor Yellow
-        Write-Host "  请通过 SPSS 安装包添加 'Integration Plug-in for Python'" -ForegroundColor Yellow
+        Write-Host "[!] [CN] Python 插件可能未安装" -ForegroundColor Yellow
+        Write-Host "[!] [EN] Python plugin may not be installed" -ForegroundColor Yellow
+        Write-Host "  [CN] 请通过 SPSS 安装包添加 'Integration Plug-in for Python'/ [EN] Add 'Integration Plug-in for Python' via SPSS installation package" -ForegroundColor Yellow
     }
 }
 
 # 6. 输出配置结果
 if ($spssInstalled) {
-    Write-Host "`n=== 配置结果 ===" -ForegroundColor Cyan
-    Write-Host "SPSS 主程序路径 (后台): $spssPath"
-    Write-Host "SPSS GUI 路径 (避免使用): $spsswinPath"
-    Write-Host "SPSS 安装目录: $spssHome"
-    Write-Host "内置 Python 路径: $pythonPath"
-    Write-Host "Python 版本: $pythonVersion"
-    Write-Host "f-string 支持: $(if ($useFString) { '✅ 支持' } else { '❌ 不支持 (需用 %s 或 .format())' })"
+    Write-Host "`n[CN] === 配置结果 ===" -ForegroundColor Cyan
+    Write-Host "[EN] === Configuration Result ===" -ForegroundColor Cyan
+    Write-Host "[CN] SPSS 主程序路径: $spssPath" -ForegroundColor White
+    Write-Host "[EN] SPSS main program path: $spssPath" -ForegroundColor White
+    Write-Host "[CN] SPSS GUI 路径 (避免使用): $spsswinPath" -ForegroundColor White
+    Write-Host "[EN] SPSS GUI path (avoid): $spsswinPath" -ForegroundColor White
+    Write-Host "[CN] SPSS 安装目录: $spssHome" -ForegroundColor White
+    Write-Host "[EN] SPSS installation directory: $spssHome" -ForegroundColor White
+    Write-Host "[CN] 内置 Python 路径: $pythonPath" -ForegroundColor White
+    Write-Host "[EN] Embedded Python path: $pythonPath" -ForegroundColor White
+    Write-Host "[CN] Python 版本: $pythonVersion" -ForegroundColor White
+    Write-Host "[EN] Python version: $pythonVersion" -ForegroundColor White
+    Write-Host "[CN] f-string 支持: $(if ($useFString) { '✅ 支持' } else { '❌ 不支持 (需用 %s 或 .format())' })" -ForegroundColor White
+    Write-Host "[EN] f-string support: $(if ($useFString) { '✅ supported' } else { '❌ not supported (use %s or .format())' })" -ForegroundColor White
     Write-Host ""
-    Write-Host "环境变量已设置:" -ForegroundColor Green
-    Write-Host "  STATSOFT_SPSS_PATH=$spssHome"
-    Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath"
-    Write-Host "  STATSOFT_SPSS_FSTRING=$useFString"
     
-    # 设置环境变量
-    [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PATH", $spssHome, "User")
-    [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PYTHON", $pythonPath, "User")
-    [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_FSTRING", $useFString.ToString(), "User")
+    # 请求用户确认后再修改环境变量
+    Write-Host "[CN] 即将设置用户环境变量:" -ForegroundColor Yellow
+    Write-Host "[EN] About to set user environment variables:" -ForegroundColor Yellow
+    Write-Host "  STATSOFT_SPSS_PATH=$spssHome" -ForegroundColor Gray
+    Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath" -ForegroundColor Gray
+    Write-Host "  STATSOFT_SPSS_FSTRING=$useFString" -ForegroundColor Gray
+
+    # L-5: 非交互回退
+    $confirm = "Y"
+    try {
+        $confirm = Read-Host "[CN] 确认设置环境变量? (y/N) / [EN] Confirm setting env vars? (y/N)"
+    } catch {
+        Write-Host "[!] [CN] 非交互模式，自动应用 / [EN] Non-interactive mode, auto-applying" -ForegroundColor Yellow
+    }
+
+    if ($confirm -eq 'y' -or $confirm -eq 'Y') {
+        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PATH", $spssHome, "User")
+        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PYTHON", $pythonPath, "User")
+        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_FSTRING", $useFString.ToString(), "User")
+        Write-Host "[OK] [CN] 环境变量已设置 / [EN] Environment variables set" -ForegroundColor Green
+    } else {
+        Write-Host "[!] [CN] 跳过环境变量设置 / [EN] Skipping env var setup" -ForegroundColor Yellow
+    }
     
     # 显示调用示例
-    Write-Host "`n=== 调用示例 ===" -ForegroundColor Cyan
-    Write-Host "1. Production Facility 批处理模式 (推荐):"
+    Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan
+    Write-Host "[EN] === Usage Examples ===" -ForegroundColor Cyan
+    Write-Host "[CN] 1. Production Facility 批处理模式 (推荐):" -ForegroundColor White
+    Write-Host "[EN] 1. Production Facility batch mode (recommended):" -ForegroundColor White
     Write-Host "   `"$spssPath`" --production `"作业文件.spj`" silent -nologo"
     Write-Host ""
-    Write-Host "2. SPSS 内部 Python 调用 (完全无闪屏):"
+    Write-Host "[CN] 2. SPSS 内部 Python 调用 (完全无闪屏):" -ForegroundColor White
+    Write-Host "[EN] 2. SPSS internal Python call (no flash screen):" -ForegroundColor White
     Write-Host "   `"$pythonPath`" spss_helper.py"
-    if (-not $useFString) {
-        Write-Host ""
-        Write-Host "   ⚠️ 注意: 此版本不支持 f-string，脚本中请使用 %s 或 .format()" -ForegroundColor Yellow
-    }
     Write-Host ""
-    Write-Host "注意：使用 stats.exe 而非 spsswin.exe，避免 GUI 窗口弹出"
+    Write-Host "[CN] 注意: 使用 stats.exe 而非 spsswin.exe，避免 GUI 窗口弹出" -ForegroundColor Yellow
+    Write-Host "[EN] Note: Use stats.exe, not spsswin.exe, to avoid GUI window popup" -ForegroundColor Yellow
 }

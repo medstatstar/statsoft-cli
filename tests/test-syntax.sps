@@ -1,5 +1,6 @@
 * test-syntax.sps — SPSS 测试语法文件
 * 用于验证 SPSS 无闪屏调用方式是否正常
+* 使用方法：将工作目录设为 tests/ 后运行
 
 * 生成测试数据
 INPUT PROGRAM.
@@ -10,8 +11,8 @@ INPUT PROGRAM.
   END FILE.
 END INPUT PROGRAM.
 
-* 保存数据
-SAVE OUTFILE="C:/Users/WintoneFileSrv/WorkBuddy/2026-06-29-13-58-39/spss-test/test-data.sav".
+* 保存数据（相对路径，工作目录为 tests/）
+SAVE OUTFILE="test-data.sav".
 
 * 描述统计
 DESCRIPTIVES VARIABLES=score

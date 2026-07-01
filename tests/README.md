@@ -20,9 +20,9 @@ Use SPSS built-in Python's `spss` module to run syntax directly, without calling
 
 # 示例
 "C:\Program Files\IBM\SPSS\Statistics\26\Python3\python.exe" \
-  "C:\Users\WintoneFileSrv\.workbuddy\skills\statsoft-cli\windows-only\SPSS\spss_helper.py" \
+  "[SKILL_DIR]/windows-only/SPSS/spss_helper.py" \
   run-internal \
-  "C:\Users\WintoneFileSrv\.workbuddy\skills\statsoft-cli\tests\test-syntax.sps"
+  "[SKILL_DIR]/tests/test-syntax.sps"
 ```
 
 ### 备用方式（可能有闪屏）/ Backup Method (May have Splash Screen)
@@ -38,7 +38,7 @@ Call .spj file via `stats.exe --production`. This method may display splash scre
 # 示例
 "C:\Program Files\IBM\SPSS\Statistics\26\stats.exe" \
   --production \
-  "C:\Users\WintoneFileSrv\.workbuddy\skills\statsoft-cli\tests\test-job.spj"
+  "[SKILL_DIR]/tests/test-job.spj"
 ```
 
 ## 测试文件 / Test Files
@@ -56,12 +56,12 @@ Call .spj file via `stats.exe --production`. This method may display splash scre
 
 ```bash
 # 检查输出文件是否生成
-ls -la "C:/Users/WintoneFileSrv/WorkBuddy/2026-06-29-13-58-39/spss-test/test-data.sav"
+ls -la "[SKILL_DIR]/test-data.sav"
 
 # 读取 .sav 文件内容（需要 pyreadstat）
 python -c "
 import pyreadstat
-df, meta = pyreadstat.read_sav('C:/Users/WintoneFileSrv/WorkBuddy/2026-06-29-13-58-39/spss-test/test-data.sav')
+df, meta = pyreadstat.read_sav('[SKILL_DIR]/test-data.sav')
 print(df)
 "
 ```

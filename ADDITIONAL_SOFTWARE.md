@@ -8,6 +8,7 @@ This file contains configuration information for additional statistical software
 
 ## 目录 / Table of Contents
 
+0. [Script Routing Tables / 完整脚本路由表](#script-routing-tables--完整脚本路由表)
 1. [JMP](#jmp)
 2. [GraphPad Prism](#graphpad-prism)
 3. [Stat/Transfer](#stattransfer)
@@ -17,6 +18,29 @@ This file contains configuration information for additional statistical software
 7. [Julia](#julia)
 8. [EViews](#eviews)
 9. [Statistica](#statistica)
+
+---
+
+## Script Routing Tables / 完整脚本路由表
+
+### Cross-Platform / 跨平台
+
+| 软件 / Software | 配置脚本 | CLI 包装器 | 验证 / Verify |
+|-----------------|----------|-----------|--------------|
+| Stat/Transfer | `cross-platform/StatTransfer/setup_stattransfer.sh` | `windows-only/StatTransfer/statsoft-stattransfer.ps1` + `st` (built-in) | `st -v` |
+| Gretl | `cross-platform/Gretl/setup_gretl.sh` | `gretlcli` (built-in) | `gretlcli -v` |
+| Minitab | `cross-platform/Minitab/setup_minitab.sh` | `Minitab` (built-in) | `Minitab -?` |
+| Matlab | `cross-platform/Matlab/setup_matlab.sh` | `matlab -batch` (built-in) | `matlab -batch "exit"` |
+| Julia | `cross-platform/Julia/setup_julia.sh` | `julia` | `julia -v` |
+
+### Windows Only / 仅 Windows
+
+| 软件 / Software | 配置脚本 | CLI 包装器 | 验证 / Verify |
+|-----------------|----------|-----------|--------------|
+| JMP | `windows-only/JMP/setup_jmp.ps1` | `windows-only/JMP/statsoft-jmp.ps1` | `JMP.exe /R "Exit();"` |
+| GraphPad | `windows-only/GraphPad/setup_graphpad.ps1` | `windows-only/GraphPad/statsoft-graphpad.ps1` | `prism.exe -help` |
+| EViews | `windows-only/EViews/setup_eviews.ps1` | `windows-only/EViews/statsoft-eviews.ps1` | `EViews.exe /?` |
+| Statistica | `windows-only/Statistica/setup_statistica.ps1` | `windows-only/Statistica/statsoft-statistica.ps1` | `Statistica.exe /?` |
 
 ---
 

@@ -94,6 +94,18 @@ verify_sas() {
         return 1
     fi
 
+    echo ""
+    echo "============================================"
+    echo "  WARNING: 即将执行 SAS 验证"
+    echo "  将运行: $SAS_CMD -sysin test_sas.sas"
+    echo "============================================"
+    echo ""
+    read -p "确认执行? (y/N): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        log_info "跳过 SAS 验证"
+        return 0
+    fi
+
     # Test SAS with a simple command
     cd /tmp
     echo "proc options; run;" > test_sas.sas
