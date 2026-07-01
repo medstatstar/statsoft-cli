@@ -15,7 +15,7 @@ metadata:
   {
     "openclaw": { "emoji": "🛠️" },
     "authors": ["medstatstar", "phoe-zip"],
-    "version": "1.3.0",
+    "version": "1.4.0",
     "license": "MIT",
     "tags": ["SPSS", "R", "SAS", "Stata", "JMP", "GraphPad", "StatTransfer", "统计软件", "Statistical Software", "Data Analysis", "Data Conversion", "CLI"]
   }
