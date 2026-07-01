@@ -4,7 +4,7 @@
 
 ---
 
-跨平台统计软件 CLI 集成技能，用于 AI Agent（OpenClaw / ClawHub）。
+跨平台统计软件 CLI 集成技能，用于 AI Agent（如 WorkBuddy / OpenClaw ）。同一个软件支持多个版本共存，如 R4.5 和 R4.0 共存，只需要指定默认使用哪个版本即可，需要时用提示词可实现无缝切换。
 
 支持 13 款统计软件：SPSS、R、Stata、SAS、JMP、GraphPad Prism、EViews、Statistica、Stat/Transfer、Gretl、Minitab、Matlab、Julia。
 
