@@ -1,5 +1,9 @@
 # statsoft-cli
 
+[🇨🇳 中文 (Chinese)](./README_zh-CN.md) | [🇬🇧 English](./README.md)
+
+---
+
 Cross-platform statistical software CLI integration for AI Agent (OpenClaw / ClawHub).
 
 Supports 13 statistical software packages: SPSS, R, Stata, SAS, JMP, GraphPad Prism, EViews, Statistica, Stat/Transfer, Gretl, Minitab, Matlab, Julia.

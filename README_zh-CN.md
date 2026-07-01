@@ -1,5 +1,9 @@
 # statsoft-cli
 
+[🇨🇳 中文 (Chinese)](./README_zh-CN.md) | [🇬🇧 English](./README.md)
+
+---
+
 跨平台统计软件 CLI 集成技能，用于 AI Agent（OpenClaw / ClawHub）。
 
 支持 13 款统计软件：SPSS、R、Stata、SAS、JMP、GraphPad Prism、EViews、Statistica、Stat/Transfer、Gretl、Minitab、Matlab、Julia。
