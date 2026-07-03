@@ -14,7 +14,7 @@ triggers:
   - "connect statistical software"
 metadata:
   {
-    "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
+    "openclaw": { "emoji": "🛠️", "icon": "assets/icon.png" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
     "version": "2.0.0",
