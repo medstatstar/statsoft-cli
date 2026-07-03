@@ -73,18 +73,16 @@ After configuration is complete, the AI Agent will provide detailed notification
 
 ---
 
-## Excluded Software / 未包含的软件
+## Excluded Software
 
 The following software was evaluated but not included due to listed reasons. For data format conversion without statistical software dependency, see the statdata-transfer skill.
 
-以下软件经过评估未纳入，原因如下。如需不依赖统计软件的数据格式转换，请使用 statdata-transfer 技能。
-
-| 软件 / Software | 原因 / Reason |
-|-----------------|--------------|
-| Systat | 市场被 SPSS/R/Python 严重挤压，用户群体持续萎缩 |
-| MaxStat | 定位小众，用户极少，功能有限 |
-| SmartPLS | 纯 GUI 操作，无 CLI 或批处理模式 |
-| WinBUGS | 功能已被 OpenBUGS 完全覆盖（均为贝叶斯 MCMC 采样） |
+| Software | Reason |
+|----------|--------|
+| Systat | Market severely squeezed by SPSS/R/Python, user base shrinking |
+| MaxStat | Niche positioning, very few users, limited functionality |
+| SmartPLS | GUI-only, no CLI or batch mode |
+| WinBUGS | Fully superseded by OpenBUGS (both Bayesian MCMC sampling) |
 
 ---
 

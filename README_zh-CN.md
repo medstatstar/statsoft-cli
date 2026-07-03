@@ -2,7 +2,7 @@
 
 [🇨🇳 中文 (Chinese)](./README_zh-CN.md) | [🇬🇧 English](./README.md)
 
-\---
+---
 
 跨平台统计软件 CLI 集成技能，用于 AI Agent（如 WorkBuddy / OpenClaw ）。
 
@@ -63,7 +63,7 @@ Agent 会自动检测软件路径并写入 `config.json`。
 
 ## 重要说明
 
-闪屏说明 / Splash Screen ：34 款统计软件的 **CLI 模式支持程度不一**：部分软件完全由命令行驱动，另一些在使用中仍可能出现图形界面（闪屏）或必须保持 GUI 运行。具体表现因软件而异：
+闪屏说明：34 款统计软件的 **CLI 模式支持程度不一**：部分软件完全由命令行驱动，另一些在使用中仍可能出现图形界面（闪屏）或必须保持 GUI 运行。具体表现因软件而异：
 
 - ✅ **纯 CLI，无闪屏**（如 R、Stata、SAS、CmdStan、Julia、Gretl、Mathematica）
 - ⚠️ **CLI 模式有短暂闪屏**（如 JMP、Minitab、EViews、Statistica）
@@ -73,7 +73,7 @@ Agent 会自动检测软件路径并写入 `config.json`。
 
 ---
 
-## 未包含的软件 / Excluded Software
+## 未包含的软件
 
 以下软件经过评估未纳入，原因如下。如需不依赖统计软件的无损数据格式转换，请使用 statdata-transfer 技能。
 
@@ -178,7 +178,7 @@ statsoft-cli/
 
 本技能执行**高风险操作**（执行本地可执行文件、修改配置、调用网络），使用前请了解风险。SKILL.md 中有完整 Trust \& Safety 说明。
 
-## License
+## 许可证
 
 [MIT](LICENSE)
 
