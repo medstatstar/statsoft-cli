@@ -1,16 +1,23 @@
 # Configuration & Memory Templates
 
-## SPSS Memory Template
+## SPSS Statistics Memory Template
 
 ```markdown
-### SPSS 环境配置 / SPSS Environment
+### SPSS Statistics 环境配置 / SPSS Statistics Environment
 
 - **版本 / Version**：IBM SPSS Statistics [26/27/28/29/30/31]
 - **主程序 / Main Executable**：`C:\Program Files\IBM\SPSS\Statistics\[版本]\stats.exe`
-- **Production Mode 命令行格式**：
-  ```bash
-  "C:\Program Files\IBM\SPSS\Statistics\[版本]\stats.exe" --production "作业文件.spj" silent -nologo
-  ```
+- **调用优先级 / Invocation Priority**：
+  1. **方案 1（首选）**：`stats.com` 控制台版 + `.spj` 文件 → 完全无闪屏，**万无一失**
+     ```bash
+     "C:\Program Files\IBM\SPSS\Statistics\[版本]\stats.com" -production silent -nologo "作业文件.spj"
+     ```
+  2. **方案 2（备用）**：Python 内部驱动 `spss.Submit()` → 无闪屏，**但只能跑纯分析语法**
+     - ❌ 不能包含 `OUTPUT SAVE`、`OUTPUT EXPORT`、`HOST COMMAND`、`XDATA` 等
+  3. **方案 3（最后备选）**：`stats.exe` GUI 版 + `.spj` → 可能有闪屏
+     ```bash
+     "C:\Program Files\IBM\SPSS\Statistics\[版本]\stats.exe" -production silent -nologo "作业文件.spj"
+     ```
 - **内置 Python 路径**：`C:\Program Files\IBM\SPSS\Statistics\[版本]\Python3\python.exe`
 - **.spj 文件 XML 结构模板**：
   ```xml
@@ -26,12 +33,12 @@
   ```
 ```
 
-## SPSS Version Differences
+## SPSS Statistics Version Differences
 
 ### Python Version Comparison
 
-| SPSS Version | Bundled Python | f-string Support |
-|--------------|---------------|-----------------|
+| SPSS Statistics Version | Bundled Python | f-string Support |
+|-------------------------|---------------|-----------------|
 | 26 | Python 3.4 | ❌ |
 | 27 | Python 3.8 | ✅ |
 | 28 | Python 3.9 | ✅ |
@@ -40,8 +47,36 @@
 
 ### spss_helper.py Compatibility
 
-- SPSS 26: Script uses `%s` / `.format()`, no f-string
-- SPSS 27+: Script can use f-string and modern Python
+- SPSS Statistics 26: Script uses `%s` / `.format()`, no f-string
+- SPSS Statistics 27+: Script can use f-string and modern Python
+
+## SPSS Modeler Memory Template
+
+```markdown
+### SPSS Modeler 环境配置 / SPSS Modeler Environment
+
+- **版本 / Version**：IBM SPSS Modeler [18.0/18.1/18.2/18.3/18.4/18.5/18.6]
+- **主程序 / Main Executable**：`C:\Program Files\IBM\SPSS\Modeler\[版本]\bin\clemb.exe`
+- **modelerclient.exe**：`C:\Program Files\IBM\SPSS\Modeler\[版本]\bin\modelerclient.exe`
+- **Batch Mode 命令行格式**：
+  ```powershell
+  # 执行流文件
+  clemb.exe -local -stream "作业文件.str" -log "输出.log" -execute
+
+  # 执行 Python 脚本（推荐）
+  clemb.exe -local -script "train_model.py" -scriptlang python -log "train.log" -execute
+  ```
+- **配置字段 / Config Field**：`config.json > "SPSS Modeler"`
+- **与 Statistics 的区别**：Statistics 是统计分析工具，Modeler 是数据挖掘/建模工具
+```
+
+## SPSSModeler Version Differences
+
+| Version | clemb.exe Path | Notes |
+|---------|---------------|-------|
+| 18.6 | `C:\Program Files\IBM\SPSS\Modeler\18.6\bin\clemb.exe` | Latest, Python scripting |
+| 18.5 | `C:\Program Files\IBM\SPSS\Modeler\18.5\bin\clemb.exe` | Performance improvements |
+| 18.0 | `C:\Program Files\IBM\SPSS\Modeler\18.0\bin\clemb.exe` | Classic stable |
 
 ## Stata Memory Template
 
@@ -87,11 +122,6 @@
 
 - **版本 / Version**：SAS [VERSION]（如 9.4）
 - **主程序路径 / Executable Path**：`[SAS_EXE_PATH]`
-- **批处理命令行格式 / Batch Command Format**：
-  ```bash
-  sas -sysin "prog.sas" -log "out.log" -print "out.lst"
-  ```
-```
 
 ## R — Alternative when R is not available
 
@@ -111,9 +141,35 @@
   "R": { "installed": true, "path": "C:\\Program Files\\R\\R-4.5.1\\bin\\Rscript.exe", "version": "4.5.1", "mode": "simple" },
   "Stata": { "installed": true, "path": "C:\\Program Files\\Stata17\\StataMP-64.exe", "edition": "MP", "version": "17", "mode": "simple" },
   "SAS": { "installed": true, "path": "C:\\Program Files\\SASFoundation\\9.4\\sas.exe", "version": "9.4", "mode": "simple" },
-  "SPSS": { "installed": true, "version": "28", "path": "C:\\Program Files\\IBM\\SPSS\\Statistics\\28\\spsswin.exe", "mode": "simple" }
+  "SPSS": { "installed": true, "version": "28", "path": "C:\\Program Files\\IBM\\SPSS\\Statistics\\28\\stats.exe", "mode": "simple" }
 }
 ```
+
+## SPSS Modeler Memory Template
+
+```markdown
+### SPSS Modeler 环境配置 / SPSS Modeler Environment
+
+- **版本 / Version**：IBM SPSS Modeler [18.0/18.1/18.2/18.3/18.4/18.5/18.6]
+- **主程序 / Main Executable**：`C:\Program Files\IBM\SPSS\Modeler\[版本]\bin\clemb.exe`
+- **modelerclient.exe**：`C:\Program Files\IBM\SPSS\Modeler\[版本]\bin\modelerclient.exe`
+- **Batch Mode 命令行格式**：
+  ```powershell
+  clemb.exe -local -stream "作业文件.str" -log "输出.log" -execute
+  ```
+- **配置字段 / Config Field**：`config.json > "SPSS Modeler"`
+- **与 Statistics 的区别**：
+  - Statistics 用 `.spj` + `stats.com -production silent -nologo`
+  - Modeler 用 `.str` + `clemb.exe -local -execute`
+```
+
+## SPSSModeler Version Differences
+
+| Version | clemb.exe Path | Notes |
+|---------|---------------|-------|
+| 18.6 | `C:\Program Files\IBM\SPSS\Modeler\18.6\bin\clemb.exe` | Latest, Python scripting |
+| 18.5 | `C:\Program Files\IBM\SPSS\Modeler\18.5\bin\clemb.exe` | Performance improvements |
+| 18.0 | `C:\Program Files\IBM\SPSS\Modeler\18.0\bin\clemb.exe` | Classic stable |
 
 ## Common Errors & Solutions
 

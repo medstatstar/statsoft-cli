@@ -7,67 +7,34 @@
 
 ## SPSS 配置完成提示
 
-```
-✅ SPSS 关联配置已完成！
+> ⚠️ **重要 — 日常使用建议**：
+> - **跑复杂语法 → 用方案 1**（`stats.com` + `.spj`，万无一失）
+> - **方案 2**（Python 内部驱动）**只能跑纯分析语法**，不能包含：
+>   - `OUTPUT SAVE`、`OUTPUT EXPORT`、`OUTPUT DISPLAY`
+>   - `HOST COMMAND`、`XDATA`、`XSAVE`（涉及 OUTPUT 对象时）
+> - 遇到不确定是否涉及 OUTPUT/SAVE 的命令时 → 统一走方案 1（`.spj`）
 
-⭐ 首选调用方式（完全无闪屏）：
-  通过 SPSS 内置 Python 的 spss 模块直接运行语法，不调用 stats.exe，完全无 GUI。
-
-⚠️ 备用调用方式（可能有闪屏）：
-  通过 stats.exe --production 调用 .spj 文件。此方式可能显示闪屏，建议优先使用首选方式。
-
-📊 配置信息：
-  - SPSS 版本: [26/27/28/29/30/31]
-  - SPSS 主程序: [stats.exe 路径]
-  - 内置 Python: [Python 路径]
-  - Python 版本: [Python 版本号]
-  - f-string 支持: [✅ 支持 / ❌ 不支持]
-
-⚠️ 重要注意事项：
-  1. SPSS 26 内置 Python 3.4，不支持 f-string，所有字符串格式化必须用 %s 或 .format()
-  2. SPSS 27+ 内置 Python 3.8+，支持 f-string，可使用现代 Python 语法
-  3. .spj 文件必须包含 <output> 元素，否则会报 NullPointerException
-  4. SPSS 输出含非 UTF-8 字符，读取时需用 cp1252 或 errors='replace' 处理
-
-📋 推荐使用方式：
-  AI Agent (Bash 工具)
-    → "[Python路径]" spss_helper.py run-internal <sps_file>
-        → SPSS 后台执行（无 GUI，无闪屏）
-
-  💡 复杂任务：建议使用外部 Anaconda Python 的 pyreadstat 包读取 .sav 和 .spv 文件
-```
+详见 SKILL.md 第 8 行"核心权限 / Core Permissions"章节中的 SPSS 调用方式说明。
 
 ### English Version
 
-```
-✅ SPSS connection configuration complete!
+See SKILL.md core permissions section for SPSS invocation details.
 
-⭐ Preferred invocation method (completely splash-free):
-  Use SPSS built-in Python's spss module to run syntax directly, without calling stats.exe, completely GUI-free.
+---
 
-⚠️ Backup invocation method (may have splash screen):
-  Call .spj file via stats.exe --production. This method may display splash screen, recommend using preferred method first.
+## SPSS Modeler 配置完成提示
 
-📊 Configuration Information:
-  - SPSS Version: [26/27/28/29/30/31]
-  - SPSS Main Executable: [stats.exe path]
-  - Bundled Python: [Python path]
-  - Python Version: [Python version]
-  - f-string Support: [✅ Supported / ❌ Not supported]
+## SPSS Modeler 配置完成提示
 
-⚠️ Important notes:
-  1. SPSS 26 built-in Python 3.4 does not support f-string, all string formatting must use %s or .format()
-  2. SPSS 27+ built-in Python 3.8+ supports f-string, can use modern Python syntax
-  3. .spj file must include <output> element, otherwise NullPointerException will occur
-  4. SPSS output contains non-UTF-8 characters, use cp1252 or errors='replace' when reading
+- ✅ SPSS Modeler 通过 `clemb.exe` 支持纯 CLI 执行，完全无 GUI，无闪屏
+- ⚠️ Windows-only，不支持 macOS 和 Linux
+- 💡 适合数据挖掘、预测建模和机器学习流水线
 
-📋 Recommended usage:
-  AI Agent (Bash tool)
-    → "[Python path]" spss_helper.py run-internal <sps_file>
-        → SPSS runs in background (no GUI, no splash screen)
+### English Version
 
-  💡 Complex tasks: Consider using external Anaconda Python pyreadstat package to read .sav and .spv files
-```
+- ✅ SPSS Modeler supports pure CLI execution via `clemb.exe`, completely GUI-free, no splash screen
+- ⚠️ Windows-only, no macOS/Linux support
+- 💡 Suitable for data mining, predictive modeling, ML pipelines
 
 ---
 
@@ -146,6 +113,36 @@
   - metafor → PyMC
 ```
 
+### English Version
+
+```
+✅ R connection configuration complete!
+
+⚠️ Important notes:
+  1. Use Rscript command for batch mode, not R GUI
+  2. Use quiet=TRUE parameter for silent package installation
+  3. Chinese encoding issues: use fileEncoding="UTF-8" parameter
+  4. Insufficient memory: use data.table or arrow packages for large data
+
+📋 Recommended usage:
+  Rscript --vanilla "script.R"
+
+  # Silent package installation
+  Rscript -e "install.packages('[PKG]', repos='https://cran.r-project.org', quiet=TRUE)"
+
+  # Read SPSS .sav file
+  Rscript -e "library(haven); df <- read_sav('data.sav'); print(head(df))"
+
+💡 Alternatives without R:
+  If R is not installed, consider using Anaconda Python environment:
+  - dplyr / tidyr → pandas
+  - ggplot2 → matplotlib / seaborn
+  - caret / xgboost → scikit-learn
+  - survival → lifelines
+  - lme4 / nlme → statsmodels
+  - metafor → PyMC
+```
+
 ---
 
 ## SAS 配置完成提示
@@ -166,6 +163,42 @@
   sas -sysin "prog.sas" -log "out.log" -print "out.lst"
 ```
 
+### English Version
+
+```
+✅ SAS connection configuration complete!
+
+⚠️ Important notes:
+  1. Batch mode generates .log (log) and .lst (output listing) files, ensure write permissions
+  2. Chinese encoding: add options encoding='utf-8'; at beginning of program
+  3. SAS license expiration will cause ERROR: License expired
+
+📋 Recommended usage:
+  # Windows
+  "sas.exe" -sysin "prog.sas" -log "out.log" -print "out.lst"
+
+  # Mac/Linux
+  sas -sysin "prog.sas" -log "out.log" -print "out.lst"
+```
+
+### English Version
+
+```
+✅ SAS connection configuration complete!
+
+⚠️ Important notes:
+  1. Batch mode generates .log (log) and .lst (output listing) files, ensure write permissions
+  2. Chinese encoding: add options encoding='utf-8'; at beginning of program
+  3. SAS license expiration will cause ERROR: License expired
+
+📋 Recommended usage:
+  # Windows
+  "sas.exe" -sysin "prog.sas" -log "out.log" -print "out.lst"
+
+  # Mac/Linux
+  sas -sysin "prog.sas" -log "out.log" -print "out.lst"
+```
+
 ---
 
 ## JMP 配置完成提示
@@ -174,6 +207,13 @@
 - ⚠️ 脚本末尾必须加 `Exit();`，否则 JMP GUI 会保持打开
 
 > 详细配置信息和注意事项请参考 [ADDITIONAL_SOFTWARE.md → JMP](ADDITIONAL_SOFTWARE.md#jmp)
+
+### English Version
+
+- ⚠️ JMP may display a brief splash screen (1-2 seconds), cannot be fully avoided
+- ⚠️ Script must end with `Exit();` or JMP GUI will remain open
+
+> See [ADDITIONAL_SOFTWARE.md → JMP](ADDITIONAL_SOFTWARE.md#jmp) for details
 
 
 ---
@@ -234,6 +274,34 @@
 
 > 详细配置信息请参考 [ADDITIONAL_SOFTWARE.md → Matlab](ADDITIONAL_SOFTWARE.md#matlab)
 
+### English Version
+
+- ✅ Completely GUI-free when using `-batch` parameter
+- ⚠️ Requires Statistics and Machine Learning Toolbox
+- 💡 Suitable for engineering statistics, signal processing, and ML
+
+> See [ADDITIONAL_SOFTWARE.md → Matlab](ADDITIONAL_SOFTWARE.md#matlab) for details
+
+---
+
+## Mathematica 配置完成提示
+
+- ✅ Mathematica 是纯 CLI 工具（`wolframscript`），完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- 💡 适合符号数学、数值分析、统计建模和可视化
+- ⚠️ WolframScript 是商业软件许可证，需要定期激活
+
+> 详细配置信息和注意事项请参考 [ADDITIONAL_SOFTWARE.md → Mathematica](ADDITIONAL_SOFTWARE.md#mathematica)
+
+### English Version
+
+- ✅ Mathematica is a pure CLI tool (`wolframscript`), completely GUI-free, no splash screen
+- ✅ Cross-platform support (Win/Mac/Linux)
+- 💡 Suitable for symbolic mathematics, numerical analysis, statistical modeling, and visualization
+- ⚠️ WolframScript requires a commercial license with periodic activation
+
+> See [ADDITIONAL_SOFTWARE.md → Mathematica](ADDITIONAL_SOFTWARE.md#mathematica) for details
+
 
 ---
 
@@ -244,6 +312,14 @@
 - 💡 常用包：`Statistics`、`HypothesisTests`、`GLM`、`Turing`（贝叶斯）
 
 > 详细配置信息请参考 [ADDITIONAL_SOFTWARE.md → Julia](ADDITIONAL_SOFTWARE.md#julia)
+
+### English Version
+
+- ✅ Julia is a pure CLI tool, completely GUI-free, no splash screen
+- ✅ High performance, suitable for big data and complex statistical computing
+- 💡 Common packages: Statistics, HypothesisTests, GLM, Turing (Bayesian)
+
+> See [ADDITIONAL_SOFTWARE.md → Julia](ADDITIONAL_SOFTWARE.md#julia) for details
 
 
 ---
@@ -267,6 +343,502 @@
 
 > 详细配置信息请参考 [ADDITIONAL_SOFTWARE.md → Statistica](ADDITIONAL_SOFTWARE.md#statistica)
 
+
+## JAGS 配置完成提示
+
+- ✅ JAGS 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ⚠️ 如果通过 `rjags` R 包调用，需要先安装 R 和 rjags 包
+- 💡 适合贝叶斯层次模型、MCMC 模拟
+
+📋 推荐使用方式：
+  jags scriptfile
+
+💡 通过 R 接口调用：
+  Rscript -e "library(rjags); jags.model('script.dat', data)"
+
+---
+
+## SHAZAM 配置完成提示
+
+- ✅ SHAZAM 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ⚠️ Windows 版需要确保许可证文件有效
+- 💡 适合计量经济学、时间序列、假设检验
+
+📋 推荐使用方式：
+  shazam commands.txt
+
+---
+
+## OxMetrics 配置完成提示
+
+- ✅ OxMetrics 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ⚠️ 需要许可证文件
+- 💡 适合计量经济学、时间序列、预测
+
+📋 推荐使用方式：
+  oxmetrics --help          # 查看选项
+  oxmetrics -b commands.txt # 批处理
+
+---
+
+## TSP 配置完成提示
+
+- ✅ TSP 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ⚠️ 需要许可证文件
+- 💡 适合时间序列分析、计量经济学、假设检验
+
+📋 推荐使用方式：
+  tsp commands.txt
+
+---
+
+## Tanagra 配置完成提示
+
+- ✅ Tanagra 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- 💡 适合聚类、分类、关联规则、特征选择
+
+📋 推荐使用方式：
+  tanagra --help          # 查看选项
+  tanagra -f script.txt   # 批处理脚本
+
+---
+
+## Orange 配置完成提示
+
+- ⚠️ Orange **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 推荐通过 Python 模块后台调用（无需 GUI）
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+
+**纯 CLI 替代方案（Python）**：
+```python
+# 后台运行 Orange 分析脚本，无需 GUI
+from Orange.data import Table
+from Orange.classification import RandomForestLearner
+
+data = Table("data.csv")
+learner = RandomForestLearner()
+model = learner(data)
+predictions = model(data)
+```
+
+📋 推荐使用方式：
+  python3 -m Orange.canvas          # GUI 模式
+  python3 script.py                 # Python 脚本模式（推荐，无 GUI）
+
+---
+
+## H2O.ai 配置完成提示
+
+- ✅ H2O 可以通过 Python 后台运行，无 GUI 弹窗
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费（AutoML 功能完全免费）
+- ⚠️ 需要 Java 环境（JVM）
+- ⚠️ 首次启动需下载组件
+- 💡 适合大规模机器学习、AutoML、深度学习
+
+📋 推荐使用方式（Python）：
+```python
+import h2o
+h2o.init()                          # 启动 H2O 服务器（后台）
+h2o.import_file("data.csv")         # 上传数据
+# ... AutoML 训练 ...
+h2o.shutdown()                      # 关闭服务器
+```
+
+⚠️ 注意事项：
+  - 默认端口 54321 被占用时，使用 `h2o.init(port=54322)`
+  - 内存不足时设置 `h2o.init(max_mem_size="4G")`
+
+---
+
+## GenStat 配置完成提示
+
+- ✅ GenStat 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ⚠️ 需要许可证文件
+- 💡 适合混合模型、试验设计、REML、空间分析、Meta 分析
+
+📋 推荐使用方式：
+  genstat commands.txt
+
+---
+
+## Rattle 配置完成提示
+
+- ⚠️ Rattle **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 推荐通过 R 脚本后台调用 Rattle 函数（无需 GUI）
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- 💡 适合数据挖掘、决策树、聚类、关联规则
+
+**纯 CLI 替代方案（R 脚本）**：
+```r
+library(rattle)
+# 加载数据
+audit <- read.csv("audit.csv")
+# 构建模型
+model <- Target ~ Age + Employment + ... 
+# 输出结果
+summary(model)
+```
+
+📋 推荐使用方式：
+  rattle --cli    # 尝试 CLI 模式（可能仍弹窗，不保证）
+  Rscript script.R  # R 脚本调用 Rattle 函数（推荐，无 GUI）
+
+---
+
+## OpenBUGS 配置完成提示
+
+- ⚠️ OpenBUGS **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 可通过 R 包 `R2OpenBUGS` 或 `BRugs` 后台调用（无需 GUI）
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- 💡 适合贝叶斯分析、MCMC、层次模型
+
+**纯 CLI 替代方案（R 脚本）**：
+```r
+library(BRugs)
+# 定义模型
+modelCheck("model.txt")
+modelData("data.txt")
+modelCompile()
+modelUpdate(1000)
+# 提取结果
+samplesStats("*")
+```
+
+📋 推荐使用方式：
+  openbugs --help            # GUI 模式
+  Rscript openbugs_script.R  # R 脚本调用（推荐，无 GUI）
+
+---
+
+## LIMDEP 配置完成提示
+
+- ✅ LIMDEP 是纯 CLI 工具，完全无 GUI，无闪屏
+- 🔴 仅支持 Windows
+- ⚠️ 需要许可证文件
+- 💡 适合 Logit、Probit、Tobit、样本选择、Count 模型、Frontier 分析
+
+📋 推荐使用方式（Windows）：
+  limdep commands.txt
+
+English Memory Template:
+```
+- **Version**: LIMDEP 11.0
+- **Path**: `[LIMDEP_install_PATH]\limdep.exe`
+- **Batch Command Format**:
+  ```batch
+  limdep commands.txt
+  ```
+- **Notes**: Windows only, license required
+```
+
+---
+
+## NLOGIT 配置完成提示
+
+- ✅ NLOGIT 是纯 CLI 工具，完全无 GUI，无闪屏
+- 🔴 仅支持 Windows
+- ⚠️ 需要许可证文件（包含在 LIMDEP 许可证中）
+- 💡 适合 Multinomial Logit、Nested Logit、Mixed Logit、Probit 模型
+
+📋 推荐使用方式（Windows）：
+  nlogit commands.txt
+
+---
+
+## Microfit 配置完成提示
+
+- ✅ Microfit 是纯 CLI 工具，完全无 GUI，无闪屏
+- 🔴 仅支持 Windows
+- ⚠️ 需要许可证文件
+- 💡 适合时间序列、计量经济学、单位根检验、ARDL、面板数据
+
+📋 推荐使用方式（Windows）：
+  microfit commands.txt
+
+---
+
+## CmdStan 配置完成提示
+
+- ✅ CmdStan 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- ⚠️ 首次使用需编译模型（耗时较长）
+- ⚠️ 需要 C++ 编译器（Windows: Rtools 或 Visual Studio）
+- 💡 适合贝叶斯统计、层次模型、消费者行为建模
+
+📋 推荐使用方式：
+  # 编译模型
+  stanc model.stan
+  # 运行采样
+  sample num_samples=1000 num_warmup=500 data file=data.json
+  # 查看结果
+  stansummary output.csv
+
+💡 通过 cmdstanr/cmdstanpy 调用（推荐）：
+  Rscript -e "library(cmdstanr); model <- cmdstan_model('model.stan'); fit <- model\$sample(data_file='data.json')"
+
+---
+
+## Weka 配置完成提示
+
+- ✅ Weka 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- ⚠️ 需要 Java 环境（JVM）
+- ⚠️ 大数据时需增加 JVM 内存：`java -Xmx4g -jar weka.jar ...`
+- 💡 适合聚类、分类、关联规则、特征选择、购物篮分析
+
+📋 推荐使用方式：
+  # 命令行分类
+  java -cp weka.jar weka.classifiers.trees.RandomForest -t data.arff -T test.arff
+  # 聚类
+  java -cp weka.jar weka.clusterers.SimpleKMeans -t data.arff -N 3
+  # 关联规则
+  java -cp weka.jar weka.associations.Apriori -t data.arff
+
+### English Version
+
+- ✅ Weka is a pure CLI tool, completely GUI-free, no splash screen
+- ✅ Cross-platform support (Win/Mac/Linux)
+- ✅ Open source and free
+- ⚠️ Requires Java environment (JVM)
+- ⚠️ Increase JVM memory for large data: `java -Xmx4g -jar weka.jar ...`
+- 💡 Suitable for clustering, classification, association rules, feature selection, market basket analysis
+
+📋 Recommended usage:
+  # Command line classification
+  java -cp weka.jar weka.classifiers.trees.RandomForest -t data.arff -T test.arff
+  # Clustering
+  java -cp weka.jar weka.clusterers.SimpleKMeans -t data.arff -N 3
+  # Association rules
+  java -cp weka.jar weka.associations.Apriori -t data.arff
+
+---
+
+## KNIME 配置完成提示
+
+- ✅ KNIME 支持无头模式（headless），完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- ⚠️ 无头模式需安装 KNIME 无头扩展
+- ⚠️ 工作流需预先在 GUI 中设计好
+- 💡 适合自动化工作流、ETL、数据挖掘、可视化分析
+
+📋 推荐使用方式：
+  # 无头模式执行工作流
+  knime -nosplash -application org.knime.product.KNIME_BATCH_APPLICATION -workflowDir="/path/to/workflow"
+  # 带参数执行
+  knime -nosplash -application org.knime.product.KNIME_BATCH_APPLICATION -workflowDir="/path/to/workflow" -workflow.variable=myVar,value,String
+
+---
+
+## jamovi 配置完成提示
+
+- ⚠️ jamovi **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 可通过 `jmv` R 包后台调用 jamovi 分析模块（无需 GUI）
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- 💡 适合描述统计、贝叶斯分析、频率分析
+
+**纯 CLI 替代方案（R 脚本）**：
+```r
+library(jmv)
+# 描述统计
+descriptives <- jmv::descriptives(data = mydata, vars = c("var1", "var2"))
+# 卡方检验
+chisq <- jmv::contTables(data = mydata, rows = "group", cols = "outcome")
+```
+
+📋 推荐使用方式：
+  jamovi --Rj "summary(mtcars)"    # Rj 模式（可能仍弹窗）
+  Rscript jmv_script.R              # R 脚本调用 jmv 包（推荐，无 GUI）
+
+---
+
+## JASP 配置完成提示
+
+- ⚠️ JASP **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 可通过 `jaspTools` R 包后台调用 JASP 分析模块（无需 GUI）
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费
+- 💡 适合描述统计、贝叶斯分析、探索性分析
+
+**纯 CLI 替代方案（R 脚本）**：
+```r
+library(jaspTools)
+# 加载 JASP 数据
+data <- jaspTools::readOSR("data.csv")
+# 描述统计
+desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
+```
+
+📋 推荐使用方式：
+  jasp --console data.csv           # 实验性控制台模式（可能仍弹窗）
+  Rscript jasp_script.R             # R 脚本调用 jaspTools 包（推荐，无 GUI）
+
+---
+
+## PSPP 配置完成提示
+
+- ✅ PSPP 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 跨平台支持（Win/Mac/Linux）
+- ✅ 开源免费（SPSS 替代品）
+- ⚠️ 语法与 SPSS 兼容，但部分高级功能不支持
+- 💡 适合描述统计、回归、列联表、数据清洗
+
+📋 推荐使用方式：
+  # 运行 .sps 语法
+  pspp -o output.txt analysis.sps
+  # 管道模式
+  pspp < analysis.sps
+  # 直接输出到文件
+  pspp analysis.sps -o output.html
+
+---
+
+## Mplus 配置完成提示
+
+- ✅ Mplus 是纯 CLI 工具，完全无 GUI，无闪屏
+- ✅ 支持 Windows 和 Mac
+- ⚠️ 需要许可证文件
+- ⚠️ 语法较独特，学习曲线陡峭
+- 💡 适合 SEM、潜类别分析（LCA/LPA）、多水平模型、生存分析
+
+📋 推荐使用方式：
+  mplus model.inp
+  # 带输出文件
+  mplus model.inp output.out
+
+---
+
+## AMOS 配置完成提示
+
+- ⚠️ AMOS **没有纯 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
+- ✅ 可通过 IBM SPSS Amos Python 扩展后台调用（无需 GUI）
+- 🔴 仅支持 Windows
+- ⚠️ 需要 SPSS Statistics 许可证
+- 💡 适合 SEM、路径分析、验证性因子分析
+
+**纯 CLI 替代方案（Python 脚本）**：
+```python
+# 需要 IBM SPSS Amos Python 扩展
+import amos
+amos.RunAnalysis("model.amw", "output.out")
+```
+
+📋 推荐使用方式：
+  # GUI 模式（会弹窗）
+  amos.exe model.amw
+  # Python 脚本调用（推荐，无 GUI）
+  python amos_script.py
+
+---
+
+## Q (MRKS) 配置完成提示
+
+- ✅ Q (MRKS) 支持 QScript 批处理模式，完全无 GUI，无闪屏
+- 🔴 仅支持 Windows
+- ⚠️ 需要 Q (MRKS) 许可证
+- 💡 适合市场调研问卷分析、交叉表、统计检验
+
+📋 推荐使用方式（Windows）：
+  REM 运行 QScript
+  Q.exe /QScript "c:\scripts\analysis.qs"
+  REM 带日志
+  Q.exe /QScript "c:\scripts\analysis.qs" /Log "c:\logs\output.log"
+
+---
+
+## NCSS 配置完成提示
+
+```
+✅ NCSS 关联配置已完成！
+
+📊 配置信息：
+  - NCSS 版本: [2024]
+  - NCSS 主程序: [NCSS.exe 路径]
+  - 平台: Windows
+
+⚠️ 重要注意事项：
+  1. NCSS 支持批处理模式，可通过 /B 参数运行分析脚本
+  2. Windows-only，不支持 macOS 和 Linux
+  3. 适合医疗统计、样本量计算和临床数据分析
+
+📋 推荐使用方式：
+  "NCSS.exe" /B "analysis.ncss"
+```
+
+### English Version
+
+```
+✅ NCSS connection configuration complete!
+
+📊 Configuration Information:
+  - NCSS Version: [2024]
+  - NCSS Executable: [NCSS.exe path]
+  - Platform: Windows
+
+⚠️ Important notes:
+  1. NCSS supports batch mode via /B parameter
+  2. Windows-only, no macOS/Linux support
+  3. Suitable for medical statistics, sample size calculation, clinical data analysis
+
+📋 Recommended usage:
+  "NCSS.exe" /B "analysis.ncss"
+```
+
+---
+
+## Origin (OriginLab) 配置完成提示
+
+```
+✅ Origin 关联配置已完成！
+
+📊 配置信息：
+  - Origin 版本: [2025/2024/2023]
+  - Origin 主程序: [Origin95.exe 或 Origin97.exe 路径]
+  - 平台: Windows
+
+⚠️ 重要注意事项：
+  1. Origin 支持 LabTalk 脚本批处理，通过 -h 参数运行 .ogs 脚本
+  2. 科学绘图与数据分析软件，全球百万用户
+  3. macOS 版本 CLI 支持有限，建议在 Windows 环境下使用
+  4. 适合批量数据处理、科学图表生成和统计分析
+
+📋 推荐使用方式：
+  "origin97.exe" -h "script.ogs"
+```
+
+### English Version
+
+```
+✅ Origin connection configuration complete!
+
+📊 Configuration Information:
+  - Origin Version: [2025/2024/2023]
+  - Origin Executable: [Origin95.exe or Origin97.exe path]
+  - Platform: Windows
+
+⚠️ Important notes:
+  1. Origin supports LabTalk script batch processing via -h parameter
+  2. Scientific graphing and data analysis software, over 1M users worldwide
+  3. macOS CLI support is limited, Windows environment recommended
+  4. Suitable for batch data processing, scientific figure generation, statistical analysis
+
+📋 Recommended usage:
+  "origin97.exe" -h "script.ogs"
+```
 
 ---
 

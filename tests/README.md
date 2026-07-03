@@ -25,19 +25,28 @@ Use SPSS built-in Python's `spss` module to run syntax directly, without calling
   "[SKILL_DIR]/tests/test-syntax.sps"
 ```
 
-### 备用方式（可能有闪屏）/ Backup Method (May have Splash Screen)
+### 备用方式（无闪屏）/ Backup Method (No Splash)
 
-通过 `stats.exe --production` 调用 .spj 文件。此方式可能显示闪屏。
+通过 `stats.com`（控制台版）调用 .spj 文件，完全无闪屏：
 
-Call .spj file via `stats.exe --production`. This method may display splash screen.
+```bash
+# 示例
+"C:\Program Files\IBM\SPSS\Statistics\26\stats.com" -production silent -nologo "[SKILL_DIR]/tests/test-job.spj"
+```
+
+`stats.com` 控制台版纯后台运行，绝无闪屏。
+
+最后备选（可能有闪屏）： `stats.exe -production silent -nologo`。
+
+Call .spj file via `stats.exe -production`. This method may display splash screen.
 
 ```bash
 # 通过 spss_helper.py 运行
-"[STATS_EXE_PATH]" --production "[SPJ_FILE]"
+"[STATS_EXE_PATH]" -production "[SPJ_FILE]" silent -nologo
 
 # 示例
 "C:\Program Files\IBM\SPSS\Statistics\26\stats.exe" \
-  --production \
+  -production \
   "[SKILL_DIR]/tests/test-job.spj"
 ```
 

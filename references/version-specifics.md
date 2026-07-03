@@ -1,225 +1,682 @@
-# 版本差异 / Version Specifics
+# Version & Platform Specifics
 
-> 本文档由 SKILL.md 精简时拆出，包含各统计软件的版本差异信息。
+> Reference for version differences across statistical software.
 
 ---
 
-## SPSS 版本差异
+## Platform Support Summary
 
-### Python 版本对比表
+| Software | Windows | macOS | Linux |
+|----------|---------|-------|-------|
+| R | ✅ | ✅ | ✅ |
+| Stata | ✅ | ✅ | ✅ |
+| SAS | ✅ | ✅ | ✅ |
+| StatTransfer | ✅ | ✅ | ❌ |
+| Gretl | ✅ | ✅ | ✅ |
+| Matlab | ✅ | ✅ | ✅ |
+| Mathematica | ✅ | ✅ | ✅ |
+| Julia | ✅ | ✅ | ✅ |
+| Minitab | ✅ | ⚠️ | ⚠️ |
+| SPSS Statistics | ✅ | ❌ | ❌ |
+| SPSS Modeler | ✅ | ❌ | ❌ |
+| JMP | ✅ | ⚠️ | ⚠️ |
+| GraphPad Prism | ✅ | ❌ | ❌ |
+| EViews | ✅ | ❌ | ❌ |
+| Statistica | ✅ | ❌ | ❌ |
+| CmdStan | ✅ | ✅ | ✅ |
+| Weka | ✅ | ✅ | ✅ |
+| KNIME | ✅ | ✅ | ✅ |
+| jamovi | ✅ | ✅ | ✅ |
+| JASP | ✅ | ✅ | ✅ |
+| PSPP | ✅ | ✅ | ✅ |
+| Mplus | ✅ | ✅ | ❌ |
+| AMOS (IBM) | ✅ | ❌ | ❌ |
+| Q / MRKS | ✅ | ❌ | ❌ |
+| JAGS | ✅ | ✅ | ✅ |
+| SHAZAM | ✅ | ✅ | ✅ |
+| OxMetrics | ✅ | ✅ | ✅ |
+| TSP | ✅ | ✅ | ✅ |
+| Tanagra | ✅ | ✅ | ✅ |
+| Orange | ✅ | ✅ | ✅ |
+| H2O.ai | ✅ | ✅ | ✅ |
+| GenStat | ✅ | ✅ | ✅ |
+| Rattle | ✅ | ✅ | ✅ |
+| OpenBUGS | ✅ | ✅ | ✅ |
+| LIMDEP | ✅ | ❌ | ❌ |
+| NLOGIT | ✅ | ❌ | ❌ |
+| Microfit | ✅ | ❌ | ❌ |
 
-| SPSS 版本 | 内置 Python | f-string 支持 | 推荐使用方式 |
-|-----------|-------------|---------------|--------------|
-| 26 |  **Python 3.4**（含 spss 模块）/ Python 2.7（旧 API，不建议） | ❌ 不支持 | 内置 Python 3.4（无 f-string），脚本需用 `%s` 或 `.format()` |
-| 27 | Python 3.8 | ✅ 支持 | 内置 Python 3.8 |
-| 28 | Python 3.9 | ✅ 支持 | 内置 Python 3.9 |
-| 29 | Python 3.10.4 | ✅ 支持 | 内置 Python 3.10.4 |
-| 30 | Python 3.10 | ✅ 支持 | 内置 Python 3.10 |
-| 31 | Python 3.10 | ✅ 支持 | 内置 Python 3.10 |
+---
 
-### 影响与注意事项
+## SPSS Statistics Version Differences
 
-#### 1. spss_helper.py 脚本兼容性
+| Version | Bundled Python | f-string Support |
+|---------|---------------|-----------------|
+| 26 | Python 3.4 | ❌ |
+| 27 | Python 3.8 | ✅ |
+| 28 | Python 3.9 | ✅ |
+| 29 | Python 3.10.4 | ✅ |
+| 30 | Python 3.10 | ✅ |
 
-- **SPSS 26**：内置 Python 3.4，不支持 f-string，脚本必须使用 `%s` 或 `.format()`
-- **SPSS 27+**：内置 Python 3.8+，支持 f-string
+### spss_helper.py Compatibility
 
-**解决方案**：
-- `spss_helper.py` 脚本已确保兼容 Python 3.4（不使用 f-string）
-- 如需使用 f-string，请升级到 SPSS 27 或更高版本
+- SPSS Statistics 26: Script uses `%s` / `.format()`, no f-string
+- SPSS Statistics 27+: Script can use f-string and modern Python
 
-#### 2. 生产模式差异
+---
 
-| 版本 | 生产作业文件格式 | 变化 |
-|------|-----------------|------|
-| 26 | `.spj` (XML 格式) | 无变化 |
-| 27-31 | `.spj` (XML 格式) | 无变化 |
+## SPSS Modeler Version Differences
 
-**注意**：从 SPSS 16.0 开始，生产作业文件格式从 `.spp` 改为 `.spj`。本技能使用 `.spj` 格式。
+| Version | clemb.exe Path | Notes |
+|---------|---------------|-------|
+| 18.6 | `...\Modeler\18.6\bin\clemb.exe` | Latest, Python scripting |
+| 18.5 | `...\Modeler\18.5\bin\clemb.exe` | Performance improvements |
+| 18.0 | `...\Modeler\18.0\bin\clemb.exe` | Classic stable |
 
-#### 3. 版本检测方法
+### clemb.exe Common Arguments
 
-在 `setup_spss.ps1` 中，通过读取注册表或安装目录名称来检测版本：
-
-```powershell
-# 从安装路径提取版本号
-$version = "26"
-if ($installPath -match "Statistics\(\d+)") {
-    $version = $matches[1]
-}
-
-# 根据版本设置 Python 兼容性标志
-if ([int]$version -le 26) {
-    $useFString = $false
-} else {
-    $useFString = $true
-}
+```
+-local          Run in local mode (batch recommended)
+-stream <file>  Load and execute .str stream file
+-script <file>  Load and execute Python script
+-project <file> Load project
+-execute        Execute loaded stream/script
+-log <file>     Redirect log to file
+-server         Server mode (requires Modeler Server)
+-hostname <h>   Server address
+-port <n>       Server port
+-username <n>   Username
+-password <p>   Password
 ```
 
-#### 4. 推荐配置策略
+---
 
-**对于 SPSS 26 用户**：
-- ✅ 使用内置 Python 3.4 调用 `spss` 模块（完全无闪屏）
-- ⚠️ 脚本中**禁止使用 f-string**
-- 💡 复杂任务建议使用外部 Python（Anaconda）
+## CmdStan Version Differences
 
-**对于 SPSS 27+ 用户**：
-- ✅ 使用内置 Python（支持 f-string）
-- ✅ 可以使用现代 Python 语法
-- ✅ 性能更好
+| Version | Notes |
+|---------|-------|
+| 2.30+ | Latest, improved threading, pathfinder |
+| 2.28+ | Improved HMC adaptation |
+| 2.26+ | Generated quantities redesign |
 
-### 官方文档链接
+### CmdStan CLI Usage
 
-- SPSS 26: https://www.ibm.com/docs/zh/spss-statistics/26.0.0
-- SPSS 27: https://www.ibm.com/docs/zh/spss-statistics/27.0.0
-- SPSS 28: https://www.ibm.com/docs/zh/spss-statistics/28.0.0
-- SPSS 29: https://www.ibm.com/docs/zh/spss-statistics/29.0.0
-- SPSS 30: https://www.ibm.com/docs/zh/spss-statistics/30.0.0
-- SPSS 31: https://www.ibm.com/docs/zh/spss-statistics/31.0.0
+```bash
+# Compile model
+cd $CMDSTAN && make /path/to/model
+
+# Run sampling
+./model sample num_samples=2000 num_warmup=1000 data file=init.csv output file=out.csv
+
+# Summary
+stansummary out.csv
+```
 
 ---
 
-## Stata 版本差异
+## Weka CLI Usage
 
-### 版本与可执行文件对照
+```bash
+# Run filter/from command line
+java -cp $WEKA_HOME/weka.jar weka.filters.unsupervised.attribute.StringToWVector \
+  -i input.arff -o output.arff
 
-| 版本 | MP | SE | BE |
-|------|----|----|-----|
-| Stata ≤ 12 | `StataMP` | `StataSE` | `Stata` |
-| Stata 13/14/15 | `StataMP` | `StataSE` | `Stata` |
-| Stata 16+ | `StataMP-64.exe` | `StataSE-64.exe` | `Stata-64.exe` |
-
-### ⚠️ 批处理命令行参数差异（重要）
-
-| 版本 | Windows 静默参数 | Mac/Linux 静默参数 | 说明 |
-|------|-----------------|-------------------|------|
-| **Stata ≤ 12** | `/e do "script.do"` | `-e do "script.do"` | `-e` 参数禁止弹出确认框 |
-| **Stata ≥ 13** | `/b do "script.do"` | `-b do "script.do"` | `-b` 参数禁止弹出确认框 |
-
-**关键**：Stata 12 **不支持 `-b` 参数**！必须用 `-e`。新版本（13+）`-e` 已被废除，必须用 `-b`。
-
-### 版本特定变化
-
-| 变化 | 版本 | 说明 |
-|------|------|------|
-| 新增 `/b` 参数 | Stata 13+ | 替代旧的 `/e` 参数，效果相同 |
-| 新增 `-64` 后缀 | Stata 16+ | 可执行文件名增加 `-64` 后缀 |
-| Python 集成 | Stata 16+ | 可从 Stata 调用 Python |
-| PyStata | Stata 17+ | 可从 Python 调用 Stata |
-| StataNow | Stata 19+ | 引入 StataNow 快速更新机制 |
-
-### Windows 安装路径差异
-
-| 版本 | 默认安装路径 |
-|------|-------------|
-| Stata 14-18 | `C:\Program Files\StataNN`（NN 为版本号） |
-| Stata 19+ | `C:\Program Files\Stata19` 或 `C:\Program Files\StataNow19` |
+# Classifier
+java -cp $WEKA_HOME/weka.jar weka.classifiers.trees.RandomForest \
+  -t train.arff -T test.arff -p 0
+```
 
 ---
 
-## R 版本差异
+## KNIME Batch Usage
 
-### Python 版本兼容性
+```bash
+# Headless batch mode
+knime -nosplash -application org.knime.product.KNIME_BATCH_APPLICATION \
+  -workflowFile=/path/to/workflow.knwf \
+  -workflow.variable=threshold,0.5,double
 
-| R 版本 | 兼容 Python 版本 | 对应 SPSS 版本 |
-|--------|-----------------|---------------|
-| 3.4 | Python 3.4 | SPSS 26 |
-| 3.5 | Python 3.5 | — |
-| 3.6 | Python 3.6 | — |
-| 3.7+ | Python 3.7+ | — |
-| 3.8+ | Python 3.8+ | SPSS 27+ |
-| 3.10+ | Python 3.10+ | SPSS 29+ / 30 / 31 |
-
-### Anaconda Python 与 R 兼容性
-
-| Anaconda Version | Python | 备注 |
-|-----------------|--------|------|
-| Anaconda 2.x | Python 2.7 | 已弃用，不建议使用 |
-| Anaconda 3.x | 3.7+ | 与 Python 3.4 的 SPSS 内置 Python 可共存 |
-| Anaconda 3.x | 3.10+ | 需要与 SPSS 内置 Python 分开安装 |
-
-### R Packages 兼容性
-
-| R 版本 | 推荐 Packages | 替代方案 |
-|--------|---------------|----------|
-| R 3.4 | base, survival | — |
-| R 3.5+ | tidyverse, caret | data.table + mlr3 |
-| R 3.6+ | renv | packrat |
-| R 4.0+ | vroom, arrow | readr, data.table |
+# CLI only (KNIME Server)
+knime -nosplash -application org.knime.product.KNIME_BATCH_APPLICATION \
+  -workflowDir=/path/to/workflow_directory
+```
 
 ---
 
-## SAS 版本差异
+## Mplus Version Differences
 
-### 平台与版本对照
+| Version | Notes |
+|---------|-------|
+| 8.11 | Latest (2025) |
+| 8.10 | BCH method for mixture models |
+| 8.8 | Improved multilevel |
+| 8.0 | Baseline |
 
-| 平台 | 默认安装路径 |
-|------|-------------|
-| Windows | `C:\Program Files\SASFoundation\9.4\` |
-| Mac | `/Applications/SASFoundation/9.4/` |
-| Linux | `/opt/SASFoundation/9.4/` |
+### Mplus CLI Usage
 
-### SAS 批处理模式输出文件
+```bash
+# Batch mode — create .inp file with DATA/FILEDATA/SAVEDATA/OUTPUT
+# Then:
+mplus model.inp
 
-| 文件扩展名 | 说明 |
-|-----------|------|
-| `.sas` | SAS 程序源文件 |
-| `.log` | 日志文件（执行记录） |
-| `.lst` | 输出列表（结果） |
-| `.sas7bdat` | SAS 数据集 |
+# Example .inp file:
+TITLE: My analysis
+FILEDATA: FILE IS data.dat;
+MODEL: y ON x1 x2;
+OUTPUT: MODINDICES STANDARDIZED;
+SAVEDATA: FILE IS results.dat;
+```
 
 ---
 
-## JMP 版本差异
+## Stata Version Differences
 
-| 版本 | 文件扩展名 | 批处理命令 |
-|------|-----------|-----------|
-| JMP 14/15/16 | `.jsl` | `JMP.exe /R "script.jsl"` |
-| JMP 16 Pro | `.jsl` | `JMP.exe /S /R "script.jsl"` |
+| Version | Windows Batch Flag | Mac/Linux Batch Flag |
+|---------|-------------------|---------------------|
+| ≤ 12 | `/e do "script.do"` | `-e do "script.do"` |
+| ≥ 13 | `/b do "script.do"` | `-b do "script.do"` |
+
+---
+
+## R Version Differences
+
+| R Version | Bundled Python | SPSS Equivalent |
+|-----------|---------------|-----------------|
+| 3.4 | Python 3.4 | SPSS Statistics 26 |
+| 3.5+ | Python 3.7+ | SPSS Statistics 27+ |
+| 4.0+ | Python 3.9+ | SPSS Statistics 30+ |
+
+---
+
+## SAS Version Differences
+
+| Platform | Batch Mode |
+|----------|-----------|
+| Windows | `sas -sysin "prog.sas" -log "out.log" -print "out.lst"` |
+| Linux | `sas -sysin "prog.sas" -log "out.log" -print "out.lst"` |
+| macOS | `sas -sysin "prog.sas" -log "out.log" -print "out.lst"` |
+
+---
+
+## JMP Version Differences
+
+| Version | Extension | Batch Command |
+|---------|-----------|--------------|
+| 14/15/16 | `.jsl` | `JMP.exe /R "script.jsl"` |
+| 16 Pro | `.jsl` | `JMP.exe /S /R "script.jsl"` |
 | JMP Live | Web-based | Web API |
 
 ---
 
-## GraphPad Prism 版本差异
+## jamovi Version Differences
 
-| 版本 | 安装路径 | 限制 |
-|------|---------|------|
-| 8 | `C:\Program Files\GraphPad\Prism 8\` | 无 CLI |
-| 9 | `C:\Program Files\GraphPad\Prism 9\` | 无 CLI |
-| 10 | `C:\Program Files\GraphPad\Prism 10\` | 无 CLI |
+| Version | Notes |
+|---------|-------|
+| 2.4+ | Latest, Rj module support |
+| 2.3+ | Improved syntax export |
 
-⚠️ 所有版本均无 CLI 模式，调用时都会弹出 GUI 界面。
+### jamovi CLI Usage
 
-### 替代方案
+```bash
+# Rj mode (execute R syntax from command line)
+jamovi --Rj "summary(mtcars)"
 
-| 方案 | 说明 |
-|------|------|
-| Python prismWriter | 后台操作 .pzfx 文件（无需 GUI） |
-| Windows COM/OLE | 通过 pywin32 调用 GraphPad Prism 自动化接口 |
-| GraphPad Script | 内置脚本语言（非 CLI） |
-| AppleScript | macOS 上通过 AppleScript 控制 Prism |
+# Or run Rj script file
+jamovi "script.Rj"
+```
 
 ---
 
-## 操作系统版本差异
+## JASP Version Differences
 
-### Python 在 Windows 上的编码问题
+| Version | Notes | CLI Status |
+|---------|-------|-----------|
+| 0.18+ | Latest | ⚠️ `jasp --console` (Beta) |
+| 0.16+ | Improved modules | ⚠️ Limited CLI |
 
-| 版本 | `python.exe` 默认编码 | 说明 |
-|------|---------------------|------|
-| Python 2.7 | `cp1252` / `gbk` | 需 `sys.setdefaultencoding('utf-8')`，2.7版本太老，不建议使用 |
-| Python 3.4 | `cp1252` | SPSS 内置 Python 3.4 使用此编码 |
-| Python 3.8+ | `utf-8`（Windows 10 1903+） | 推荐使用 |
-| Python 3.10+ | `utf-8` | 默认 UTF-8 |
+### JASP CLI Usage
 
-**注意**：SPSS 输出含非 UTF-8 字符，读取时需用 `cp1252` 或 `errors='replace'` 处理。
+```bash
+# Experimental — may not support all features in headless mode
+jasp --console data.csv
+```
 
-### 路径差异
+---
 
-| 操作系统 | 路径分隔符 | 示例 |
-|---------|-----------|------|
-| Windows | `\`（反斜杠） | `C:\Program Files\IBM\SPSS\...` |
-| macOS | `/`（正斜杠） | `/Library/Frameworks/R.framework/...` |
-| Linux | `/`（正斜杠） | `/usr/lib/R/...` |
+## PSPP Version Differences
 
-**注意**：R 脚本中 `\` 是转义符，需使用正斜杠 `/` 或双反斜杠 `\\`。
+| Version | Notes |
+|---------|-------|
+| 2.0+ | Latest, improved compatibility |
+| 1.6+ | Added GLM |
+
+### PSPP CLI Usage
+
+```bash
+# Run .sps syntax
+pspp -o output.txt analysis.sps
+
+# Pipe mode
+pspp < analysis.sps
+```
+
+---
+
+## AMOS Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 29.0 | Latest (SPSS Statistics 29 bundle) |
+| 28.0 | Improved multi-group |
+| 27.0 | Baseline |
+
+### AMOS Batch Usage
+
+> ⚠️ AMOS CLI is limited. Use Python extension to control AMOS:
+
+```python
+# Requires IBM SPSS Amos Python extension
+import amos
+amos.RunAnalysis("model.amw", "output.out")
+```
+
+---
+
+## Q (MRKS) Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 6.0+ | Latest |
+| 5.5+ | Improved R integration |
+
+### Q Batch Usage
+
+```batch
+REM Run QScript
+Q.exe /QScript "c:\scripts\analysis.qs"
+```
+
+---
+
+## Mathematica Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 14.0 | Latest (2024), improved WolframScript |
+| 13.0 | Baseline for modern Wolfram Language |
+| 12.0 | First version with full WolframScript support |
+
+### Mathematica CLI Usage
+
+```bash
+# Run Wolfram Language script
+wolframscript -file script.wl
+
+# Execute code directly
+wolframscript -code "Table[i^2, {i, 10}]"
+
+# Windows explicit MathKernel call
+"C:\Program Files\Wolfram Research\Mathematica\14.0\MathKernel.exe" -noprompt < script.m
+```
+
+### Mathematica Common Errors
+
+| Error | Solution |
+|-------|----------|
+| `wolframscript not found` | Add Mathematica to PATH or use full path |
+| License activation required | Run Mathematica GUI once to activate |
+| `MathKernel` hangs | Use `-noprompt` flag for batch mode |
+
+---
+
+## Common Errors & Solutions
+
+| Software | Error | Solution |
+|----------|-------|----------|
+| SPSS Statistics | NullPointerException | Add `<output>` to .spj XML |
+| SPSS Statistics | UnicodeDecodeError | Use `cp1252` or `errors='replace'` |
+| SPSS Statistics | F-string error (v26) | Use `%s` formatting |
+| SPSS Modeler | Stream not found | Verify file path and .str extension |
+| CmdStan | `stanc` not found | Set CMDSTAN env var, run setup |
+| CmdStan | Compilation fails | Check C++ toolchain |
+| Weka | Out of memory | Use `-Xmx` JVM flag with Java |
+| KNIME | `-workflowDir` not recognized | Update to KNIME 4.7+ |
+| Mplus | License not found | Check license file |
+| Mplus | Model not found | Verify .inp file and data path |
+| Stata | Confirmation dialog | Loop: v≤12 → `/e`, v≥13 → `/b` |
+| R | Package not installed | `install.packages()` |
+| SAS | License expired | Update license file |
+
+---
+
+## JAGS Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 4.3.0 | Latest stable |
+| 4.2.0 | Improved parallel chain support |
+
+### JAGS CLI Usage
+
+```bash
+# Run JAGS script
+jags scriptfile
+
+# Batch execution
+jags-script script.txt
+
+# With R interface
+Rscript -e "library(rjags); jags.model('script.dat', data)"
+```
+
+### JAGS Common Errors
+
+| Error | Solution |
+|-------|----------|
+| `Cannot find JAGS` | Install JAGS |
+| Syntax error in model | Check BUGS syntax |
+| MCMC did not converge | Increase burn-in and iterations |
+
+---
+
+## SHAZAM Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 12.0 | Latest, improved command language |
+| 11.0 | Baseline |
+
+### SHAZAM CLI Usage
+
+```bash
+# Run SHAZAM command file
+shazam commands.txt
+
+# Sample command file content:
+# /MODEL TITLE MYMODEL
+# / X 1 100
+# / PREDICT Y
+# /END
+```
+
+---
+
+## OxMetrics Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 8.0 | Latest (Ox 8) |
+| 7.0 | Baseline |
+
+### OxMetrics CLI Usage
+
+```bash
+# Show CLI options
+oxmetrics --help
+
+# Run batch
+oxmetrics -b commands.txt
+```
+
+---
+
+## TSP Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 5.0 | Latest |
+| 4.5 | Baseline |
+
+### TSP CLI Usage
+
+```bash
+# Run TSP command file
+tsp commands.txt
+```
+
+---
+
+## Tanagra Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 1.8 | Latest |
+| 1.5 | Baseline |
+
+### Tanagra CLI Usage
+
+```bash
+# Show CLI options
+tanagra --help
+
+# Execute batch script
+tanagra -f script.txt
+```
+
+---
+
+## Orange Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 3.36 | Latest |
+| 3.30 | Baseline |
+
+### Orange CLI Usage
+
+```bash
+# Show CLI options (GUI mode)
+orange-canvas --help
+
+# Python module approach (recommended)
+python3 -m Orange.canvas
+```
+
+### Orange Common Errors
+
+| Error | Solution |
+|-------|----------|
+| Module not found | `pip install orange3` |
+| Conda issues | `conda install -c condaforge orange3` |
+
+---
+
+## H2O.ai Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 3.44 | Latest |
+| 3.40 | AutoML improvements |
+
+### H2O CLI Usage
+
+```bash
+# Show CLI options
+h2o --help
+
+# Start H2O server
+h2o start
+
+# Via Python (recommended)
+python3 -c "import h2o; h2o.init()"
+```
+
+### H2O Common Errors
+
+| Error | Solution |
+|-------|----------|
+| Server not starting | Check Java, `java -version` |
+| Out of memory | Set `-Xmx` in `h2o.start()` |
+| Port conflict | Change port: `h2o.init(port=54322)` |
+
+---
+
+## GenStat Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 23.0 | Latest |
+| 22.0 | Baseline |
+
+### GenStat CLI Usage
+
+```bash
+# Show CLI options
+genstat --help
+
+# Run GenStat command file
+genstat commands.txt
+```
+
+---
+
+## Rattle Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 5.5 | Latest |
+| 5.0 | Baseline |
+
+### Rattle CLI Usage
+
+```bash
+# Run Rattle in CLI mode
+rattle --cli
+
+# Via R package
+Rscript -e "library(rattle); rattle()"
+```
+
+---
+
+## OpenBUGS Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 3.2.3 | Latest stable |
+| 3.2.2 | Baseline |
+
+### OpenBUGS CLI Usage
+
+```bash
+# Show CLI options
+openbugs --help
+
+# Batch execution via script
+openbugs -b script.txt
+```
+
+---
+
+## LIMDEP Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 11.0 | Latest |
+| 10.0 | Baseline |
+
+### LIMDEP CLI Usage
+
+```batch
+REM Run LIMDEP command file
+limdep commands.txt
+```
+
+### LIMDEP Common Errors
+
+| Error | Solution |
+|-------|----------|
+| License not found | Check license file |
+| Data not found | Verify data path in command file |
+
+---
+
+## NLOGIT Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 6.0 | Latest |
+| 5.0 | Discrete choice improvements |
+
+### NLOGIT CLI Usage
+
+```batch
+REM Run NLOGIT command file
+nlogit commands.txt
+```
+
+### NLOGIT Common Errors
+
+| Error | Solution |
+|-------|----------|
+| Model not converging | Check starting values |
+| Sample size mismatch | Verify data dimensions |
+
+---
+
+## Microfit Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 5.0 | Latest |
+| 4.0 | Baseline |
+
+### Microfit CLI Usage
+
+```batch
+REM Run Microfit command file
+microfit commands.txt
+```
+
+---
+
+## NCSS
+
+### Platform Support
+
+| 平台 / Platform | 支持 | CLI 支持 | 闪屏 |
+|----------------|------|----------|------|
+| Windows | ✅ | ✅（/B 参数） | ❌ |
+| macOS | ❌ | ❌ | — |
+| Linux | ❌ | ❌ | — |
+
+### Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 2024 | Latest, batch mode support |
+| 2023 | Baseline |
+
+### NCSS CLI Usage
+
+```batch
+REM Run NCSS batch analysis
+"NCSS.exe" /B "analysis.ncss"
+```
+
+---
+
+## Origin (OriginLab)
+
+### Platform Support
+
+| 平台 / Platform | 支持 | CLI 支持 | 闪屏 |
+|----------------|------|----------|------|
+| Windows | ✅ | ✅（-h 参数） | ❌ |
+| macOS | ✅ | ⚠️ 有限 / Limited | ⚠️ 可能有 / May have |
+| Linux | ❌ | ❌ | — |
+
+### Version Differences
+
+| Version | Notes |
+|---------|-------|
+| 2025 | Latest, improved LabTalk support |
+| 2024 | Baseline |
+| 2023 | Older versions may have limited CLI support |
+
+### Origin CLI Usage
+
+```batch
+REM Run LabTalk script in batch mode
+origin97 -h script.ogs
+```

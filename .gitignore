@@ -14,5 +14,7 @@ __pycache__/
 
 # Backup files
 *.bak
+*.bak_*
+config.json.bak_*
 *.zip
 *.tar.gz
