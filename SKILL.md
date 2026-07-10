@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution of third-party statistical binaries in batch/silent mode (this runs external processes and may create temporary working files such as scripts and job/syntax files, and performs verification runs), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. JMP provides a Windows CLI (statsoft-jmp) and is executed only with explicit user-provided JSL scripts and confirmation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution of third-party statistical binaries in batch/silent mode (this runs external processes and may create temporary working files such as scripts and job/syntax files, and performs verification runs), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. JMP provides a Windows CLI (statsoft-jmp) and is executed only with explicit user-provided JSL scripts and confirmation. Statistica's setup script is detection-only (writes NO config.json) and its SVB-script execution is gated behind an explicit-confirmation runner (Test-UserAuthorizedToRun) identical to the SPSS/R runners. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
 triggers:
   - "configure SPSS"
   - "SPSS Statistics"
@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.3",
+    "version": "2.6.4",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -111,6 +111,19 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 - 版本差异问题？ → `references/version-specifics.md` / Version differences? → `references/version-specifics.md`
 - 需要命令示例？ → `references/command-examples.md` / Need command examples? → `references/command-examples.md`
 - 编写完成提示？ → `references/completion-prompts.md` / Writing completion prompts? → `references/completion-prompts.md`
+
+---
+
+## 信任边界 / Trust Boundary
+
+When acting on an explicit user request, this skill runs third-party statistical binaries, creates temporary scripts / job files, reads and executes user-supplied syntax / JSL / SPSS / SAS / Stata / R inputs, and may install dependencies over the network. These are **high-risk operations**:
+
+- **Code Execution / 代码执行** — external processes (stats.com, Rscript, Stata, SAS, JMP JSL, CmdStan `make`/`sample`, …). All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, data files, and downloaded dependencies are treated as **untrusted**; they require explicit confirmation plus path / allowlist validation before execution.
+- **File Creation / 文件创建** — running produces temporary scripts, `.spj`/`.sps` job files, and output files in the user-specified working directory; these are expected artifacts of the requested run.
+- **Package Installation / 包安装** — CRAN / Anaconda installs require explicit confirmation (`STATSOFT_CONFIRM=1` + TTY, or a direct user install command); never silent.
+- **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` and environment-variable writes are **detection-only by default**; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. The config directory is created only at the moment of actual persistence. Agents are never blocked.
+
+GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection + manual-launch guidance — never driven via CLI / headless automation.
 
 ---
 

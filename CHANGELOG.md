@@ -1,5 +1,19 @@
 # Changelog / 更新日志
 
+## v2.6.4 (2026-07-10)
+
+ClawHub SkillSpector 审计继续修复（v2.6.3 仍 `suspicious`，15 项发现；扫描器已把审计主题扩展到注入 / 清单 / 信任边界 / 输出净化）。本轮定向修复：
+
+- **Statistica 改造为仅检测 + 受控运行（SDI-1 HIGH / SDI-4）**：v2.6.3 的 `setup_statistica.ps1` 仍执行持久化配置（GUI 导向工具被扩展为状态变更 setup）。现改为**纯检测脚本**，仅报告路径与版本、**绝不写入 config.json**；删除 `Save-StatSoftConfig` / `Configure-Statistica`，仅打印手动启动与 SVB 运行指引。其执行入口 `statsoft-statistica.ps1` 补齐 `Test-UserAuthorizedToRun` 闸门（与 SPSS/R 运行器一致：默认仅用户显式调用时执行，`STATSOFT_AUTO_WRITE=1` 非交互放行，`STATSOFT_CONFIRM=1`+TTY 提示 y/N）。
+- **SPSS `data-info` 注入修复（SDI-1 / MEDIUM）**：移除把 `$savFile` 直接插值进 Python 原始字符串字面量、再用通用 `python.exe` 执行的代码注入路径；改为调用固定辅助脚本 `_data_info.py` 并以 `argv` 安全传参，消除任意代码执行。
+- **SPSS 解释器固定（SDI-2 / MEDIUM）**：`data-info` 不再裸调 `python.exe`（PATH 解析可被劫持），改为 `Get-Command python.exe` 解析为**绝对路径**后再执行。
+- **Statistica / StatTransfer 预置建目录（SDI-4）**：删除检测阶段提前 `New-Item -ItemType Directory` / `mkdir -p`，目录仅在 `write_config.py` 真正持久化时才创建，确保仅检测零写入。
+- **JMP COM 自动化示例（SDI-2 / MEDIUM）**：从 `setup_jmp.ps1` 输出中移除 COM 自动化示例，仅保留经批准的 JMP CLI/JSL 调用示例。
+- **清单收集同意闸门（SQP-2）**：`scan_all.sh` / `scan_all.ps1` 在主机级软件清单前新增显式同意闸门（默认跳过；`STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1`+TTY 才执行），并披露将收集的本地工具路径/版本。
+- **CmdStan 输出净化（OH1 HIGH）**：`statsoft-cmdstan.py` 新增 `_ANSI_RE` + `_sanitize()`，对执行的模型二进制 `stdout`/`stderr` 剥离 ANSI/控制字符后再打印，防止终端/日志注入。
+- **信任边界与触发收窄（TP4 / RA2 / SQP-1）**：`SKILL.md` 新增 `## 信任边界 / Trust Boundary` 段，显式声明代码执行/文件创建/包安装/用户脚本与下载依赖均属高风险、需显式确认与路径校验；描述补述 Statistica 仅检测 + 受控运行；`README.md` / `README_zh-CN.md` 的 `Usage/使用方式` 明确「仅限明确、限定范围的请求（指名工具+动作）才激活」，并列出非触发示例与执行前确认要求。
+- **安装/工作流警示（SQP-2）**：`references/command-examples.md` 的 Orange `pip install orange3` / `conda install` 段补充「需联网、修改本地环境、仅经显式确认后运行」警告；`tests/example_workflow.md` 在多工具工作流前新增安全提示（审阅脚本、最小权限、隔离目录）。
+
 ## v2.6.3 (2026-07-10)
 
 ClawHub SkillSpector 审计迭代修复（扫描器非确定性，需对每个持久化写入/外部执行路径补齐显式内联 opt-in 闸门）：

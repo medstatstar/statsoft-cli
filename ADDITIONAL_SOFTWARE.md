@@ -1038,6 +1038,10 @@ Statistica 是数据挖掘与机器学习软件（Windows-only），有 CLI 支�
 
 Statistica is a data mining and machine learning software (Windows-only), has CLI support (SVB script batch processing), may have splash screen.
 
+> ⚠️ **仅检测 + 手动指引（SDI-1 安全边界）**：`setup_statistica.ps1` 为**纯检测脚本**，仅报告已安装路径与版本，**绝不写入 config.json**。执行 SVB 脚本须经受控运行器 `statsoft-statistica.ps1` 的 `Test-UserAuthorizedToRun` 闸门（默认仅在用户显式调用时执行；`STATSOFT_AUTO_WRITE=1` 非交互放行，`STATSOFT_CONFIRM=1`+TTY 提示 y/N），与 SPSS/R 运行器一致。
+>
+> ⚠️ **Detection-only + manual guidance**: `setup_statistica.ps1` is detection-only and never writes `config.json`. Executing an SVB script goes through the guarded runner `statsoft-statistica.ps1` with a `Test-UserAuthorizedToRun` gate (same as SPSS/R runners).
+
 ### 平台支持 / Platform Support
 
 | 平台 / Platform | 支持 | CLI 支持 | 闪屏 |
@@ -1046,8 +1050,10 @@ Statistica is a data mining and machine learning software (Windows-only), has CL
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### 配置完成提示 / Configuration Completion Notes
+### 检测与手动指引提示 / Detection & Manual-Guidance Notes
 
+- ⚠️ `setup_statistica.ps1` 仅检测、**不写入 config.json** / detection-only, writes no config.json
+- ⚠️ 执行 SVB 须经受控运行器并显式确认 / executing an SVB requires the guarded runner + explicit confirmation
 - ⚠️ Statistica 批处理模式可能有闪屏/ Statistica batch mode may have splash screen
 - ⚠️ Windows-only，不支持 macOS 和 Linux/ Windows-only, no macOS/Linux support
 - 💡 适合数据挖掘、机器学习和统计分析/ Suitable for data mining, ML, statistical analysis

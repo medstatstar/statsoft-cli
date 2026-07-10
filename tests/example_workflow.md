@@ -145,6 +145,9 @@ Run SAS program test_sas_report.sas
 
 ---
 
+> ⚠️ **安全提示 / Safety**: 以下命令会依次执行外部脚本（R/SPSS/Stata/SAS）并在本地生成/覆盖文件。执行前请审阅所有被引用的脚本与输出路径，建议在隔离的工作目录中以最小权限运行。
+> ⚠️ **Safety**: the commands below execute external scripts (R/SPSS/Stata/SAS) and create or overwrite local files. Review every referenced script and output path before running, and prefer an isolated working directory with least privilege.
+
 ## Complete Workflow Command / 完整工作流命令
 
 In AI Agent conversation, you can trigger the entire workflow with natural language:

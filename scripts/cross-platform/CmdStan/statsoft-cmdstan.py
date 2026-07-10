@@ -7,7 +7,18 @@ Usage:
     statsoft-cmdstan install [-v <version>]
     statsoft-cmdstan info
 """
-import argparse, json, os, subprocess, sys
+import argparse, json, os, re, subprocess, sys
+
+_ANSI_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]|\x1b\][^\x07]*\x07|[\x00-\x08\x0b\x0c\x0e-\x1f]')
+
+
+def _sanitize(text):
+    """Strip ANSI escape sequences and other control characters from subprocess
+    output before printing, to prevent terminal/log injection (OH1 fix)."""
+    if not text:
+        return text
+    return _ANSI_RE.sub('', text)
+
 
 def get_config():
     """Read config.json if available."""
@@ -104,7 +115,7 @@ def run_model(model_file, data_file, output_dir=None):
         "make", "-C", path, os.path.join(os.getcwd(), os.path.basename(model_file)).replace(".stan", "")
     ], capture_output=True, text=True)
     if build.returncode != 0:
-        print(f"Build failed:\n{build.stderr}")
+        print("Build failed:\n" + _sanitize(build.stderr))
         sys.exit(1)
 
     # Run
@@ -116,9 +127,9 @@ def run_model(model_file, data_file, output_dir=None):
     print(f"Command: {' '.join(args)}")
 
     proc = subprocess.run(args, capture_output=True, text=True)
-    print(proc.stdout)
+    print(_sanitize(proc.stdout))
     if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
+        print(_sanitize(proc.stderr), file=sys.stderr)
     sys.exit(proc.returncode)
 
 def main():

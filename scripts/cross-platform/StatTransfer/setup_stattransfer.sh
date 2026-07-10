@@ -156,9 +156,6 @@ configure_stattransfer() {
 
     log_info "配置 StatTransfer..."
 
-    # 创建配置目录
-    mkdir -p "$(dirname "$config_file")"
-
     # Build desired config (read-only); delegate persistence to centralized gate.
     local new_config
     new_config=$(python3 - "$config_file" "$st_path" "$platform" <<'PYEOF'

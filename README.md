@@ -161,13 +161,24 @@ statsoft-cli/
 
 ## Usage
 
-Trigger with natural language in AI Agent conversations:
+This skill activates only on an **explicit, narrowly scoped request** that names the target tool and action (for example `configure R`, `run Stata <file>`, `convert data.sav to data.dta`). Free-form phrases like "configure statistical software" are intentionally not auto-activated for high-risk execution.
+
+Trigger examples (require naming the tool/action):
 
 ```
 Connect SPSS 26
 Configure R statistical software
 Convert data.sav to data.dta
 Run a Stata .do file in batch mode
+```
+
+Before any execution, install, network fetch, or persistent write, the skill requires explicit confirmation (interactive) or an opt-in environment flag (`STATSOFT_AUTO_WRITE=1` / `STATSOFT_CONFIRM=1`). Read-only detection is the default.
+
+Non-trigger examples (treated as ordinary conversation, NOT activated):
+
+```
+I read a paper about R
+Can you explain what Stata is?
 ```
 
 ## Trust & Safety

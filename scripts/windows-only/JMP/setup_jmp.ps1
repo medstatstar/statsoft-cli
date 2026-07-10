@@ -143,8 +143,4 @@ if ($jmpInstalled) {
     Write-Lang "静默模式:" "Silent mode:" -Color White
   Write-Lang "`"$jmpPath`"" "S /R `" -Color White
     Write-Lang "" ""
-    Write-Lang "COM 自动化 (PowerShell):" "COM automation (PowerShell):" -Color White
-    Write-Host '  $jmp = New-Object -ComObject JMP.Application'
-    Write-Host '  $jmp.RunScriptFile("C:\path\to\script.jsl")'
-    Write-Host '  $jmp.Quit()'
 }

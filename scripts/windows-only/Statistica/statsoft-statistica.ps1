@@ -12,7 +12,22 @@ param(
     [string]$FilePath
 )
 
-# 初始化
+# ============================================================
+# Execution authorization gate (SDI-1 / mirrors SPSS & R runners)
+# Default: proceed only on an explicit user invocation. STATSOFT_AUTO_WRITE=1
+# proceeds non-interactively (agent/CI); STATSOFT_CONFIRM=1 + a real TTY prompts
+# y/N and never blocks an automated run unexpectedly.
+# ============================================================
+function Test-UserAuthorizedToRun {
+    if ($env:STATSOFT_AUTO_WRITE -eq '1') { return $true }
+    if ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host "[CN] 即将执行 Statistica 外部二进制（运行用户提供的 SVB 脚本），是否继续？(y/N) / [EN] About to run the Statistica external binary (user-supplied SVB script). Continue? (y/N)"
+        return ($ans -match '^[yY]')
+    }
+    return $true
+}
+
+# 初始化 / Init
 $configPath = "$PSScriptRoot\..\config.json"
 $config = $null
 $statisticaExe = $null
@@ -41,6 +56,10 @@ switch ($Command) {
     "run" {
         if (-not $FilePath -or -not (Test-Path $FilePath)) {
             Write-Error "[CN] Script file not found: $FilePath / [EN] 脚本文件不存在: $FilePath"
+            exit 1
+        }
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Error "[CN] 已取消执行（未确认）/ [EN] Execution cancelled (not confirmed)"
             exit 1
         }
         Write-Host "[CN] Running Statistica script: $FilePath" -ForegroundColor Cyan

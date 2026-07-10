@@ -89,6 +89,12 @@ def main():
               "Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.")
         return 0
 
+    # Only now — when actually persisting — create the parent directory, so that
+    # detection-only mode never touches the filesystem (SDI-4 fix).
+    parent_dir = os.path.dirname(os.path.abspath(target_path))
+    if parent_dir and not os.path.isdir(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+
     # Persist with timestamped backup + atomic replace.
     if os.path.exists(target_path):
         bak = target_path + ".bak." + datetime.datetime.now().strftime("%Y%m%d_%H%M%S")

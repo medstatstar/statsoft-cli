@@ -556,9 +556,10 @@ tanagra -f script.txt
 # 通过 Python 模块
 python3 -m Orange.canvas
 
-# 安装
+# 安装（需联网，且会修改本地 Python 环境；仅在用户显式确认后执行）
+# Install (requires network access and modifies the local Python environment; run ONLY after explicit user confirmation)
 pip install orange3
-# 或
+# 或 / or
 conda install -c conda-forge orange3
 ```
 

@@ -313,22 +313,16 @@ switch ($Command) {
     "data-info" {
         $savFile = $Args[0]
         if (-not $savFile -or -not (Test-Path $savFile)) { Write-Error "数据文件不存在 / Data file not found"; exit 1 }
-        $pyCode = @"
-import sys
-try:
-    import pyreadstat
-    df, meta = pyreadstat.read_sav(r'$($savFile -replace "\\", "/")')
-    print('Variables:', len(df.columns), 'Rows:', len(df))
-    print(df.head(20).to_string())
-    sys.exit(0)
-except ImportError:
-    print('ERROR: pip install pyreadstat'); sys.exit(1)
-except Exception as e:
-    print('ERROR:', str(e)); sys.exit(1)
-"@
-        $tmpPy = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.py'
-        [System.IO.File]::WriteAllText($tmpPy, $pyCode, [System.Text.Encoding]::UTF8)
-        & python.exe $tmpPy; Remove-Item $tmpPy -ErrorAction SilentlyContinue
+        $helperPy = Join-Path $scriptDir "_data_info.py"
+        if (-not (Test-Path $helperPy)) { Write-Error "缺少辅助脚本 _data_info.py / Missing helper _data_info.py"; exit 1 }
+        # Resolve a concrete interpreter to an absolute path (SDI-2 fix):
+        # avoid bare `python.exe` PATH resolution, which can pick up an unexpected
+        # interpreter. The path is passed to the helper as a safe argv argument.
+        $pyExe = $null
+        $cmd = Get-Command python.exe -ErrorAction SilentlyContinue
+        if ($cmd) { $pyExe = $cmd.Source }
+        if (-not $pyExe) { Write-Error "未找到 Python / Python not found"; exit 1 }
+        & $pyExe $helperPy $savFile
     }
 
     "version" {

@@ -4,6 +4,27 @@
 
 $ErrorActionPreference = "SilentlyContinue"
 
+# ─────────── CONSENT GATE (SQP-2) ───────────
+# Host-wide inventory exposes local tooling paths and versions. Require explicit
+# opt-in before running: STATSOFT_AUTO_WRITE=1 (non-interactive) or
+# STATSOFT_CONFIRM=1 + a real TTY (interactive y/N). Otherwise abort with notice.
+$autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+$confirm = $env:STATSOFT_CONFIRM -eq '1'
+if (-not $autoWrite) {
+    if ($confirm -and -not [Console]::IsInputRedirected) {
+        Write-Host "This will inventory installed statistical software (paths + versions) on this host."
+        $ans = Read-Host "Proceed with host-wide detection? (y/N)"
+        if (-not ($ans -match '^[yY]')) {
+            Write-Host "Aborted: host-wide detection requires explicit consent."
+            exit 0
+        }
+    } else {
+        Write-Host "Host-wide detection skipped: requires explicit consent."
+        Write-Host "Set STATSOFT_AUTO_WRITE=1 to run non-interactively, or STATSOFT_CONFIRM=1 for an interactive prompt."
+        exit 0
+    }
+}
+
 $results = @{}
 
 function Write-JsonOutput($obj) {

@@ -55,6 +55,22 @@ check_path_exists() {
     [[ -e "$path" ]] && echo "$path" || return 1
 }
 
+# ─────────── CONSENT GATE (SQP-2) ───────────
+# Host-wide inventory exposes local tooling paths and versions. Require explicit
+# opt-in before running: STATSOFT_AUTO_WRITE=1 (non-interactive) or
+# STATSOFT_CONFIRM=1 + a real TTY (interactive y/N). Otherwise abort with notice.
+if [[ "${STATSOFT_AUTO_WRITE:-}" == "1" ]]; then
+    : # auto-proceed
+elif [[ "${STATSOFT_CONFIRM:-}" == "1" && -t 0 ]]; then
+    echo "This will inventory installed statistical software (paths + versions) on this host."
+    read -p "Proceed with host-wide detection? (y/N) " _ans
+    case "$_ans" in y|Y|yes) : ;; *) echo "Aborted: host-wide detection requires explicit consent."; exit 0 ;; esac
+else
+    echo "Host-wide detection skipped: requires explicit consent."
+    echo "Set STATSOFT_AUTO_WRITE=1 to run non-interactively, or STATSOFT_CONFIRM=1 for an interactive prompt."
+    exit 0
+fi
+
 # ─────────── PLATFORM-SPECIFIC DETECTION ───────────
 
 case "${WB_OS:-$(uname -s | tr '[:upper:]' '[:lower:]')}" in
