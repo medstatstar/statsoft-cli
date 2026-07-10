@@ -222,12 +222,12 @@ See SKILL.md core permissions section for SPSS invocation details.
 
 - ⚠️⚠️⚠️ GraphPad Prism **没有 CLI 模式**，调用时会弹出 GUI 界面（无法避免）
 - ⚠️ 使用时会有以下现象：调用时弹出 GUI 界面，用户需手动操作
+- 🖱️ 本技能仅提供**检测 + 手动启动 GUI 指引**，不通过 CLI/无头方式驱动其批处理
 
-**替代方案**：
+**只读替代方案 / Read-only alternative**：
 | 方案 | 说明 |
 |------|------|
-| Python `prismWriter` | 后台操作 .pzfx 文件（无需 GUI） |
-| Windows COM/OLE | 通过 pywin32 调用 GraphPad Prism 自动化接口 |
+| Python `prismWriter` | 只读读取/校验 .pzfx 文件结构（无需启动 GUI） |
 
 > 详细配置信息和注意事项请参考 [ADDITIONAL_SOFTWARE.md → GraphPad Prism](ADDITIONAL_SOFTWARE.md#graphpad-prism)
 
@@ -660,9 +660,8 @@ descriptives <- jmv::descriptives(data = mydata, vars = c("var1", "var2"))
 chisq <- jmv::contTables(data = mydata, rows = "group", cols = "outcome")
 ```
 
-📋 推荐使用方式：
-  jamovi --Rj "summary(mtcars)"    # Rj 模式（可能仍弹窗）
-  Rscript jmv_script.R              # R 脚本调用 jmv 包（推荐，无 GUI）
+📋 推荐使用方式 / Recommended approach:
+  Rscript jmv_script.R              # R 脚本调用 jmv 包（推荐，无 GUI / recommended, no GUI）
 
 ---
 
@@ -683,9 +682,8 @@ data <- jaspTools::readOSR("data.csv")
 desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
 ```
 
-📋 推荐使用方式：
-  jasp --console data.csv           # 实验性控制台模式（可能仍弹窗）
-  Rscript jasp_script.R             # R 脚本调用 jaspTools 包（推荐，无 GUI）
+📋 推荐使用方式 / Recommended approach:
+  Rscript jasp_script.R             # R 脚本调用 jaspTools 包（推荐，无 GUI / recommended, no GUI）
 
 ---
 
@@ -730,18 +728,13 @@ desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
 - ⚠️ 需要 SPSS Statistics 许可证
 - 💡 适合 SEM、路径分析、验证性因子分析
 
-**纯 CLI 替代方案（Python 脚本）**：
-```python
-# 需要 IBM SPSS Amos Python 扩展
-import amos
-amos.RunAnalysis("model.amw", "output.out")
-```
+**后台调用（需自行编写，不在本技能自动范围内）/ Background automation (write your own, outside this skill's automation scope)**:
+- 如需后台调用，可使用 IBM SPSS Amos 官方 Python 扩展自行编写脚本（本技能不自动驱动）/ For background automation, use the official IBM SPSS Amos Python extension on your own (this skill does not drive it)
+- 本技能仅提供**检测 + 手动启动 GUI 指引**（GUI-only，不自动驱动）
 
-📋 推荐使用方式：
-  # GUI 模式（会弹窗）
+📋 推荐使用方式 / Recommended approach:
+  # 手动启动 GUI 打开文件（会弹窗，不自动化）/ Manually launch GUI to open file (pops up, no automation)
   amos.exe model.amw
-  # Python 脚本调用（推荐，无 GUI）
-  python amos_script.py
 
 ---
 

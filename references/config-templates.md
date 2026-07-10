@@ -274,4 +274,3 @@
 | SPSS | `statsoft-spss run syntax.sps` |
 | SPSS (batch) | `statsoft-spss run-batch s1.sps s2.sps s3.sps` |
 | JMP | `statsoft-jmp run script.jsl` |
-| GraphPad | `statsoft-graphpad run file.pzfx` |

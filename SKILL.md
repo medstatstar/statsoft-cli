@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (writes config.json with timestamped backup), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi, etc.) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi, etc.) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
 triggers:
   - "configure SPSS"
   - "SPSS Statistics"
@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.5.0",
+    "version": "2.6.0",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -72,6 +72,7 @@ Many statistical software packages have CLI (Command Line Interface) execution m
    - **单软件配置 / Single**: 调用单个 `setup_*.ps1` / `setup_*.sh` 脚本 / Call individual setup script
 4. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件 / Route to platform-specific script, auto-hide incompatible software on non-Windows
 5. **保存配置 / Save Config** — 写入 `config.json` / Write to `config.json`
+   - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。绝不会阻塞 agent。
    - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak`（带时间戳）
    - **写入确认 / Write Confirmation** — 向用户展示将要写入的内容，确认后再写入
 6. **写入记忆 / Write Memory** (需用户同意 / With user consent) — 询问后追加到 `~/.workbuddy/MEMORY.md` / Append to `~/.workbuddy/MEMORY.md` after confirmation
@@ -124,7 +125,7 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 ## 激活边界 / Activation Boundary
 
 - 本技能**仅在用户显式请求**配置或运行某款统计软件时才会被激活；不会主动扫描、修改系统或安装软件。
-- 任何持久化写入（config.json、环境变量）与软件下载/安装，均须在执行前向用户说明并获得确认；严格模式可设环境变量 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。
+- 任何持久化写入（config.json、环境变量）与软件下载/安装，均须在执行前向用户说明并获得确认。默认**仅检测、不写入**——配置写入为 fail-closed：仅在非交互式下设 `STATSOFT_AUTO_WRITE=1`，或交互式下设 `STATSOFT_CONFIRM=1` 并回答 y 时才会持久化 config.json；严格模式可设 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。
 - GUI-only 软件（AMOS、GraphPad Prism、JASP、jamovi 等）仅提供**检测 + 手动启动 GUI 指引**，本技能不通过 CLI/无头方式驱动其批处理。
 
 ## 语言 / Language

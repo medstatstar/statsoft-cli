@@ -53,37 +53,37 @@ config['Tanagra'] = {
     'platform': 'all',
     'mode': 'simple'
 }
-# ── Backup & Confirm (mirrors windows-only *.ps1) ──
-import os, shutil, datetime, sys, json
-_T = sys.argv[1]
-_D = config
-if os.path.exists(_T):
-    _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    shutil.copy2(_T, _bak)
-    print('Config backed up to: ' + _bak)
-_tmp = _T + '.tmp.' + str(os.getpid())
-with open(_tmp, 'w', encoding='utf-8') as f:
-    json.dump(_D, f, indent=2, ensure_ascii=False)
-# Confirmation gate: opt-in via STATSOFT_CONFIRM=1 (never blocks the agent).
-# Default (agent/CI) = write with backup taken; strict mode requires explicit 'y'.
-_confirm = os.environ.get('STATSOFT_CONFIRM') == '1'
-if _confirm and sys.stdin.isatty():
+# ── Backup & Confirm (fail-closed: detection-only by default) ──
+# Persistence requires explicit opt-in:
+#   * non-interactive/agent : STATSOFT_AUTO_WRITE=1            -> persist
+#   * interactive           : STATSOFT_CONFIRM=1 + 'y' at prompt -> persist
+# Otherwise this script only reports the detected path and does NOT modify config.json.
+import shutil, datetime, sys, json
+_T = cfg_path
+_D = cfg
+_auto_write = os.environ.get('STATSOFT_AUTO_WRITE') == '1'
+_confirm_env = os.environ.get('STATSOFT_CONFIRM') == '1'
+_go = False
+if _auto_write:
+    _go = True
+elif _confirm_env and sys.stdin.isatty():
     try:
-        sys.stdout.write('Confirm write config.json? (y/N) ')
+        sys.stdout.write('Persist detected config to config.json? (y/N) ')
         sys.stdout.flush()
         _ans = sys.stdin.readline().strip().lower()
         _go = _ans in ('y', 'yes')
     except Exception:
         _go = False
-else:
-    _go = True
 if not _go:
-    print('Skipped config write (not confirmed).')
-    try:
-        os.remove(_tmp)
-    except Exception:
-        pass
+    print('Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.')
 else:
+    if os.path.exists(_T):
+        _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        shutil.copy2(_T, _bak)
+        print('Config backed up to: ' + _bak)
+    _tmp = _T + '.tmp.' + str(os.getpid())
+    with open(_tmp, 'w', encoding='utf-8') as f:
+        json.dump(_D, f, indent=2, ensure_ascii=False)
     os.replace(_tmp, _T)
     print('Config written to: ' + _T)
 print('config.json updated.')

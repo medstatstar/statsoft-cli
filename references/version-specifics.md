@@ -215,14 +215,15 @@ SAVEDATA: FILE IS results.dat;
 | 2.4+ | Latest, Rj module support |
 | 2.3+ | Improved syntax export |
 
-### jamovi CLI Usage
+### jamovi 执行方式 / jamovi Execution
 
-```bash
-# Rj mode (execute R syntax from command line)
-jamovi --Rj "summary(mtcars)"
+> ⚠️ jamovi **没有纯 CLI 模式**，无法静默批处理。本技能仅提供检测与手动启动 GUI 指引（GUI-only）。
+> jamovi has **no pure CLI mode** and cannot run silently/batch. This skill provides detection and manual GUI-launch guidance only (GUI-only).
 
-# Or run Rj script file
-jamovi "script.Rj"
+**替代方案（R 脚本，无需 GUI） / Alternative (R script, no GUI)**: 使用 `jmv` R 包在后台调用 jamovi 分析模块 / Use the `jmv` R package to run jamovi modules in the background:
+```r
+library(jmv)
+descriptives <- jmv::descriptives(data = mydata, vars = c("var1", "var2"))
 ```
 
 ---
@@ -231,14 +232,19 @@ jamovi "script.Rj"
 
 | Version | Notes | CLI Status |
 |---------|-------|-----------|
-| 0.18+ | Latest | ⚠️ `jasp --console` (Beta) |
+| 0.18+ | Latest | ⚠️ 无稳定 CLI（GUI-only） |
 | 0.16+ | Improved modules | ⚠️ Limited CLI |
 
-### JASP CLI Usage
+### JASP 执行方式 / JASP Execution
 
-```bash
-# Experimental — may not support all features in headless mode
-jasp --console data.csv
+> ⚠️ JASP **没有纯 CLI 模式**，无法静默批处理。本技能仅提供检测与手动启动 GUI 指引（GUI-only）。
+> JASP has **no pure CLI mode** and cannot run silently/batch. This skill provides detection and manual GUI-launch guidance only (GUI-only).
+
+**替代方案（R 脚本，无需 GUI） / Alternative (R script, no GUI)**: 使用 `jaspTools` R 包在后台调用 JASP 分析模块 / Use the `jaspTools` R package to run JASP modules in the background:
+```r
+library(jaspTools)
+data <- jaspTools::readOSR("data.csv")
+desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
 ```
 
 ---
@@ -270,15 +276,12 @@ pspp < analysis.sps
 | 28.0 | Improved multi-group |
 | 27.0 | Baseline |
 
-### AMOS Batch Usage
+### AMOS 执行方式 / AMOS Execution
 
-> ⚠️ AMOS CLI is limited. Use Python extension to control AMOS:
+> ⚠️ AMOS **没有 CLI 模式**，无法静默批处理。本技能仅提供检测与手动启动 GUI 指引（GUI-only）。
+> AMOS has **no CLI mode** and cannot run silently/batch. This skill provides detection and manual GUI-launch guidance only (GUI-only).
 
-```python
-# Requires IBM SPSS Amos Python extension
-import amos
-amos.RunAnalysis("model.amw", "output.out")
-```
+如需后台调用，请使用 IBM SPSS Amos 官方 Python 扩展自行编写脚本（不在本技能自动范围内）/ For background automation, use the official IBM SPSS Amos Python extension on your own (outside this skill's automation scope).
 
 ---
 

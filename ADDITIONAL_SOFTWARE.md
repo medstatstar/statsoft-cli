@@ -61,7 +61,7 @@ This file contains configuration information for additional statistical software
 |-----------------|----------|-----------|--------------|
 | AMOS | `scripts/windows-only/AMOS/setup_amos.ps1` | — | Check install |
 | EViews | `scripts/windows-only/EViews/setup_eviews.ps1` | `scripts/windows-only/EViews/statsoft-eviews.ps1` | `EViews.exe /?` |
-| GraphPad | `scripts/windows-only/GraphPad/setup_graphpad.ps1` | `scripts/windows-only/GraphPad/statsoft-graphpad.ps1` | 无 CLI（手动启动 GUI 验证） |
+| GraphPad | `scripts/windows-only/GraphPad/setup_graphpad.ps1` | —（GUI-only，无 CLI 包装器） | 无 CLI（手动启动 GUI 验证） |
 | JMP | `scripts/windows-only/JMP/setup_jmp.ps1` | `scripts/windows-only/JMP/statsoft-jmp.ps1` | `JMP.exe /R "Exit();"` |
 | LIMDEP | `scripts/windows-only/Limdep/setup_limdep.ps1` | — | `limdep commands.txt` |
 | Mathematica | `scripts/windows-only/Mathematica/setup_mathematica.ps1` | `scripts/cross-platform/Mathematica/setup_mathematica.sh` | `wolframscript -code "Print[1]"` |
