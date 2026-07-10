@@ -61,7 +61,7 @@ This file contains configuration information for additional statistical software
 |-----------------|----------|-----------|--------------|
 | AMOS | `scripts/windows-only/AMOS/setup_amos.ps1` | — | Check install |
 | EViews | `scripts/windows-only/EViews/setup_eviews.ps1` | `scripts/windows-only/EViews/statsoft-eviews.ps1` | `EViews.exe /?` |
-| GraphPad | `scripts/windows-only/GraphPad/setup_graphpad.ps1` | `scripts/windows-only/GraphPad/statsoft-graphpad.ps1` | `prism.exe -help` |
+| GraphPad | `scripts/windows-only/GraphPad/setup_graphpad.ps1` | `scripts/windows-only/GraphPad/statsoft-graphpad.ps1` | 无 CLI（手动启动 GUI 验证） |
 | JMP | `scripts/windows-only/JMP/setup_jmp.ps1` | `scripts/windows-only/JMP/statsoft-jmp.ps1` | `JMP.exe /R "Exit();"` |
 | LIMDEP | `scripts/windows-only/Limdep/setup_limdep.ps1` | — | `limdep commands.txt` |
 | Mathematica | `scripts/windows-only/Mathematica/setup_mathematica.ps1` | `scripts/cross-platform/Mathematica/setup_mathematica.sh` | `wolframscript -code "Print[1]"` |
@@ -234,13 +234,12 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 **macOS**:
 - `/Applications/GraphPad Prism.app/Contents/MacOS/GraphPad Prism`
 
-### 调用命令 / Invocation Command（手动启动 GUI，非批处理自动化）
+### 调用方式 / How to Launch（仅手动启动 GUI，无 CLI 批处理）
 
-```powershell
-# ⚠️ 以下命令会弹出 GraphPad Prism GUI，无法静默/批处理执行
-# 本技能不通过 CLI 自动化 GraphPad；此命令仅用于手动打开文件
-"prism.exe" "file.pzfx"
-```
+> ⚠️ GraphPad Prism **没有 CLI 模式**，无法用命令行静默/批处理执行。
+> 本技能**不提供**任何 `prism.exe` 命令行调用；仅支持以下两种方式：
+> 1. 手动双击打开 GUI（或由用户自行启动）；
+> 2. 通过 Python `prismWriter` 库在后台操作 `.pzfx` 文件（见下方替代方案）。
 
 ### ⚠️ 重要限制 / Important Limitation
 

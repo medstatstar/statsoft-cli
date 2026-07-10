@@ -41,7 +41,8 @@ $patterns = @(
     "{0}:\IBM\SPSS\Statistics\{1}"
 )
 
-$drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -gt 0 } | Select-Object -ExpandProperty Name
+# Fixed system drives only (C:, D:) — no full host inventory of mounted volumes
+$drives = @("C", "D")
 
 foreach ($d in $drives) {
     foreach ($v in $versions) {
@@ -234,7 +235,7 @@ if ($spssInstalled) {
     Write-Lang "" ""
     Write-Lang "即将设置用户环境变量:" "About to set user environment variables:" -Color Yellow
     Write-Host "  STATSOFT_SPSS_PATH=$spssHome"
-  Write-Lang "STATSOFT_SPSS_COM=$(if ($statsComExists) { $statsComPath } else { 'N" "A' })" -Color White
+  Write-Lang "STATSOFT_SPSS_COM=$(if ($statsComExists) { $statsComPath } else { 'N/A' })" -Color White
     Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath"
     Write-Host "  STATSOFT_SPSS_FSTRING=$useFString"
 
@@ -273,7 +274,7 @@ if ($spssInstalled) {
 
     Write-Lang "2. 方案2 (Python 备用, 无闪屏):" "2. Method 2 (Python backup, no splash):"
     Write-Host "   `"$pythonPath`" spss_helper.py run-internal `"syntax.sps`""
-  Write-Lang "$(if ($script:isZH) { '⚠️ 只能跑纯分析语法（不能含 OUTPUT SAVE" "EXPORT/HOST COMMAND）' } else { 'WARNING: Pure analysis syntax only (no OUTPUT SAVE/EXPORT/HOST COMMAND)' })" -Color White
+  Write-Lang "$(if ($script:isZH) { '⚠️ 只能跑纯分析语法（不能含 OUTPUT SAVE/EXPORT/HOST COMMAND）' } else { 'WARNING: Pure analysis syntax only (no OUTPUT SAVE/EXPORT/HOST COMMAND)' })" -Color White
     Write-Lang "" ""
 
     Write-Lang "3. 方案3 (最后备选, 可能有闪屏):" "3. Method 3 (last resort, may flash):"

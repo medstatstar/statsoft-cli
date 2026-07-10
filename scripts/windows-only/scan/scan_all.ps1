@@ -130,14 +130,14 @@ if ($cmdPy) { Add-RResult "Python" $true $cmdPy.Path (& python --version 2>&1) }
     if ($cmdPy2) { Add-RResult "Python" $cmdPy2 }
 }
 
-# SPSS Statistics — 动态扫描所有盘符 / Dynamic scan all drives
+# SPSS Statistics — 扫描固定系统盘符（C:、D:），不枚举所有挂载卷 / Scan fixed system drives only
 $regSpss = Get-NsisSoftware "IBM SPSS Statistics"
 $regSpss2 = Get-NsisSoftwareWow64 "IBM SPSS Statistics"
 $foundSpss = $regSpss
 if (-not $foundSpss) { $foundSpss = $regSpss2 }
-# Also check known paths dynamically
+# Also check known paths dynamically (fixed drives C:/D: only — no full host inventory)
 if (-not $foundSpss) {
-    $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -gt 0 } | Select-Object -ExpandProperty Name
+    $drives = @("C", "D")
     $versions = @("30", "29", "28", "27", "26")
     $patterns = @(
         "{0}:\Program Files\IBM\SPSS\Statistics",
@@ -252,7 +252,7 @@ if (-not $foundWeka -and $cmdWeka) {
 Add-RResult "Weka" $foundWeka $foundWeka.Path $foundWeka.Version
 
 # Julia
-$pathsJulia = @("C:\Program Files\Julia*\bin\julia.exe", "C:\Users\*\AppData\Local\Programs\Julia*\bin\julia.exe")
+$pathsJulia = @("C:\Program Files\Julia*\bin\julia.exe", "$env:LOCALAPPDATA\Programs\Julia*\bin\julia.exe")
 $cmdJulia = Detect-ByCommand "julia"
 if ($cmdJulia) { Add-RResult "Julia" $true $cmdJulia.Path }
 

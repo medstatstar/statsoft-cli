@@ -12,7 +12,7 @@ spss_helper.py — SPSS 无闪屏调用辅助脚本
         - HOST COMMAND（执行系统命令）
         - XDATA / XSAVE（涉及 OUTPUT 对象时）
      —— 遇到不确定是否涉及 OUTPUT/SAVE 的命令时，统一走方案1
-  3) stats.exe -production silent -nologo（方案3：可能有闪屏，需用户确认）
+  3) stats.exe -production silent -nologo（方案3：可能有闪屏；严格模式需 STATSOFT_CONFIRM=1 显式确认）
 
 ⚠️ .spj 文件格式要求：
   - 必须用 SPSS 26+ 新格式：<output>/<syntax> 子元素（非 attributes）
@@ -64,6 +64,28 @@ def _log(msg_cn, msg_en):
     """双语输出"""
     print("[CN] " + msg_cn)
     print("[EN] " + msg_en)
+
+
+def _opt_in_confirm(prompt_cn, prompt_en):
+    """Opt-in execution confirmation (never blocks the agent).
+
+    Consistent with the config-write gate used elsewhere in this skill:
+      * Default (agent/CI run) = proceed. The user's explicit invocation is
+        treated as intent.
+      * Strict mode (env STATSOFT_CONFIRM=1 AND a real interactive TTY) = prompt
+        y/N, default to skip. Only fires when the user explicitly asked for it,
+        so it can never hang an automated run.
+    Returns True if execution may proceed.
+    """
+    if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
+        try:
+            sys.stdout.write(prompt_cn + " / " + prompt_en + " (y/N) ")
+            sys.stdout.flush()
+            ans = sys.stdin.readline().strip().lower()
+            return ans in ("y", "yes")
+        except Exception:
+            return False
+    return True
 
 
 def _validate_path(path, kind):
@@ -243,7 +265,7 @@ spss.StopSPSS()
 
 
 # ============================================================
-# 备用2：stats.exe（可能有闪屏，需用户确认）
+# 备用2：stats.exe（可能有闪屏；尊重 STATSOFT_CONFIRM=1 显式确认门禁）
 # ============================================================
 
 def run_exe(spj_file, stats_exe=None):
@@ -269,7 +291,9 @@ def run_exe(spj_file, stats_exe=None):
 
     _log("执行 Production Facility（stats.exe 方式，可能有闪屏）",
          "Running Production Facility (via stats.exe, may show splash screen)")
-    _log("⚠️ 请确认是否继续", "⚠️ Please confirm to continue")
+    if not _opt_in_confirm("⚠️ 即将执行 stats.exe，是否继续？", "⚠️ About to run stats.exe. Continue?"):
+        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+        return 1
     cmd = [stats_exe, "-production", "silent", "-nologo", spj_file]
     returncode, stdout, stderr = _run_silent(cmd, timeout=300)
 

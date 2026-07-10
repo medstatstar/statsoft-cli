@@ -43,10 +43,10 @@ Rscript --vanilla "script.R"
 R CMD BATCH "script.R" "output.Rout"
 ```
 
-### 安装包（需告知用户将联网下载）
+### 安装包（需用户明确确认后，方可联网下载安装）
 
 ```bash
-# 将从 CRAN 下载并修改本地 R 环境，执行前需告知用户
+# 将从 CRAN 下载并修改本地 R 环境；执行前必须获得用户明确确认，未确认不得安装
 Rscript -e "install.packages('pkg', repos='https://cran.r-project.org')"
 ```
 
@@ -359,12 +359,7 @@ Exit();
 
 ## GraphPad Prism
 
-⚠️ **重要限制**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。
-
-```powershell
-# ⚠️ 会弹出 GUI 界面
-& "C:\Program Files\GraphPad\Prism 9\prism.exe" "file.pzfx"
-```
+⚠️ **重要限制**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。本技能**不提供**任何 `prism.exe` 命令行调用；仅支持手动启动 GUI 或通过 Python `prismWriter` 后台操作文件。
 
 ### 替代方案：Python prismWriter
 
@@ -569,14 +564,16 @@ conda install -c conda-forge orange3
 
 ### Python 方式（推荐）
 
+> ⚠️ **网络与下载提示**：`h2o.init()` / `h2o start` 会在本机启动一个**本地 Web 服务器**（默认端口 54321，可被浏览器访问），首次运行会**联网下载**组件；`pip install h2o` 同样需要联网。请在了解上述行为后再执行，并确保不暴露该端口到公网。
+
 ```bash
-# 启动 H2O 服务器
+# 启动 H2O 服务器（本地 HTTP 服务，默认端口 54321）
 h2o start
 
 # 通过 Python
 python3 -c "import h2o; h2o.init()"
 
-# 安装
+# 安装（需联网）
 pip install h2o
 ```
 

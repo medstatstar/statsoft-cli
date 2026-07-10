@@ -90,14 +90,14 @@ See SKILL.md core permissions section for SPSS invocation details.
 
 ⚠️ 重要注意事项：
   1. 批处理模式使用 Rscript 命令，不要用 R GUI
-  2. 安装新 R 包前需告知用户（将从 CRAN 下载并修改本地环境）
+  2. 安装新 R 包前**必须获得用户明确确认**（将从 CRAN 下载并修改本地环境），未确认不得安装
   3. 中文乱码问题：用 fileEncoding="UTF-8" 参数指定文件编码
   4. 内存不足时：使用 data.table 或 arrow 包处理大数据
 
 📋 推荐使用方式：
   Rscript --vanilla "script.R"
 
-  # 安装包（需告知用户将联网下载）
+  # 安装包（需用户明确确认后，方可联网下载安装）
   Rscript -e "cat('Installing package from CRAN (requires network access)...\n'); install.packages('[PKG]', repos='https://cran.r-project.org')"
 
   # 读取 SPSS .sav 文件
@@ -120,14 +120,14 @@ See SKILL.md core permissions section for SPSS invocation details.
 
 ⚠️ Important notes:
   1. Use Rscript command for batch mode, not R GUI
-  2. Installing R packages requires user notification (downloads from CRAN, modifies local environment)
+  2. Installing R packages requires EXPLICIT user confirmation (downloads from CRAN, modifies local environment) before proceeding — do not install without it
   3. Chinese encoding issues: use fileEncoding="UTF-8" parameter
   4. Insufficient memory: use data.table or arrow packages for large data
 
 📋 Recommended usage:
   Rscript --vanilla "script.R"
 
-  # Package installation (notifies user about network download)
+  # Package installation (requires explicit user confirmation before network download)
   Rscript -e "cat('Installing package from CRAN (requires network access)...\n'); install.packages('[PKG]', repos='https://cran.r-project.org')"
 
   # Read SPSS .sav file

@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (writes config.json with timestamped backup), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (writes config.json with timestamped backup), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi, etc.) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
 triggers:
   - "configure SPSS"
   - "SPSS Statistics"
@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.4.0",
+    "version": "2.5.0",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -118,6 +118,18 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 **中文**: configure SPSS, R statistical, R command line, configure Stata, configure SAS, 统计软件 CLI, 连接统计软件命令行, statsoft-cli
 
 **English**: configure SPSS, R statistical, R command line, R scripting, configure Stata, configure SAS, connect statistical software CLI, statsoft-cli
+
+---
+
+## 激活边界 / Activation Boundary
+
+- 本技能**仅在用户显式请求**配置或运行某款统计软件时才会被激活；不会主动扫描、修改系统或安装软件。
+- 任何持久化写入（config.json、环境变量）与软件下载/安装，均须在执行前向用户说明并获得确认；严格模式可设环境变量 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。
+- GUI-only 软件（AMOS、GraphPad Prism、JASP、jamovi 等）仅提供**检测 + 手动启动 GUI 指引**，本技能不通过 CLI/无头方式驱动其批处理。
+
+## 语言 / Language
+
+- 默认使用**用户当前输入的语言**进行回复（中文 ↔ English 自动切换）；除非用户另有要求，不强制使用英语。
 
 ---
 

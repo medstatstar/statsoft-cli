@@ -46,7 +46,8 @@ if (Test-Path $configPath) {
 
 # 动态扫描
 if (-not $statsPython -or -not $statsCom) {
-    $drives = Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used -gt 0 } | Select-Object -ExpandProperty Name
+    # Fixed system drives only (C:, D:) — no full host inventory of mounted volumes
+    $drives = @("C", "D")
     $versions = @("26", "27", "28", "29", "30")
     $patterns = @(
         "{0}:\Program Files\IBM\SPSS\Statistics\{1}",
