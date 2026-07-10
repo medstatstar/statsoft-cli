@@ -206,10 +206,18 @@ scan_packages() {
 
     log_info "$(LANG_ZH "扫描已安装 R 包..." "Scanning installed R packages...")"
 
-    local cache_dir="${WORKSPACE_DIR:-$ROOT_DIR/.cache}/.statsoft-cli-cache"
-    mkdir -p "$cache_dir"
-    find "$cache_dir" -name 'r_packages_*.txt' -mtime +7 -delete 2>/dev/null || true
-    local pkg_list_file="$cache_dir/r_packages_$(date +%Y%m%d).txt"
+    # Package list is written to an ephemeral temp file by default (detection-only).
+    # Persistent caching to disk is OPT-IN via STATSOFT_CACHE=1 (avoids writing
+    # outside the agent's working scope without explicit consent).
+    local pkg_list_file
+    if [[ "${STATSOFT_CACHE:-0}" == "1" ]]; then
+        local cache_dir="${WORKSPACE_DIR:-$ROOT_DIR/.cache}/.statsoft-cli-cache"
+        mkdir -p "$cache_dir"
+        find "$cache_dir" -name 'r_packages_*.txt' -mtime +7 -delete 2>/dev/null || true
+        pkg_list_file="$cache_dir/r_packages_$(date +%Y%m%d).txt"
+    else
+        pkg_list_file="$(mktemp -t r_packages.XXXXXX.txt 2>/dev/null || echo /tmp/r_packages_$$.txt)"
+    fi
 
     "$R_CMD" -e "cat(installed.packages()[,'Package'], sep='\n')" 2>/dev/null > "$pkg_list_file"
 
@@ -279,42 +287,15 @@ save_config() {
     local config_file="${1:-$ROOT_DIR/../config.json}"
     local r_path="${R_CMD:-not installed}"
 
-    # 写入确认 / Write Confirmation — 交互模式下询问用户
-    if [[ -t 0 ]]; then
-        echo ""
-        echo "============================================"
-        if [[ "$SCRIPT_LANG" == "zh" ]]; then
-            echo "  即将写入配置文件: $config_file"
-            echo "  内容预览:"
-            echo "    R.path = $r_path"
-            echo "    R.version = $R_VERSION"
-            echo "    R.platform = $WB_OS"
-        else
-            echo "  About to write config: $config_file"
-            echo "  Content preview:"
-            echo "    R.path = $r_path"
-            echo "    R.version = $R_VERSION"
-            echo "    R.platform = $WB_OS"
-        fi
-        echo "============================================"
-        read -p "$(LANG_ZH "确认写入? (y/N)" "Confirm write? (y/N)")" write_confirm
-        if [[ ! "$write_confirm" =~ ^[Yy]$ ]]; then
-            log_error "$(LANG_ZH "已取消写入" "Write cancelled")"
-            return 1
-        fi
-    fi
-
-    if [[ -f "$config_file" ]]; then
-        local backup_file="${config_file}.bak.$(date +%Y%m%d_%H%M%S)"
-        cp "$config_file" "$backup_file"
-        log_info "$(LANG_ZH "配置已备份: $backup_file" "Config backed up: $backup_file")"
-        log_info "$(LANG_ZH "更新已有配置: $config_file" "Updating existing config: $config_file")"
-        
-        if command -v python &>/dev/null; then
-            python -c "
-import json, sys
-with open('$config_file', 'r') as f:
-    config = json.load(f)
+    # 1) Build the desired config (read-only) — do NOT write here.
+    # 2) Delegate persistence to the centralized fail-closed gate (write_config.py).
+    _NEW_CFG=$(python3 - "$config_file" <<PYEOF
+import json, sys, os
+p = sys.argv[1]
+config = {}
+if os.path.exists(p):
+    with open(p, 'r') as f:
+        config = json.load(f)
 config['R'] = {
     'installed': True,
     'path': '$r_path',
@@ -323,25 +304,10 @@ config['R'] = {
     'mode': 'simple',
     'package_count': ${R_PACKAGE_COUNT:-0}
 }
-with open('$config_file', 'w') as f:
-    json.dump(config, f, indent=2)
-"
-        fi
-    else
-        cat > "$config_file" << EOF
-{
-  "R": {
-    "installed": true,
-    "path": "$r_path",
-    "version": "$R_VERSION",
-    "platform": "$WB_OS",
-    "mode": "simple",
-    "package_count": ${R_PACKAGE_COUNT:-0}
-  }
-}
-EOF
-        log_success "$(LANG_ZH "已创建配置文件: $config_file" "Created config: $config_file")"
-    fi
+print(json.dumps(config, ensure_ascii=False))
+PYEOF
+)
+    python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$_NEW_CFG"
 }
 
 main() {

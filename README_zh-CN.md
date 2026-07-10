@@ -26,7 +26,7 @@
 配置 R 统计软件
 ```
 
-Agent 会自动检测软件路径并写入 `config.json`。
+Agent 会自动检测软件路径。**默认仅报告检测结果、不修改 `config.json`（仅检测 / 失败即停止）**。如需持久化，需显式选择加入：非交互/agent 场景设置 `STATSOFT_AUTO_WRITE=1`；交互场景设置 `STATSOFT_CONFIRM=1` 并在提示处输入 `y`。
 
 ### 验证安装
 

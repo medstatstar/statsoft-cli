@@ -26,7 +26,7 @@ Connect SPSS 26
 Configure R statistical software
 ```
 
-The Agent will auto-detect the software path and write to `config.json`.
+The Agent will auto-detect the software path. **By default it only reports the detected path and does NOT modify `config.json`** (fail-closed / detection-only). To persist the result, opt in explicitly: set `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` and answer `y` at the prompt (interactive).
 
 ### Verify Installation
 

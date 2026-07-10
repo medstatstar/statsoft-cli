@@ -114,16 +114,15 @@ verify_stata() {
 save_config() {
     local config_file="${1:-$ROOT_DIR/../config.json}"
 
-    if [[ -f "$config_file" ]]; then
-        cp "$config_file" "${config_file}.bak.$(date +%Y%m%d_%H%M%S)"
-        log_info "$(LANG_ZH "配置已备份: ${config_file}.bak.*" "Config backed up: ${config_file}.bak.*")"
-        log_info "$(LANG_ZH "更新已有配置: $config_file" "Updating existing config: $config_file")"
-        
-        if command -v python &>/dev/null; then
-            python -c "
-import json, sys
-with open('$config_file', 'r') as f:
-    config = json.load(f)
+    # 1) Build the desired config (read-only) — do NOT write here.
+    # 2) Delegate persistence to the centralized fail-closed gate (write_config.py).
+    _NEW_CFG=$(python3 - "$config_file" <<PYEOF
+import json, sys, os
+p = sys.argv[1]
+config = {}
+if os.path.exists(p):
+    with open(p, 'r') as f:
+        config = json.load(f)
 config['Stata'] = {
     'installed': True,
     'path': '$STATA_CMD',
@@ -132,56 +131,10 @@ config['Stata'] = {
     'platform': '$WB_OS',
     'mode': 'simple'
 }
-# ── Backup & Confirm (fail-closed: detection-only by default) ──
-# Persistence requires explicit opt-in:
-#   * non-interactive/agent : STATSOFT_AUTO_WRITE=1            -> persist
-#   * interactive           : STATSOFT_CONFIRM=1 + 'y' at prompt -> persist
-# Otherwise this script only reports the detected path and does NOT modify config.json.
-import shutil, datetime, sys, json
-_T = cfg_path
-_D = cfg
-_auto_write = os.environ.get('STATSOFT_AUTO_WRITE') == '1'
-_confirm_env = os.environ.get('STATSOFT_CONFIRM') == '1'
-_go = False
-if _auto_write:
-    _go = True
-elif _confirm_env and sys.stdin.isatty():
-    try:
-        sys.stdout.write('Persist detected config to config.json? (y/N) ')
-        sys.stdout.flush()
-        _ans = sys.stdin.readline().strip().lower()
-        _go = _ans in ('y', 'yes')
-    except Exception:
-        _go = False
-if not _go:
-    print('Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.')
-else:
-    if os.path.exists(_T):
-        _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        shutil.copy2(_T, _bak)
-        print('Config backed up to: ' + _bak)
-    _tmp = _T + '.tmp.' + str(os.getpid())
-    with open(_tmp, 'w', encoding='utf-8') as f:
-        json.dump(_D, f, indent=2, ensure_ascii=False)
-    os.replace(_tmp, _T)
-    print('Config written to: ' + _T)
-"
-        fi
-    else
-        cat > "$config_file" << EOF
-{
-  "Stata": {
-    "installed": true,
-    "path": "$STATA_CMD",
-    "edition": "$STATA_EDITION",
-    "version": "$STATA_VERSION",
-    "platform": "$WB_OS",
-    "mode": "simple"
-  }
-}
-EOF
-        log_success "$(LANG_ZH "已创建配置文件: $config_file" "Created config: $config_file")"
-    fi
+print(json.dumps(config, ensure_ascii=False))
+PYEOF
+)
+    python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$_NEW_CFG"
 }
 
 main() {

@@ -99,7 +99,7 @@ def main():
     print(f"Found: {exe}")
     print(f"Version: {version}\n")
 
-    # Write to config.json
+    # Write to config.json — delegate to the centralized fail-closed gate.
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(script_dir, "..", "config.json")
 
@@ -108,7 +108,7 @@ def main():
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = json.load(f)
-        except:
+        except Exception:
             pass
 
     config["AMOS"] = {
@@ -119,41 +119,26 @@ def main():
         "platform": "win"
     }
 
-    # ── Backup & Confirm (fail-closed: detection-only by default) ──
-    # Persistence requires explicit opt-in:
-    #   * non-interactive/agent : STATSOFT_AUTO_WRITE=1            -> persist
-    #   * interactive           : STATSOFT_CONFIRM=1 + 'y' at prompt -> persist
-    # Otherwise this script only reports the detected path and does NOT modify config.json.
-    import shutil, datetime, sys, json
-    _T = config_path
-    _D = config
-    _auto_write = os.environ.get('STATSOFT_AUTO_WRITE') == '1'
-    _confirm_env = os.environ.get('STATSOFT_CONFIRM') == '1'
-    _go = False
-    if _auto_write:
-        _go = True
-    elif _confirm_env and sys.stdin.isatty():
-        try:
-            sys.stdout.write('Persist detected config to config.json? (y/N) ')
-            sys.stdout.flush()
-            _ans = sys.stdin.readline().strip().lower()
-            _go = _ans in ('y', 'yes')
-        except Exception:
-            _go = False
-    if not _go:
-        print('Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.')
-    else:
-        if os.path.exists(_T):
-            _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            shutil.copy2(_T, _bak)
-            print('Config backed up to: ' + _bak)
-        _tmp = _T + '.tmp.' + str(os.getpid())
-        with open(_tmp, 'w', encoding='utf-8') as f:
-            json.dump(_D, f, indent=2, ensure_ascii=False)
-        os.replace(_tmp, _T)
-        print('Config written to: ' + _T)
+    # Route persistence through the single auditable gate (write_config.py).
+    # Default = detection-only; persist only on STATSOFT_AUTO_WRITE=1 or
+    # STATSOFT_CONFIRM=1 + interactive 'y'.
+    import subprocess
+    gate = os.path.join(script_dir, "..", "..", "common", "write_config.py")
+    payload = json.dumps(config, ensure_ascii=False)
+    try:
+        proc = subprocess.run(
+            [sys.executable, gate, config_path],
+            input=payload,
+            capture_output=True,
+            text=True,
+        )
+        if proc.stdout:
+            print(proc.stdout.strip())
+        if proc.stderr:
+            print(proc.stderr.strip(), file=sys.stderr)
+    except Exception as e:
+        print("Failed to invoke config gate: " + str(e))
 
-    print(f"Configuration saved to: {config_path}")
     print("Done.")
 
 

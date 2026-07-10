@@ -118,7 +118,7 @@ save_config() {
     version=$(get_version)
 
     if command -v python3 &>/dev/null; then
-        python3 - "$CONFIG_PATH" "$MATHKERNEL" "$WOLFRAMSCRIPT" "$version" <<'PYEOF'
+        _NEW_CFG=$(python3 - "$CONFIG_PATH" "$MATHKERNEL" "$WOLFRAMSCRIPT" "$version" <<'PYEOF'
 import json, sys, os
 
 config_path = sys.argv[1]
@@ -140,42 +140,11 @@ config["Mathematica"] = {
     "mode": "simple"
 }
 
-# ── Backup & Confirm (fail-closed: detection-only by default) ──
-# Persistence requires explicit opt-in:
-#   * non-interactive/agent : STATSOFT_AUTO_WRITE=1            -> persist
-#   * interactive           : STATSOFT_CONFIRM=1 + 'y' at prompt -> persist
-# Otherwise this script only reports the detected path and does NOT modify config.json.
-import shutil, datetime, sys, json
-_T = cfg_path
-_D = cfg
-_auto_write = os.environ.get('STATSOFT_AUTO_WRITE') == '1'
-_confirm_env = os.environ.get('STATSOFT_CONFIRM') == '1'
-_go = False
-if _auto_write:
-    _go = True
-elif _confirm_env and sys.stdin.isatty():
-    try:
-        sys.stdout.write('Persist detected config to config.json? (y/N) ')
-        sys.stdout.flush()
-        _ans = sys.stdin.readline().strip().lower()
-        _go = _ans in ('y', 'yes')
-    except Exception:
-        _go = False
-if not _go:
-    print('Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.')
-else:
-    if os.path.exists(_T):
-        _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        shutil.copy2(_T, _bak)
-        print('Config backed up to: ' + _bak)
-    _tmp = _T + '.tmp.' + str(os.getpid())
-    with open(_tmp, 'w', encoding='utf-8') as f:
-        json.dump(_D, f, indent=2, ensure_ascii=False)
-    os.replace(_tmp, _T)
-    print('Config written to: ' + _T)
-
-print(f"Config updated: {config_path}")
+# Build desired config (read-only) then delegate to centralized fail-closed gate.
+print(json.dumps(config, ensure_ascii=False))
 PYEOF
+)
+        python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_PATH" <<< "$_NEW_CFG"
     fi
 }
 

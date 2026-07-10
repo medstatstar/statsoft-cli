@@ -215,6 +215,8 @@ statsoft-modeler run-script "C:\path\to\train_model.py"
 
 ### 服务器模式（需 Modeler Server）
 
+> ⚠️ **远程执行与凭据安全 / Remote execution & credentials**: 此命令会连接**远程 Modeler Server** 并以凭据身份执行流。仅在用户**明确确认**且服务器可信时执行；凭据**必须**来自环境变量（如上 `$env:MODELER_USER` / `$env:MODELER_PASS`），**严禁**硬编码到脚本或提示词中。Agent 不得在未获用户明确授权的情况下发起远程执行。
+
 ```powershell
 statsoft-modeler server-run "stream.str" -hostname modeler-srv -port 80 `
     -username $env:MODELER_USER -password $env:MODELER_PASS
@@ -564,7 +566,7 @@ conda install -c conda-forge orange3
 
 ### Python 方式（推荐）
 
-> ⚠️ **网络与下载提示**：`h2o.init()` / `h2o start` 会在本机启动一个**本地 Web 服务器**（默认端口 54321，可被浏览器访问），首次运行会**联网下载**组件；`pip install h2o` 同样需要联网。请在了解上述行为后再执行，并确保不暴露该端口到公网。
+> ⚠️ **网络与下载提示**：`h2o.init()` / `h2o start` 会在本机启动一个**本地 Web 服务器**（默认端口 54321，可被浏览器访问），首次运行会**联网下载**组件；`pip install h2o` 同样需要联网。**在启动 H2O 服务器前，Agent 必须先向用户说明上述网络行为并获得明确确认，且绝不将该端口暴露到公网。**
 
 ```bash
 # 启动 H2O 服务器（本地 HTTP 服务，默认端口 54321）

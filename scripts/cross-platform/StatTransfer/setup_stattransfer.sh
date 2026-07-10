@@ -153,85 +153,39 @@ configure_stattransfer() {
     local st_path=$1
     local platform=$2
     local config_file="$HOME/.workbuddy/skills/statsoft-cli/config.json"
-    
+
     log_info "配置 StatTransfer..."
-    
+
     # 创建配置目录
     mkdir -p "$(dirname "$config_file")"
-    
-    # 读取现有配置
-    local config="{}"
-    if [[ -f "$config_file" ]]; then
-        config=$(cat "$config_file")
-    fi
-    
-    # 更新配置（使用 Python 进行 JSON 操作）
-    CONFIG_FILE="$config_file"
-    ST_PATH="$st_path"
-    PLATFORM="$platform"
-    local new_config=$(python3 -c "
-import json
-import sys
 
+    # Build desired config (read-only); delegate persistence to centralized gate.
+    local new_config
+    new_config=$(python3 - "$config_file" "$st_path" "$platform" <<'PYEOF'
+import json, sys, os
 config_file = sys.argv[1]
 st_path = sys.argv[2]
 platform = sys.argv[3]
 
-try:
-    with open(config_file, 'r') as f:
-        config = json.load(f)
-except:
-    config = {}
-
-if 'StatTransfer' not in config:
-    config['StatTransfer'] = {}
-
-config['StatTransfer']['installed'] = True
-config['StatTransfer']['path'] = st_path
-config['StatTransfer']['platform'] = platform
-config['StatTransfer']['version'] = 'Unknown'
-
-# ── Backup & Confirm (fail-closed: detection-only by default) ──
-# Persistence requires explicit opt-in:
-#   * non-interactive/agent : STATSOFT_AUTO_WRITE=1            -> persist
-#   * interactive           : STATSOFT_CONFIRM=1 + 'y' at prompt -> persist
-# Otherwise this script only reports the detected path and does NOT modify config.json.
-import shutil, datetime, sys, json
-_T = cfg_path
-_D = cfg
-_auto_write = os.environ.get('STATSOFT_AUTO_WRITE') == '1'
-_confirm_env = os.environ.get('STATSOFT_CONFIRM') == '1'
-_go = False
-if _auto_write:
-    _go = True
-elif _confirm_env and sys.stdin.isatty():
+config = {}
+if os.path.exists(config_file):
     try:
-        sys.stdout.write('Persist detected config to config.json? (y/N) ')
-        sys.stdout.flush()
-        _ans = sys.stdin.readline().strip().lower()
-        _go = _ans in ('y', 'yes')
+        with open(config_file, 'r') as f:
+            config = json.load(f)
     except Exception:
-        _go = False
-if not _go:
-    print('Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.')
-else:
-    if os.path.exists(_T):
-        _bak = _T + '.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        shutil.copy2(_T, _bak)
-        print('Config backed up to: ' + _bak)
-    _tmp = _T + '.tmp.' + str(os.getpid())
-    with open(_tmp, 'w', encoding='utf-8') as f:
-        json.dump(_D, f, indent=2, ensure_ascii=False)
-    os.replace(_tmp, _T)
-    print('Config written to: ' + _T)
+        config = {}
 
-print('config.json updated.')
-" "$CONFIG_FILE" "$ST_PATH" "$PLATFORM" 2>/dev/null || echo "$config")
-    
-    # 保存配置
-    LANG_ZH "$new_config" "$new_config"
-    
-    log_info "StatTransfer 配置已保存到: $config_file"
+config['StatTransfer'] = {
+    'installed': True,
+    'path': st_path,
+    'platform': platform,
+    'version': 'Unknown'
+}
+print(json.dumps(config, ensure_ascii=False))
+PYEOF
+)
+    python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$new_config"
+    log_info "StatTransfer 检测完成 (默认仅检测；设置 STATSOFT_AUTO_WRITE=1 才会写入 config.json)"
     return 0
 }
 
