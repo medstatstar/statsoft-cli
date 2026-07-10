@@ -128,11 +128,13 @@ switch ($Command) {
             }
             ".dta" {
                 Write-Lang "Stata (.dta) 文件需要 haven 包" "Stata (.dta) file requires haven package" -Color Yellow
-                & $rPath -e "if (!require('haven', quietly=TRUE)) install.packages('haven'); df <- haven::read_dta('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
+                Write-Lang "如果 haven 未安装，将自动从 CRAN 安装（首次约 1-2 分钟）" "If haven not installed, will auto-install from CRAN (~1-2 min)" -Color Gray
+                & $rPath -e "if (!require('haven', quietly=TRUE)) { cat('Installing haven from CRAN...\n'); install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE) }; df <- haven::read_dta('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
             }
             ".sav" {
                 Write-Lang "SPSS (.sav) 文件需要 haven 包" "SPSS (.sav) file requires haven package" -Color Yellow
-                & $rPath -e "if (!require('haven', quietly=TRUE)) install.packages('haven'); df <- haven::read_sav('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
+                Write-Lang "如果 haven 未安装，将自动从 CRAN 安装（首次约 1-2 分钟）" "If haven not installed, will auto-install from CRAN (~1-2 min)" -Color Gray
+                & $rPath -e "if (!require('haven', quietly=TRUE)) { cat('Installing haven from CRAN...\n'); install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE) }; df <- haven::read_sav('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
             }
             default {
                 Write-Lang-Warning "不支持的文件格式: $ext" "Unsupported file format: $ext"

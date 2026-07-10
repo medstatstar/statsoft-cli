@@ -1,35 +1,31 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English)."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (config.json with backup), environment variable setup, and batch scanning of installed statistical software."
 triggers:
   - "SPSS"
   - "SPSS Statistics"
-  - "R"
+  - "R statistical"
+  - "R command line"
+  - "R scripting"
   - "R命令行"
   - "Stata"
   - "SAS"
-  - "统计软件"
-  - "连接统计软件"
+  - "统计软件 CLI"
+  - "连接统计软件命令行"
   - "statsoft-cli"
   - "connect statistical software"
 metadata:
   {
-    "openclaw": { "emoji": "🛠️", "icon": "assets/icon.png" },
+    "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.0.0",
+    "version": "2.1.0",
     "license": "MIT",
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
     "repository": "https://github.com/medstatstar/statsoft-cli"
   }
 ---
-
-# 🛡️ 信任与安全 / Trust & Safety
-
-> 本技能执行**高风险操作**，详见 `references/trust-and-safety.md` / This skill performs **high-risk operations**. See `references/trust-and-safety.md` for details.
-
-**核心权限 / Core Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、环境变量修改 (user-scoped)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), environment variable modification (user-scoped), network access (CRAN/Anaconda repositories).
 
 ---
 
@@ -59,8 +55,8 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 1. **检测平台 / Detect Platform** — `source scripts/cross-platform/_platform-detect.sh`
 2. **扫描前确认 / Pre-scan Confirmation** — 在执行任何扫描操作前，必须向用户做出以下提示并等待用户选择 / Before any scan, MUST prompt the user and wait for their choice：
    - 提示内容 / Prompt message:
-     - **中文**: "⚠️ 自动扫描系统可能耗时较长（Windows 约 30-60 秒）。如果您已知已安装的统计软件数量有限（≤3），建议直接指定软件及对应安装路径，跳过扫描。您希望如何选择？" 选项：A) 自动扫描 B) 手工指定软件路径
-     - **English**: "⚠️ Auto-scan may take a while (~30s on Windows). If you have few statistical packages (≤3), you can skip scanning and specify paths directly. Your choice?" Options: A) Auto-scan B) Specify paths manually
+     - **中文**: "⚠️ 自动扫描系统可能耗时较长（Windows 约 30-60 秒）。扫描为只读操作，不会修改任何文件或配置。如果您已知已安装的统计软件数量有限（≤3），建议直接指定软件及对应安装路径，跳过扫描。您希望如何选择？" 选项：A) 自动扫描 B) 手工指定软件路径
+     - **English**: "⚠️ Auto-scan may take a while (~30s on Windows). Scanning is read-only — no files or configs will be modified. If you have few statistical packages (≤3), you can skip scanning and specify paths directly. Your choice?" Options: A) Auto-scan B) Specify paths manually
    - 用户选择 A → 继续第 3 步系统扫描 / User selects A → proceed to step 3
    - 用户选择 B → 询问用户"希望配置哪些软件？各软件的安装路径是什么？"，跳过第 3 步，直接进入第 4 步配置 / User selects B → ask "Which software to configure? What are the installation paths?", skip step 3, go directly to step 4
 3. **系统扫描 / System Scan** — 批量检测系统已安装统计软件 / Batch detect installed statistical software（仅在步骤 2 选择 A 时执行 / Execute only when step 2 = A）：
@@ -74,7 +70,10 @@ Many statistical software packages have CLI (Command Line Interface) execution m
    - **单软件配置 / Single**: 调用单个 `setup_*.ps1` / `setup_*.sh` 脚本 / Call individual setup script
 4. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件 / Route to platform-specific script, auto-hide incompatible software on non-Windows
 5. **保存配置 / Save Config** — 写入 `config.json` / Write to `config.json`
+   - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak`（带时间戳）
+   - **写入确认 / Write Confirmation** — 向用户展示将要写入的内容，确认后再写入
 6. **写入记忆 / Write Memory** (需用户同意 / With user consent) — 询问后追加到 `~/.workbuddy/MEMORY.md` / Append to `~/.workbuddy/MEMORY.md` after confirmation
+   - **环境变量修改说明 / Env Var Justification** — 在执行任何环境变量修改脚本前，必须向用户说明为何需要修改（例如："需要将 R 添加到 PATH 以便命令行调用"），并等待用户确认后再执行
 7. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template
 
 ---
@@ -114,6 +113,14 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 
 ## 触发短语 / Trigger Phrases
 
-**中文**: SPSS, R, Stata, SAS, 统计软件, 连接统计软件, statsoft-cli
+**中文**: SPSS, R statistical, R command line, Stata, SAS, 统计软件 CLI, 连接统计软件命令行, statsoft-cli
 
-**English**: SPSS, R command line, Stata CLI, SAS batch, connect statistical software, statsoft-cli
+**English**: SPSS, R statistical, R command line, R scripting, Stata CLI, SAS batch, connect statistical software, statsoft-cli
+
+---
+
+# 🛡️ 信任与安全 / Trust & Safety
+
+> 本技能执行**高风险操作**，详见 `references/trust-and-safety.md` / This skill performs **high-risk operations**. See `references/trust-and-safety.md` for details.
+
+**核心权限 / Core Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、环境变量修改 (user-scoped)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), environment variable modification (user-scoped), network access (CRAN/Anaconda repositories).

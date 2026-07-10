@@ -49,6 +49,12 @@ This file contains configuration information for additional statistical software
 
 ## 完整脚本路由表 / Script Routing Tables
 
+> **关于 GUI 软件 / GUI Software Note**: 以下软件**没有 CLI 模式**，调用时会弹出 GUI 界面，无法完全静默执行。本技能仅提供检测与启动能力，无法进行批处理自动化。/ The following software **have no CLI mode** — calling them launches a GUI, cannot run fully silent. This skill provides detection and launch capability only, no batch automation.
+> - **AMOS** — 全程 GUI / GUI only
+> - **GraphPad Prism** — 全程 GUI / GUI only
+> - **JASP** — 需 GUI / Requires GUI
+> - **jamovi** — 需 GUI / Requires GUI
+
 ### 仅 Windows / Windows Only
 
 | 软件 / Software | 配置脚本 | CLI 包装器 | 验证 / Verify |
@@ -70,6 +76,8 @@ This file contains configuration information for additional statistical software
 | Origin | `scripts/windows-only/Origin/setup_origin.ps1` | — | `origin97 -h test.ogs` |
 
 ### 跨平台 / Cross-Platform
+
+> **注意 / Note**: JASP 和 jamovi 需 GUI 运行时，无法纯 CLI 静默执行 / JASP and jamovi require GUI, cannot run in pure CLI silent mode。
 
 | 软件 / Software | 配置脚本 | CLI 包装器 | 验证 / Verify |
 |-----------------|----------|-----------|--------------|
