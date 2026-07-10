@@ -6,7 +6,7 @@
 
 跨平台统计软件 CLI 集成技能，用于 AI Agent（如 WorkBuddy / OpenClaw ）。
 
-支持 34 款统计软件：SPSS Statistics、R、Stata、SAS、AMOS、CmdStan、EViews、GenStat、GraphPad Prism、Gretl、H2O.ai、JAGS、JASP、JMP、Julia、KNIME、LIMDEP、Mathematica、Matlab、Microfit、Minitab、Mplus、NCSS、NLOGIT、OpenBUGS、Orange、OriginLab Origin、OxMetrics、PSPP、Q (MRKS)、Rattle、SHAZAM、Stat/Transfer、Statistica、TSP、Tanagra、Weka、jamovi。
+支持 34 款统计软件：SPSS Statistics、R、Stata、SAS、AMOS、CmdStan、EViews、GenStat、GraphPad Prism、Gretl、H2O.ai、JAGS、JASP、JMP、Julia、KNIME、LIMDEP、Mathematica、Matlab、Microfit、Minitab、Mplus、NCSS、NLOGIT、OpenBUGS、Orange、OriginLab Origin、OxMetrics、PSPP、Q (MRKS)、Rattle、SHAZAM、Stat/Transfer、Statistica、TSP、Tanagra、Weka、jamovi。（注：AMOS、GraphPad Prism、JASP、jamovi 仅 GUI，只能检测与手动启动，无 CLI 批处理模式。）
 
 同一个软件支持多个版本共存，如 R4.5 和 R4.0 共存，只需要指定默认使用哪个版本即可，需要时用提示词可实现无缝切换。
 
@@ -23,7 +23,7 @@
 在 AI Agent 对话中触发：
 ```
 帮我关联 SPSS 26
-帮我配置 R
+配置 R 统计软件
 ```
 
 Agent 会自动检测软件路径并写入 `config.json`。
@@ -46,7 +46,7 @@ Agent 会自动检测软件路径并写入 `config.json`。
 将 R 脚本、SPSS 语法、SAS 宏、Stata do-file 统一纳入 AI 工作流，作为标准化节点被反复调用、组合和编排。
 
 ### 3. 数据格式转换
-通过 StatTransfer 在不同统计软件间迁移数据（SAS ↔ SPSS ↔ Stata ↔ Excel）。
+通过 Stat/Transfer（受支持的 CLI 工具）在不同统计软件间迁移数据（SAS ↔ SPSS ↔ Stata ↔ Excel）。如需不依赖统计软件的数据格式转换，请使用 statdata-transfer 技能。
 
 ### 4. SPSS Statistics 无闪屏批处理
 通过内置 Python 引擎（spss.StartSPSS）运行 `.sps` 语法，跳过闪屏。
@@ -169,9 +169,9 @@ statsoft-cli/
 
 ```
 帮我关联 SPSS 26
-帮我配置 R
+配置 R 统计软件
 将 data.sav 转换为 data.dta
-运行 Stata do-file
+运行 Stata .do 文件（批处理模式）
 ```
 
 ## 安全说明

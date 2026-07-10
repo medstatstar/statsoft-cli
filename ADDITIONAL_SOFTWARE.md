@@ -234,10 +234,11 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 **macOS**:
 - `/Applications/GraphPad Prism.app/Contents/MacOS/GraphPad Prism`
 
-### 调用命令 / Invocation Command
+### 调用命令 / Invocation Command（手动启动 GUI，非批处理自动化）
 
 ```powershell
-# Windows — 会弹出 GUI
+# ⚠️ 以下命令会弹出 GraphPad Prism GUI，无法静默/批处理执行
+# 本技能不通过 CLI 自动化 GraphPad；此命令仅用于手动打开文件
 "prism.exe" "file.pzfx"
 ```
 

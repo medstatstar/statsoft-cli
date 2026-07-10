@@ -2,6 +2,7 @@
 # setup_sas.sh - Cross-platform SAS detection and setup
 # Compatible with Windows (Git Bash), macOS, Linux
 # Language: auto-detects system locale — Chinese on zh-* systems, English otherwise
+# ⚠️ SETUP tool: detects software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"

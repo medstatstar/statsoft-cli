@@ -169,7 +169,12 @@ function Invoke-SPSSExecutable {
         return $false
     }
 
-    $confirm = Read-Host "[CN] 此方式可能出现闪屏。是否继续? (y/N) / [EN] May show splash. Continue? (y/N)"
+    $confirm = "N"
+    try {
+        $confirm = Read-Host "[CN] 此方式可能出现闪屏。是否继续? (y/N) / [EN] May show splash. Continue? (y/N)"
+    } catch {
+        Write-Host "[CN] 非交互模式，默认跳过 / [EN] Non-interactive mode, defaulting to skip" -ForegroundColor Yellow
+    }
     if ($confirm -ne 'y' -and $confirm -ne 'Y') { exit 1 }
 
     try {

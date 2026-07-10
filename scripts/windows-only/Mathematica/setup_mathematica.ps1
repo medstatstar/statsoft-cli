@@ -108,5 +108,17 @@ $config | Add-Member -NotePropertyName "Mathematica" -NotePropertyValue @{
     mode = "simple"
 } -Force
 
+# ── Backup & Confirm ──
+$configDir = Split-Path $configPath -Parent
+if (Test-Path $configPath) {
+    $backupPath = Join-Path $configDir "config.json.bak.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    Copy-Item $configPath $backupPath
+    Write-Lang "Config backed up to: $backupPath" "配置已备份至: $backupPath" -Color Gray
+}
+$writeConfirm = Read-Host (if ($script:isZH) { "确认写入配置? (y/N)" } else { "Confirm write config? (y/N)" })
+if ($writeConfirm -ne 'y' -and $writeConfirm -ne 'Y') {
+    Write-Lang "Skipped config write." "已跳过配置写入。" -Color Yellow
+    return
+}
 $config | ConvertTo-Json -Depth 3 | Set-Content $configPath -Encoding UTF8
 Write-Lang "Config updated: $configPath" "Config updated: $configPath" -ForegroundColor Green

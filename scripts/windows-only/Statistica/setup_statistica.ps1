@@ -118,6 +118,19 @@ function Configure-Statistica {
         version = "Unknown"
     }
     
+    # ── Backup & Confirm ──
+    if (Test-Path $configFile) {
+        $configFileDir = Split-Path $configFile -Parent
+        $backupPath = Join-Path $configFileDir "config.json.bak.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        Copy-Item $configFile $backupPath
+        Write-Lang "Config backed up to: $backupPath" "配置已备份至: $backupPath" -Color Gray
+    }
+    $writeConfirm = Read-Host (if ($script:isZH) { "确认写入配置? (y/N)" } else { "Confirm write config? (y/N)" })
+    if ($writeConfirm -ne 'y' -and $writeConfirm -ne 'Y') {
+        Write-Lang "Skipped config write." "已跳过配置写入。" -Color Yellow
+        return
+    }
+
     # 保存配置
     $config | ConvertTo-Json -Depth 10 | Set-Content $configFile
     

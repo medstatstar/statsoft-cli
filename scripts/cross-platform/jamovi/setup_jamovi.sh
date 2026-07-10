@@ -12,6 +12,7 @@ fi
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
 # setup_jamovi.sh — Detect and configure jamovi (cross-platform)
+# ⚠️ SETUP tool: detects software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner. GUI-only software: detection/launch only, no CLI batch.
 set -euo pipefail
 
 CONFIG_PATH="$(dirname "$0")/../../config.json"

@@ -2,6 +2,7 @@
 # run-spss-internal.py — Run SPSS syntax via SPSS built-in Python (no GUI)
 # Usage: "C:\Program Files\IBM\SPSS\Statistics\XX\Python3\python.exe" run-spss-internal.py <sps_file>
 # Note: 动态扫描任意盘符下的 SPSS 安装目录 / Dynamic scan SPSS on any drive
+# Safety: 过滤危险指令（HOST COMMAND 等）/ Filter dangerous directives
 
 import sys
 import os
@@ -12,6 +13,29 @@ def log(msg_cn, msg_en=None):
     if msg_en is None:
         msg_en = msg_cn
     print("[CN] " + msg_cn + "\n[EN] " + msg_en)
+
+
+def validate_syntax(syntax):
+    """
+    Validate SPSS syntax for safety.
+    Reject scripts containing HOST COMMAND or other dangerous directives.
+    """
+    dangerous_patterns = [
+        r'^\s*HOST\s+COMMAND\s*=\s*',
+        r'^\s*HOST\s+',
+        r'^\s*INSERT\s+.*FILE\s*=\s*',
+        r'^\s*PRESERVE\s*\.',
+        r'^\s*RESTORE\s*\.',
+        r'^\s*COMPUTE\s+.*EXECUTE\s*\.',
+    ]
+    lines = syntax.splitlines()
+    for i, line in enumerate(lines, 1):
+        if not line.strip() or line.strip().startswith('*'):
+            continue
+        for pattern in dangerous_patterns:
+            if re.search(pattern, line, re.IGNORECASE):
+                return False, "Line {}: blocked pattern '{}' in '{}'".format(i, pattern.strip(), line.strip()[:60])
+    return True, "OK"
 
 
 def _find_spss_home():
@@ -92,6 +116,15 @@ def run_syntax(sps_file):
 
     log("正在运行语法文件: " + sps_file, "Running syntax file: " + sps_file)
     log("语法行数: " + str(len(syntax.splitlines())), "Syntax lines: " + str(len(syntax.splitlines())))
+
+    # Validate syntax for safety
+    valid, reason = validate_syntax(syntax)
+    if not valid:
+        log("语法安全检查失败: " + reason, "Syntax security check failed: " + reason)
+        log("拒绝执行。请检查语法文件。", "Execution rejected. Please check the syntax file.")
+        return 1
+
+    log("语法安全检查通过", "Syntax security check passed")
 
     try:
         spss.StartSPSS()

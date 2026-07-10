@@ -1,26 +1,27 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (config.json with backup), environment variable setup, and batch scanning of installed statistical software."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (writes config.json with timestamped backup), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation."
 triggers:
-  - "SPSS"
+  - "configure SPSS"
   - "SPSS Statistics"
   - "R statistical"
   - "R command line"
   - "R scripting"
   - "R命令行"
-  - "Stata"
-  - "SAS"
+  - "configure Stata"
+  - "configure SAS"
   - "统计软件 CLI"
   - "连接统计软件命令行"
   - "statsoft-cli"
-  - "connect statistical software"
+  - "connect statistical software CLI"
 metadata:
   {
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.1.0",
+    "version": "2.4.0",
     "license": "MIT",
+    "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
     "repository": "https://github.com/medstatstar/statsoft-cli"
@@ -41,10 +42,11 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 
 | 类别 / Category | 软件 / Software |
 |-----------------|-----------------|
-| ✅ 全部平台 (Win + Mac + Linux) | R, Stata, SAS, CmdStan, GenStat, Gretl, H2O.ai, JAGS, JASP, Julia, KNIME, Mathematica, Matlab, OpenBUGS, Orange, OxMetrics, PSPP, Rattle, SHAZAM, Stat/Transfer, Tanagra, TSP, Weka, jamovi |
+| ✅ 全部平台 (Win + Mac + Linux, CLI) | R, Stata, SAS, CmdStan, GenStat, Gretl, H2O.ai, JAGS, Julia, KNIME, Mathematica, Matlab, OpenBUGS, Orange, OxMetrics, PSPP, Rattle, SHAZAM, Stat/Transfer, Tanagra, TSP, Weka |
 | ✅ Win + Mac + 有限 Linux | Mplus |
 | ⚠️ Win + 有限 Mac/Linux | Minitab |
-| 🔴 Windows only | SPSS Statistics, AMOS, EViews, GraphPad Prism, JMP, LIMDEP, Microfit, NCSS, NLOGIT, Origin, Q (MRKS), SPSS Modeler, Statistica |
+| 🔴 Windows only | SPSS Statistics, EViews, JMP, LIMDEP, Microfit, NCSS, NLOGIT, Origin, Q (MRKS), SPSS Modeler, Statistica |
+| 🔴 GUI-only（仅检测/启动, 无 CLI 批处理） | AMOS, GraphPad Prism, JASP, jamovi（只能检测与手动启动 GUI，无法批处理自动化） |
 
 *(详细平台支持见 `references/version-specifics.md` / Detailed platform support: `references/version-specifics.md`)*
 
@@ -113,9 +115,9 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 
 ## 触发短语 / Trigger Phrases
 
-**中文**: SPSS, R statistical, R command line, Stata, SAS, 统计软件 CLI, 连接统计软件命令行, statsoft-cli
+**中文**: configure SPSS, R statistical, R command line, configure Stata, configure SAS, 统计软件 CLI, 连接统计软件命令行, statsoft-cli
 
-**English**: SPSS, R statistical, R command line, R scripting, Stata CLI, SAS batch, connect statistical software, statsoft-cli
+**English**: configure SPSS, R statistical, R command line, R scripting, configure Stata, configure SAS, connect statistical software CLI, statsoft-cli
 
 ---
 

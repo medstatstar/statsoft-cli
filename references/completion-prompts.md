@@ -90,15 +90,15 @@ See SKILL.md core permissions section for SPSS invocation details.
 
 ⚠️ 重要注意事项：
   1. 批处理模式使用 Rscript 命令，不要用 R GUI
-  2. 安装新 R 包时使用 quiet=TRUE 参数实现静默安装
+  2. 安装新 R 包前需告知用户（将从 CRAN 下载并修改本地环境）
   3. 中文乱码问题：用 fileEncoding="UTF-8" 参数指定文件编码
   4. 内存不足时：使用 data.table 或 arrow 包处理大数据
 
 📋 推荐使用方式：
   Rscript --vanilla "script.R"
 
-  # 静默安装包
-  Rscript -e "install.packages('[PKG]', repos='https://cran.r-project.org', quiet=TRUE)"
+  # 安装包（需告知用户将联网下载）
+  Rscript -e "cat('Installing package from CRAN (requires network access)...\n'); install.packages('[PKG]', repos='https://cran.r-project.org')"
 
   # 读取 SPSS .sav 文件
   Rscript -e "library(haven); df <- read_sav('data.sav'); print(head(df))"
@@ -120,15 +120,15 @@ See SKILL.md core permissions section for SPSS invocation details.
 
 ⚠️ Important notes:
   1. Use Rscript command for batch mode, not R GUI
-  2. Use quiet=TRUE parameter for silent package installation
+  2. Installing R packages requires user notification (downloads from CRAN, modifies local environment)
   3. Chinese encoding issues: use fileEncoding="UTF-8" parameter
   4. Insufficient memory: use data.table or arrow packages for large data
 
 📋 Recommended usage:
   Rscript --vanilla "script.R"
 
-  # Silent package installation
-  Rscript -e "install.packages('[PKG]', repos='https://cran.r-project.org', quiet=TRUE)"
+  # Package installation (notifies user about network download)
+  Rscript -e "cat('Installing package from CRAN (requires network access)...\n'); install.packages('[PKG]', repos='https://cran.r-project.org')"
 
   # Read SPSS .sav file
   Rscript -e "library(haven); df <- read_sav('data.sav'); print(head(df))"

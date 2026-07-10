@@ -6,7 +6,7 @@
 
 Cross-platform statistical software CLI integration for AI Agent (such as WorkBuddy / OpenClaw). 
 
-Supports 34 statistical software packages: SPSS Statistics, R, Stata, SAS, AMOS, CmdStan, EViews, GenStat, GraphPad Prism, Gretl, H2O.ai, JAGS, JASP, JMP, Julia, KNIME, LIMDEP, Mathematica, Matlab, Microfit, Minitab, Mplus, NCSS, NLOGIT, OpenBUGS, Orange, OriginLab Origin, OxMetrics, PSPP, Q (MRKS), Rattle, SHAZAM, Stat/Transfer, Statistica, TSP, Tanagra, Weka, jamovi.
+Supports 34 statistical software packages: SPSS Statistics, R, Stata, SAS, AMOS, CmdStan, EViews, GenStat, GraphPad Prism, Gretl, H2O.ai, JAGS, JASP, JMP, Julia, KNIME, LIMDEP, Mathematica, Matlab, Microfit, Minitab, Mplus, NCSS, NLOGIT, OpenBUGS, Orange, OriginLab Origin, OxMetrics, PSPP, Q (MRKS), Rattle, SHAZAM, Stat/Transfer, Statistica, TSP, Tanagra, Weka, jamovi. (Note: AMOS, GraphPad Prism, JASP, and jamovi are GUI-only — they can be detected and launched but have no CLI batch mode.)
 
 Multiple versions of the same software can coexist — for example, R4.5 and R4.0 can coexist, with a default version configured. Switch versions seamlessly by mentioning it in your prompt.
 
@@ -23,7 +23,7 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 Trigger in AI Agent conversation:
 ```
 Connect SPSS 26
-Help me configure R
+Configure R statistical software
 ```
 
 The Agent will auto-detect the software path and write to `config.json`.
@@ -46,7 +46,7 @@ Seamlessly invoke R modeling + SPSS descriptive + Stata data prep in a single AI
 Bring R scripts, SPSS syntax, SAS macros, Stata do-files into the AI workflow as standard nodes.
 
 ### 3. Data Format Conversion
-StatTransfer migrates data between software (SAS ↔ SPSS ↔ Stata ↔ Excel).
+Stat/Transfer (a supported CLI tool) migrates data between software (SAS ↔ SPSS ↔ Stata ↔ Excel). For general format conversion without statistical software, use the statdata-transfer skill.
 
 ### 4. SPSS Statistics Splash-Free Batch
 Execute `.sps` syntax via built-in Python engine, skipping splash screen.
@@ -165,9 +165,9 @@ Trigger with natural language in AI Agent conversations:
 
 ```
 Connect SPSS 26
-Help me configure R 
+Configure R statistical software
 Convert data.sav to data.dta
-Run Stata do-file
+Run a Stata .do file in batch mode
 ```
 
 ## Trust & Safety

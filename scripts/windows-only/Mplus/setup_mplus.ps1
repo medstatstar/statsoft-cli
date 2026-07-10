@@ -86,9 +86,17 @@ $config["Mplus"] = [ordered]@{
     "platform"  = "win"
 }
 
-# Backup and write
+# ── Backup & Confirm ──
+$configDir = Split-Path $configPath -Parent
 if (Test-Path $configPath) {
-    Copy-Item $configPath "$configPath.bak" -Force
+    $backupPath = Join-Path $configDir "config.json.bak.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    Copy-Item $configPath $backupPath
+    Write-Lang "Config backed up to: $backupPath" "配置已备份至: $backupPath" -Color Gray
+}
+$writeConfirm = Read-Host (if ($script:isZH) { "确认写入配置? (y/N)" } else { "Confirm write config? (y/N)" })
+if ($writeConfirm -ne 'y' -and $writeConfirm -ne 'Y') {
+    Write-Lang "Skipped config write." "已跳过配置写入。" -Color Yellow
+    return
 }
 
 ConvertTo-Json $config -Depth 5 | Set-Content $configPath -Encoding UTF8

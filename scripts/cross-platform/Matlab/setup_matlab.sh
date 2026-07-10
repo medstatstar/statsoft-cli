@@ -88,8 +88,12 @@ main() {
     LANG_ZH "✅ 检测到 Matlab 安装" "Matlab installation detected:"
     LANG_ZH "  路径" "Path: $matlab_path"
         
-        # 获取版本信息
-        local version=$($matlab_path -batch "disp(version)" 2>&1 | tail -1)
+        # 获取版本信息（只检查路径，不执行二进制 / Check path only, do not execute）
+        local version="unknown"
+        if [ -f "$matlab_path" ]; then
+            version=$(basename "$(dirname "$(dirname "$matlab_path")")")
+            version=${version#R}
+        fi
     LANG_ZH "  版本" "Version: $version"
         
         # 输出配置信息（供 AI Agent 读取）

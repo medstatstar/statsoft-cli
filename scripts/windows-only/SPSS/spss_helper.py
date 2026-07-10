@@ -85,6 +85,24 @@ def _validate_path(path, kind):
     return None
 
 
+def validate_syntax(syntax_text):
+    """过滤可能执行系统命令或越权的 SPSS 语法。返回 (ok, reason)。
+    允许：纯分析语法（GET / COMPUTE / REGRESSION 等）。
+    拒绝：HOST COMMAND（执行系统命令）、INSERT FILE（读取任意文件）、
+          PRESERVE / RESTORE（修改环境）。
+    """
+    forbidden = [
+        r'^\s*HOST\s+COMMAND',
+        r'^\s*INSERT\s+FILE',
+        r'^\s*PRESERVE\b',
+        r'^\s*RESTORE\b',
+    ]
+    for pat in forbidden:
+        if re.search(pat, syntax_text, re.IGNORECASE | re.MULTILINE):
+            return False, "含受限命令: " + pat
+    return True, ""
+
+
 def _safe_wrapper_path(script_dir):
     """获取安全的包装脚本路径"""
     real_dir = os.path.realpath(script_dir)
@@ -95,7 +113,10 @@ def _safe_wrapper_path(script_dir):
 
 
 def _run_silent(cmd, env=None, timeout=300):
-    """静默执行，返回 (returncode, stdout_str, stderr_str)"""
+    """受控执行：仅接受 list 形式的命令（禁止 shell 字符串）。调用方须先校验可执行文件。"""
+    if not isinstance(cmd, list) or not cmd:
+        _log("拒绝执行：命令必须为非空 list（禁止 shell）", "Rejected: command must be a non-empty list (shell forbidden)")
+        return 1, "", "invalid command"
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
         try:
@@ -184,6 +205,13 @@ def run_internal(sps_file, stats_python_path=None):
 
     helper_home = os.path.dirname(stats_python_path).replace("\\", "/")
     sps_file_forward = sps_file.replace("\\", "/")
+
+    with open(sps_file, encoding="utf-8", errors="replace") as f:
+        syntax_text = f.read()
+    ok, reason = validate_syntax(syntax_text)
+    if not ok:
+        _log("语法安全检查未通过: " + reason, "Syntax security check failed: " + reason)
+        return 1
 
     wrapper_code = '''# -*- coding: utf-8 -*-
 import sys, os

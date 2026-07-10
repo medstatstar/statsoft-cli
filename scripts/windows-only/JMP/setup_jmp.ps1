@@ -1,5 +1,6 @@
 # setup_jmp.ps1 — JMP 检测与配置脚本
 # 用法: powershell -ExecutionPolicy Bypass -File setup_jmp.ps1
+# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
 
 # ============================================================
 # Language Detection
@@ -119,11 +120,11 @@ if ($jmpInstalled) {
     Write-Host "  STATSOFT_JMP_PATH=$jmpPath" -ForegroundColor Gray
 
     # L-5: 非交互回退
-    $confirm = "Y"
+    $confirm = "N"
     try {
         $confirm = Read-Host "[CN] 确认设置环境变量? (y/N) / [EN] Confirm setting env vars? (y/N)"
     } catch {
-  Write-Lang "[!] [CN] 非交互模式，自动应用" "[EN] Non-interactive mode, auto-applying" -Color Yellow
+  Write-Lang "[!] [CN] 非交互模式，跳过环境变量设置" "[EN] Non-interactive mode, skipping env var setup" -Color Yellow
     }
 
     if ($confirm -eq 'y' -or $confirm -eq 'Y') {

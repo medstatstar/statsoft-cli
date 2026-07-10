@@ -2,6 +2,7 @@
 # setup_r.sh - Cross-platform R setup and detection
 # Compatible with Windows (Git Bash), macOS, Linux
 # Language: auto-detects system locale — Chinese on zh-* systems, English otherwise
+# ⚠️ SETUP tool: detects R, optionally downloads/installs R (explicit y/N), installs CRAN packages (explicit y/N), and persists config to config.json (timestamped backup + confirmation). NOT a read-only scanner.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -118,6 +119,13 @@ install_r() {
                 return 1
             fi
 
+            log_warn "$(LANG_ZH "注意: 下载的安装包未经数字签名校验，请手动核对 CRAN 官方哈希" "NOTE: downloaded installer is NOT cryptographically signed — verify against official CRAN hash manually")"
+            if command -v certutil &>/dev/null; then
+                local sha
+                sha="$(certutil -hashfile "$installer" SHA256 2>/dev/null | grep -v -i 'SHA256' | tr -d ' \r')"
+                log_info "$(LANG_ZH "安装包 SHA256: $sha" "Installer SHA256: $sha")"
+            fi
+
             log_info "$(LANG_ZH "下载完成，正在静默安装..." "Download complete. Installing silently...")"
             "$installer" /SILENT /COMPONENTS="main,x64,translations"
 
@@ -161,17 +169,19 @@ install_r() {
                 log_error "$(LANG_ZH "已取消安装" "Installation cancelled")"
                 return 1
             fi
+            LANG_ZH "" ""
+            echo "$(LANG_ZH "本技能不自动执行 sudo 安装。请在确认来源后，手动以管理员权限运行以下命令安装 R：" "This skill does not auto-run sudo. After verifying the source, manually install R as admin with:")"
             if command -v apt &>/dev/null; then
-                sudo apt update
-                sudo apt install -y r-base
+                echo "  sudo apt update && sudo apt install -y r-base"
             elif command -v yum &>/dev/null; then
-                sudo yum install -y R
+                echo "  sudo yum install -y R"
             elif command -v dnf &>/dev/null; then
-                sudo dnf install -y R
+                echo "  sudo dnf install -y R"
             else
                 log_error "$(LANG_ZH "未找到包管理器，请手动安装 R" "Package manager not found. Please install R manually.")"
                 return 1
             fi
+            return 0
             ;;
     esac
 }
@@ -196,7 +206,10 @@ scan_packages() {
 
     log_info "$(LANG_ZH "扫描已安装 R 包..." "Scanning installed R packages...")"
 
-    local pkg_list_file="${WORKSPACE_DIR:-/tmp}/r_packages_$(date +%Y%m%d_%H%M%S).txt"
+    local cache_dir="${WORKSPACE_DIR:-$ROOT_DIR/.cache}/.statsoft-cli-cache"
+    mkdir -p "$cache_dir"
+    find "$cache_dir" -name 'r_packages_*.txt' -mtime +7 -delete 2>/dev/null || true
+    local pkg_list_file="$cache_dir/r_packages_$(date +%Y%m%d).txt"
 
     "$R_CMD" -e "cat(installed.packages()[,'Package'], sep='\n')" 2>/dev/null > "$pkg_list_file"
 
@@ -266,9 +279,35 @@ save_config() {
     local config_file="${1:-$ROOT_DIR/../config.json}"
     local r_path="${R_CMD:-not installed}"
 
+    # 写入确认 / Write Confirmation — 交互模式下询问用户
+    if [[ -t 0 ]]; then
+        echo ""
+        echo "============================================"
+        if [[ "$SCRIPT_LANG" == "zh" ]]; then
+            echo "  即将写入配置文件: $config_file"
+            echo "  内容预览:"
+            echo "    R.path = $r_path"
+            echo "    R.version = $R_VERSION"
+            echo "    R.platform = $WB_OS"
+        else
+            echo "  About to write config: $config_file"
+            echo "  Content preview:"
+            echo "    R.path = $r_path"
+            echo "    R.version = $R_VERSION"
+            echo "    R.platform = $WB_OS"
+        fi
+        echo "============================================"
+        read -p "$(LANG_ZH "确认写入? (y/N)" "Confirm write? (y/N)")" write_confirm
+        if [[ ! "$write_confirm" =~ ^[Yy]$ ]]; then
+            log_error "$(LANG_ZH "已取消写入" "Write cancelled")"
+            return 1
+        fi
+    fi
+
     if [[ -f "$config_file" ]]; then
-        cp "$config_file" "${config_file}.bak.$(date +%Y%m%d_%H%M%S)"
-        log_info "$(LANG_ZH "配置已备份: ${config_file}.bak.*" "Config backed up: ${config_file}.bak.*")"
+        local backup_file="${config_file}.bak.$(date +%Y%m%d_%H%M%S)"
+        cp "$config_file" "$backup_file"
+        log_info "$(LANG_ZH "配置已备份: $backup_file" "Config backed up: $backup_file")"
         log_info "$(LANG_ZH "更新已有配置: $config_file" "Updating existing config: $config_file")"
         
         if command -v python &>/dev/null; then

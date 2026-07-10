@@ -203,11 +203,9 @@ $regMatlab2 = Get-NsisSoftwareWow64 "MATLAB"
 $foundMatlab = $regMatlab
 if (-not $foundMatlab) { $foundMatlab = $regMatlab2 }
 if (-not $foundMatlab) {
-    # Try mathworks paths
     $mwPaths = @("C:\Program Files\MATLAB\R2025a", "C:\Program Files\MATLAB\R2024b", "C:\Program Files\MATLAB\R2024a")
     foreach ($mp in $mwPaths) {
         if (Test-Path $mp) {
-            & "$mp\bin\matlab.exe" -batch "disp(version)" 2>&1 | Out-Null
             $foundMatlab = @{ Path = $mp; Version = ($mp -replace '.*R','R'); DisplayName = "MATLAB" }
             break
         }

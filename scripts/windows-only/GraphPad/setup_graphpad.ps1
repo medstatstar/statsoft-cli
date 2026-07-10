@@ -1,5 +1,6 @@
 # setup_graphpad.ps1 — GraphPad Prism 检测与配置脚本
 # 用法: powershell -ExecutionPolicy Bypass -File setup_graphpad.ps1
+# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner. GUI-only software: detection/launch only, no CLI batch.
 
 # ============================================================
 # Language Detection
@@ -117,8 +118,14 @@ if ($graphPadInstalled) {
     Write-Lang "版本: $graphPadVersion" "Version: $graphPadVersion" -Color White
     Write-Lang "环境变量: STATSOFT_GRAPHPAD_PATH=$graphPadPath" "Environment variable: STATSOFT_GRAPHPAD_PATH=$graphPadPath" -Color White
     
-    # 设置环境变量
-    [System.Environment]::SetEnvironmentVariable("STATSOFT_GRAPHPAD_PATH", $graphPadPath, "User")
+    # 设置环境变量（需用户确认）
+    $setEnvConfirm = Read-Host (if ($script:isZH) { "确认设置环境变量 STATSOFT_GRAPHPAD_PATH? (y/N)" } else { "Confirm set env var STATSOFT_GRAPHPAD_PATH? (y/N)" })
+    if ($setEnvConfirm -ne 'y' -and $setEnvConfirm -ne 'Y') {
+        Write-Lang "Skipped env var setting." "已跳过环境变量设置。" -Color Yellow
+    } else {
+        [System.Environment]::SetEnvironmentVariable("STATSOFT_GRAPHPAD_PATH", $graphPadPath, "User")
+        Write-Lang "环境变量已设置。" "Environment variable set." -Color Green
+    }
     
     # 显示调用示例
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan

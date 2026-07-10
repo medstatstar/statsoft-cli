@@ -43,10 +43,11 @@ Rscript --vanilla "script.R"
 R CMD BATCH "script.R" "output.Rout"
 ```
 
-### 静默安装包
+### 安装包（需告知用户将联网下载）
 
 ```bash
-Rscript -e "install.packages('pkg', repos='https://cran.r-project.org', quiet=TRUE)"
+# 将从 CRAN 下载并修改本地 R 环境，执行前需告知用户
+Rscript -e "install.packages('pkg', repos='https://cran.r-project.org')"
 ```
 
 ### 批处理脚本模板
@@ -216,7 +217,7 @@ statsoft-modeler run-script "C:\path\to\train_model.py"
 
 ```powershell
 statsoft-modeler server-run "stream.str" -hostname modeler-srv -port 80 `
-    -username admin -password secret
+    -username $env:MODELER_USER -password $env:MODELER_PASS
 ```
 
 ### Python 脚本示例（在 Modeler 中运行）

@@ -1,6 +1,7 @@
 # setup_spss.ps1 — SPSS Statistics 检测与配置（后台静默运行）
 # 用法: powershell -ExecutionPolicy Bypass -File setup_spss.ps1 [-Version "26"]
 # 注意：SPSS 26+ 版主程序为 stats.exe，无 spsswin.exe
+# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
 # Language: auto-detects system locale — Chinese on zh-* systems, English otherwise
 
 param(
@@ -237,12 +238,12 @@ if ($spssInstalled) {
     Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath"
     Write-Host "  STATSOFT_SPSS_FSTRING=$useFString"
 
-    $confirm = "Y"
+    $confirm = "N"
     try {
         $promptText = if ($script:isZH) { "确认设置环境变量? (y/N)" } else { "Confirm setting env vars? (y/N)" }
         $confirm = Read-Host $promptText
     } catch {
-        Write-Lang "非交互模式，自动应用" "Non-interactive mode, auto-applying" -Color Yellow
+        Write-Lang "非交互模式，跳过环境变量设置" "Non-interactive mode, skipping env var setup" -Color Yellow
     }
 
     if ($confirm -eq 'y' -or $confirm -eq 'Y') {

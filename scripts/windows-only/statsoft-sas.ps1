@@ -3,6 +3,7 @@
 #   statsoft-sas run <sas_file> [--log-file <path>]
 #   statsoft-sas data-info <sas_file> [--vars var1 var2]
 #   statsoft-sas read-log <log_path>
+# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
 
 param(
     [Parameter(Position=0)]
