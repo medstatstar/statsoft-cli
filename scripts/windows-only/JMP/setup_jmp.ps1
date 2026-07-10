@@ -114,24 +114,24 @@ if ($jmpInstalled) {
     Write-Lang "JMP 路径: $jmpPath" "JMP path: $jmpPath" -Color White
     Write-Lang "版本: $jmpVersion" "Version: $jmpVersion" -Color White
     
-    # 请求用户确认后再修改环境变量
+    # 请求用户确认后再修改环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
     Write-Lang "`n[CN] 即将设置用户环境变量:" "`n[CN] 即将设置用户环境变量:" -ForegroundColor Yellow
     Write-Lang "[EN] About to set environment variables:" "[EN] About to set environment variables:" -ForegroundColor Yellow
     Write-Host "  STATSOFT_JMP_PATH=$jmpPath" -ForegroundColor Gray
 
-    # L-5: 非交互回退
-    $confirm = "N"
-    try {
-        $confirm = Read-Host "[CN] 确认设置环境变量? (y/N) / [EN] Confirm setting env vars? (y/N)"
-    } catch {
-  Write-Lang "[!] [CN] 非交互模式，跳过环境变量设置" "[EN] Non-interactive mode, skipping env var setup" -Color Yellow
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    $persist = $false
+    if ($autoWrite) { $persist = $true }
+    elseif ($confirm -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host (if ($script:isZH) { "确认设置环境变量? (y/N)" } else { "Confirm setting env vars? (y/N)" })
+        if ($ans -match '^[yY]') { $persist = $true }
     }
-
-    if ($confirm -eq 'y' -or $confirm -eq 'Y') {
+    if (-not $persist) {
+        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
+    } else {
         [System.Environment]::SetEnvironmentVariable("STATSOFT_JMP_PATH", $jmpPath, "User")
   Write-Lang "[OK] [CN] 环境变量已设置" "[EN] Environment variable set" -Color Green
-    } else {
-  Write-Lang "[!] [CN] 跳过环境变量设置" "[EN] Skipping env var setup" -Color Yellow
     }
     
     # 显示调用示例

@@ -67,14 +67,14 @@ def _log(msg_cn, msg_en):
 
 
 def _opt_in_confirm(prompt_cn, prompt_en):
-    """Opt-in execution confirmation (never blocks the agent).
+    """Execution authorization for the splash-prone stats.exe path.
 
-    Consistent with the config-write gate used elsewhere in this skill:
-      * Default (agent/CI run) = proceed. The user's explicit invocation is
-        treated as intent.
+    This gates RUNNING user-provided SPSS syntax (NOT config persistence),
+    so the user's explicit invocation is treated as intent:
+      * Default (agent/CI run, no STATSOFT_CONFIRM) = proceed.
       * Strict mode (env STATSOFT_CONFIRM=1 AND a real interactive TTY) = prompt
-        y/N, default to skip. Only fires when the user explicitly asked for it,
-        so it can never hang an automated run.
+        y/N, default to skip. Never fires without a TTY, so it can never hang an
+        automated run.
     Returns True if execution may proceed.
     """
     if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
@@ -108,10 +108,14 @@ def _validate_path(path, kind):
 
 
 def validate_syntax(syntax_text):
-    """过滤可能执行系统命令或越权的 SPSS 语法。返回 (ok, reason)。
-    允许：纯分析语法（GET / COMPUTE / REGRESSION 等）。
-    拒绝：HOST COMMAND（执行系统命令）、INSERT FILE（读取任意文件）、
-          PRESERVE / RESTORE（修改环境）。
+    """Validate SPSS syntax safety before execution. Returns (ok, reason).
+
+    Allows: pure analysis syntax (GET / COMPUTE / REGRESSION / etc.).
+    Blocks (ok=False) commands that can execute system commands or read/modify
+    the environment:
+      - HOST COMMAND       (executes OS shell commands)
+      - INSERT FILE        (reads arbitrary files from disk)
+      - PRESERVE / RESTORE  (modify/restore the SPSS environment)
     """
     forbidden = [
         r'^\s*HOST\s+COMMAND',
@@ -161,6 +165,10 @@ def _run_silent(cmd, env=None, timeout=300):
 
 def run_console(spj_file, stats_com=None):
     """首选：通过 stats.com 控制台版运行 .spj 文件（完全无闪屏）"""
+    if not _opt_in_confirm("⚠️ 即将通过 stats.com 运行 SPSS 语法，是否继续？",
+                           "⚠️ About to run SPSS syntax via stats.com. Continue?"):
+        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+        return 1
     if not os.path.exists(spj_file):
         _log(".spj 文件不存在: " + spj_file, ".spj file not found: " + spj_file)
         return 1
@@ -197,6 +205,10 @@ def run_console(spj_file, stats_com=None):
 
 def run_internal(sps_file, stats_python_path=None):
     """备用：通过 SPSS 内置 Python 运行语法（无闪屏）"""
+    if not _opt_in_confirm("⚠️ 即将通过 SPSS 内置 Python 运行语法，是否继续？",
+                           "⚠️ About to run syntax via SPSS bundled Python. Continue?"):
+        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+        return 1
     if not os.path.exists(sps_file):
         _log("语法文件不存在: " + sps_file, "Syntax file not found: " + sps_file)
         return 1

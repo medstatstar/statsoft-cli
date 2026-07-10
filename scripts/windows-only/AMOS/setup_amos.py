@@ -120,24 +120,36 @@ def main():
     }
 
     # Route persistence through the single auditable gate (write_config.py).
-    # Default = detection-only; persist only on STATSOFT_AUTO_WRITE=1 or
-    # STATSOFT_CONFIRM=1 + interactive 'y'.
+    # Fail-closed by default: persist ONLY on explicit opt-in.
     import subprocess
     gate = os.path.join(script_dir, "..", "..", "common", "write_config.py")
     payload = json.dumps(config, ensure_ascii=False)
-    try:
-        proc = subprocess.run(
-            [sys.executable, gate, config_path],
-            input=payload,
-            capture_output=True,
-            text=True,
-        )
-        if proc.stdout:
-            print(proc.stdout.strip())
-        if proc.stderr:
-            print(proc.stderr.strip(), file=sys.stderr)
-    except Exception as e:
-        print("Failed to invoke config gate: " + str(e))
+    _auto_write = os.environ.get("STATSOFT_AUTO_WRITE") == "1"
+    _confirm_env = os.environ.get("STATSOFT_CONFIRM") == "1"
+    _persist = False
+    if _auto_write:
+        _persist = True
+    elif _confirm_env and sys.stdin.isatty():
+        sys.stdout.write("Persist detected config to config.json? (y/N) ")
+        sys.stdout.flush()
+        _ans = sys.stdin.readline().strip().lower()
+        _persist = _ans in ("y", "yes")
+    if not _persist:
+        print("Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.")
+    else:
+        try:
+            proc = subprocess.run(
+                [sys.executable, gate, config_path],
+                input=payload,
+                capture_output=True,
+                text=True,
+            )
+            if proc.stdout:
+                print(proc.stdout.strip())
+            if proc.stderr:
+                print(proc.stderr.strip(), file=sys.stderr)
+        except Exception as e:
+            print("Failed to invoke config gate: " + str(e))
 
     print("Done.")
 

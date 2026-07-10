@@ -238,8 +238,24 @@ function New-SpssSpj {
 # ============================================================
 # Main dispatch
 # ============================================================
+function Test-UserAuthorizedToRun {
+    # Execution authorization for running SPSS (external command / file writes).
+    # The user's explicit `run`/`run-batch` invocation is the intent, so default = proceed;
+    # STATSOFT_CONFIRM=1 + a real TTY prompts y/N; STATSOFT_AUTO_WRITE=1 auto-proceeds.
+    # Never fires without a TTY, so it can never hang an automated run.
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    if ($autoWrite) { return $true }
+    if ($confirm -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host (if ($script:isZH) { "确认运行 SPSS? (y/N)" } else { "Confirm running SPSS? (y/N)" })
+        return ($ans -match '^[yY]')
+    }
+    return $true
+}
+
 switch ($Command) {
     "run" {
+        if (-not (Test-UserAuthorizedToRun)) { Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow; exit 1 }
         $spsFile = $Args[0]
         if (-not $spsFile -or -not (Test-Path $spsFile)) {
             Write-Error "[CN] 语法文件不存在: $spsFile / [EN] Syntax file not found"; exit 1
@@ -271,6 +287,7 @@ switch ($Command) {
     }
 
     "run-batch" {
+        if (-not (Test-UserAuthorizedToRun)) { Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow; exit 1 }
         if ($Args.Count -eq 0) { Write-Error "需提供语法文件路径 / Please provide syntax file path"; exit 1 }
         $workDir   = $PWD
         $masterSps = Join-Path $workDir "batch-master.sps"

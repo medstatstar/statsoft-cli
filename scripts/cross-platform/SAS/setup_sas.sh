@@ -118,9 +118,18 @@ verify_sas() {
     fi
     echo "============================================"
     LANG_ZH "" ""
-    read -p "$(LANG_ZH "确认执行? (y/N)" "Confirm execution? (y/N)")" confirm
-    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-        log_info "$(LANG_ZH "跳过 SAS 验证" "Skipping SAS verification")"
+    # Fail-closed opt-in: executing SAS is an external action, so default = detection-only (skip).
+    # Only proceed when explicitly opted in: STATSOFT_AUTO_WRITE=1, or STATSOFT_CONFIRM=1 + a real TTY.
+    if [[ "${STATSOFT_AUTO_WRITE:-}" == "1" ]]; then
+        : # auto-proceed
+    elif [[ "${STATSOFT_CONFIRM:-}" == "1" && -t 0 ]]; then
+        read -p "$(LANG_ZH "确认执行? (y/N)" "Confirm execution? (y/N)")" confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+            log_info "$(LANG_ZH "跳过 SAS 验证" "Skipping SAS verification")"
+            return 0
+        fi
+    else
+        log_info "$(LANG_ZH "仅检测：跳过 SAS 验证（设置 STATSOFT_AUTO_WRITE=1 执行，或 STATSOFT_CONFIRM=1 交互确认）" "Detection-only: skipping SAS verification (set STATSOFT_AUTO_WRITE=1 to run, or STATSOFT_CONFIRM=1 for an interactive prompt)")"
         return 0
     fi
 
@@ -153,7 +162,16 @@ config['SAS'] = {
 print(json.dumps(config, ensure_ascii=False))
 PYEOF
 )
-    python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$_NEW_CFG"
+    # Fail-closed by default — persist ONLY when explicitly opted in.
+    if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then
+        STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$_NEW_CFG"
+    elif [ "${STATSOFT_CONFIRM:-0}" = "1" ] && [ -t 0 ]; then
+        printf 'Persist detected config to config.json? (y/N) '
+        read -r _ans
+        case "$_ans" in y|Y|yes) STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$config_file" <<< "$_NEW_CFG" ;; *) echo "Detection-only: config.json NOT modified." ;; esac
+    else
+        echo "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt."
+    fi
 }
 
 main() {

@@ -42,9 +42,9 @@ else
     OX_BIN="NOT_INSTALLED"
 fi
 
-# Update config.json
+# Config persistence (fail-closed: detection-only by default; persists only on explicit opt-in)
 if [ -f "$CONFIG_FILE" ] && [ "$OX_BIN" != "NOT_INSTALLED" ]; then
-    LANG_ZH "正在更新配置..." "Updating config.json..."
+    LANG_ZH "默认仅检测；写入需 opt-in（STATSOFT_AUTO_WRITE=1）" "Detection-only by default; write requires opt-in (STATSOFT_AUTO_WRITE=1)"
     _NEW_CFG=$(python3 -c "
 import json, sys
 with open(sys.argv[1], 'r') as f:
@@ -56,7 +56,16 @@ config['OxMetrics'] = {
     'mode': 'simple'
 }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$OX_VERSION" "$OX_BIN")
-    python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_FILE" <<< "$_NEW_CFG"
+    # Fail-closed by default — persist ONLY when explicitly opted in.
+    if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then
+        STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_FILE" <<< "$_NEW_CFG"
+    elif [ "${STATSOFT_CONFIRM:-0}" = "1" ] && [ -t 0 ]; then
+        printf 'Persist detected config to config.json? (y/N) '
+        read -r _ans
+        case "$_ans" in y|Y|yes) STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_FILE" <<< "$_NEW_CFG" ;; *) echo "Detection-only: config.json NOT modified." ;; esac
+    else
+        echo "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt."
+    fi
 fi
 
 LANG_ZH "" ""

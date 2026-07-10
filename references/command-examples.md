@@ -361,15 +361,17 @@ Exit();
 
 ## GraphPad Prism
 
-⚠️ **重要限制**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。本技能**不提供**任何 `prism.exe` 命令行调用；仅支持手动启动 GUI 或通过 Python `prismWriter` 后台操作文件。
+⚠️ **重要限制**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。本技能**不提供**任何 `prism.exe` 命令行调用或自动化；它仅能检测 Prism 并给出**手动启动 GUI 的指引**（由你自己打开 Prism）。
 
-### 替代方案：Python prismWriter
+### 文件格式辅助（非自动化）：Python `prismWriter`
+
+`prismWriter` 是一个纯 Python 库，仅用于**读写 `.pzfx` 数据文件**（解析/生成 XML），**不涉及启动或驱动 Prism 进程**。它属于手动数据格式辅助工具，不是对 Prism 的批处理自动化。使用前须由用户明确提供待处理的文件，且不得用于未授权的文件写入。
 
 ```python
-# 使用 prismWriter 后台操作 .pzfx 文件（无需 GUI）
+# 手动读写 .pzfx 数据文件（不启动 Prism GUI，不驱动 Prism）
 from prismwriter import Project
 
-p = Project("template.pzfx")
+p = Project("template.pzfx")   # 用户明确提供的文件
 # 写入数据、执行分析...
 p.save("output.pzfx")
 ```

@@ -16,10 +16,43 @@ function Write-Lang {
     else { Write-Host $EN -ForegroundColor $Color }
 }
 
+function Save-StatSoftConfig {
+    param(
+        [string]$ConfigPath,
+        [object]$Config
+    )
+    # Fail-closed by default - persist ONLY when explicitly opted in.
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    $persist = $false
+    if ($autoWrite) {
+        $persist = $true
+    } elseif ($confirm -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host (if ($script:isZH) { "Persist detected config to config.json? (y/N)" } else { "Persist detected config to config.json? (y/N)" })
+        if ($ans -match '^[yY]') { $persist = $true }
+    }
+    if (-not $persist) {
+        Write-Lang "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
+        return
+    }
+    $gate = Join-Path $PSScriptRoot "..\..\common\write_config.py"
+    if (-not (Test-Path $gate)) {
+        Write-Lang "write_config.py gate not found; skipping persist." "write_config.py gate not found; skipping persist." -Color Red
+        return
+    }
+    $tmp = [System.IO.Path]::GetTempFileName()
+    $Config | ConvertTo-Json -Depth 10 | Set-Content -Path $tmp -Encoding UTF8
+    $env:STATSOFT_AUTO_WRITE = "1"
+    & python3 "$gate" "$ConfigPath" "$tmp"
+    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+}
+
+}
+
 
 param()
 
-$configPath = Join-Path (Split-Path $MyInvocation.MyCommand.Path -Parent) "..\..\config.json"
+$configPath = Join-Path $PSScriptRoot "..\config.json"
 
 # Load existing config (ordered)
 $config = [ordered]@{}
@@ -80,18 +113,4 @@ $config["Q_MRKS"] = [ordered]@{
     "platform"  = "win"
 }
 
-# ── Backup & Confirm ──
-$configDir = Split-Path $configPath -Parent
-if (Test-Path $configPath) {
-    $backupPath = Join-Path $configDir "config.json.bak.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-    Copy-Item $configPath $backupPath
-    Write-Lang "Config backed up to: $backupPath" "配置已备份至: $backupPath" -Color Gray
-}
-$writeConfirm = Read-Host (if ($script:isZH) { "确认写入配置? (y/N)" } else { "Confirm write config? (y/N)" })
-if ($writeConfirm -ne 'y' -and $writeConfirm -ne 'Y') {
-    Write-Lang "Skipped config write." "已跳过配置写入。" -Color Yellow
-    return
-}
-
-ConvertTo-Json $config -Depth 5 | Set-Content $configPath -Encoding UTF8
-Write-Lang "Done." "Done." -ForegroundColor Green
+Save-StatSoftConfig -ConfigPath $configPath -Config $config

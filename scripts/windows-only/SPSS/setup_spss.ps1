@@ -239,22 +239,24 @@ if ($spssInstalled) {
     Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath"
     Write-Host "  STATSOFT_SPSS_FSTRING=$useFString"
 
-    $confirm = "N"
-    try {
+    # 设置环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    $persist = $false
+    if ($autoWrite) { $persist = $true }
+    elseif ($confirm -and -not [Console]::IsInputRedirected) {
         $promptText = if ($script:isZH) { "确认设置环境变量? (y/N)" } else { "Confirm setting env vars? (y/N)" }
-        $confirm = Read-Host $promptText
-    } catch {
-        Write-Lang "非交互模式，跳过环境变量设置" "Non-interactive mode, skipping env var setup" -Color Yellow
+        $ans = Read-Host $promptText
+        if ($ans -match '^[yY]') { $persist = $true }
     }
-
-    if ($confirm -eq 'y' -or $confirm -eq 'Y') {
+    if (-not $persist) {
+        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
+    } else {
         [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PATH", $spssHome, "User")
         [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_COM", $(if ($statsComExists) { $statsComPath } else { "" }), "User")
         [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PYTHON", $pythonPath, "User")
         [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_FSTRING", $useFString.ToString(), "User")
         Write-Lang "环境变量已设置" "Environment variables set" -Color Green
-    } else {
-        Write-Lang "跳过环境变量设置" "Skipping env var setup" -Color Yellow
     }
 
     # ============================================================

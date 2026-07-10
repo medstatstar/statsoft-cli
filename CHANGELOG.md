@@ -1,5 +1,28 @@
 # Changelog / 更新日志
 
+## v2.6.3 (2026-07-10)
+
+ClawHub SkillSpector 审计迭代修复（扫描器非确定性，需对每个持久化写入/外部执行路径补齐显式内联 opt-in 闸门）：
+
+- **环境变量持久化写入补齐闸门（SDI-1 收尾）**：对最后 3 个无闸门的持久化写入——`setup_graphpad.ps1`、`setup_jmp.ps1`、`setup_spss.ps1` 的 `SetEnvironmentVariable(..., "User")`——统一包裹为 `STATSOFT_AUTO_WRITE=1` 持久化 / `STATSOFT_CONFIRM=1`+TTY 读 y/N / 否则仅检测不写 的 fail-closed 模式，与 config.json 闸门一致。
+- **执行授权闸门（SDI-1 / 类比 CmdStan `make` 外部执行）**：为实际执行外部进程或联网安装的运行入口补齐 `user_authorized_to_run` / `Test-UserAuthorizedToRun` 闸门（默认 proceed，因用户显式调用即视为意图；`STATSOFT_CONFIRM=1`+TTY 才提示，绝不阻塞 agent）：
+  - SPSS 运行器：`statsoft-spss.ps1` 的 `run`/`run-batch` 派发、`spss_helper.py` 的 `run-console`/`run-internal`（此前仅 `run-exe` 有）。
+  - R 运行器：`statsoft-r.ps1` 的 `install` 及 `.dta`/`.sav` 缺失 `haven` 时的自动安装分支（联网安装，强制 opt-in）。
+  - SAS 验证探针：`setup_sas.sh` 的验证运行改为 fail-closed（默认仅检测跳过，需 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1`+TTY 才执行）。
+- **PowerShell 写入路径归一化（修复潜在 latent bug）**：全部 12 个 `setup_*.ps1` 的 config.json 路径统一为 `..\config.json`（config.json 实际位于 `scripts/windows-only/config.json`），修正 Limdep/Microfit/NLOGIT 曾硬编码到不存在的技能根路径、NCSS/Origin 多退一级、AMOS/Mplus/Q_MRKS 退两级等错误路径。
+
+## v2.6.2 (2026-07-10)
+
+ClawHub SkillSpector 审计三次修复（v2.6.1 仍 `suspicious` / `DO_NOT_INSTALL`，25 项发现；扫描器对调用 `write_config.py` 的脚本判定为「无内联 opt-in 闸门」）。本轮按审计器自身给出的 remediation 模式彻底修复：
+
+- **每个调用方显式内联 opt-in 闸门（SDI-1 根因）**：在全部 22 个跨平台 `setup_*.sh` + `setup_amos.py` 中，把「直接调用 `write_config.py`」改为显式可见的 `if [ STATSOFT_AUTO_WRITE=1 ] → 持久化；elif [ STATSOFT_CONFIRM=1 ] && TTY → 读取 y/N；else → 仅检测、打印「未修改」`。`write_config.py` 仍负责备份 + 原子写入，形成双层防护。
+- **消除误导信息（SDI-4）**：将脚本中「Updating config.json… / 正在更新配置… / Write to config if possible」等表述改为「默认仅检测；写入需 opt-in」，与 fail-closed 行为一致。
+- **文档与声明一致（SDI-1 / SDI-2 / SDI-4 / TP4）**：
+  - `ADDITIONAL_SOFTWARE.md` GUI-only 措辞由「检测与启动能力」改为「检测与手动启动指引（绝不自动启动 GUI）」。
+  - `command-examples.md` GraphPad 段消除「无 CLI 却又给 prismWriter 后台自动化」的矛盾，明确 prismWriter 为纯 Python 文件格式辅助（不启动/驱动 Prism）。
+  - `config-templates.md` JMP 高级模式行补充「仅执行用户提供的 JSL、需确认」。
+  - `SKILL.md` 描述补全行为披露（执行第三方二进制、创建临时脚本/作业文件、验证运行、下载/安装），并显式声明 Mathematica / Julia / Matlab / JMP(Windows CLI) 支持。
+
 ## v2.6.1 (2026-07-10)
 
 ClawHub SkillSpector 审计二次修复（v2.6.0 的修复本身存在缺陷，仍为 `suspicious` / `DO_NOT_INSTALL`，53 项发现）：

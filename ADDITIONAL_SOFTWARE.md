@@ -49,7 +49,7 @@ This file contains configuration information for additional statistical software
 
 ## 完整脚本路由表 / Script Routing Tables
 
-> **关于 GUI 软件 / GUI Software Note**: 以下软件**没有 CLI 模式**，调用时会弹出 GUI 界面，无法完全静默执行。本技能仅提供检测与启动能力，无法进行批处理自动化。/ The following software **have no CLI mode** — calling them launches a GUI, cannot run fully silent. This skill provides detection and launch capability only, no batch automation.
+> **关于 GUI 软件 / GUI Software Note**: 以下软件**没有 CLI 模式**，调用时会弹出 GUI 界面，无法完全静默执行。本技能仅提供**检测与手动启动指引（由你自己打开 GUI）**，绝不自动启动 GUI 应用程序，也无法进行批处理自动化。/ The following software **have no CLI mode** — they launch a GUI and cannot run fully silent. This skill provides detection and manual-launch guidance only (you open the GUI yourself); it never auto-launches GUI applications and offers no batch automation.
 > - **AMOS** — 全程 GUI / GUI only
 > - **GraphPad Prism** — 全程 GUI / GUI only
 > - **JASP** — 需 GUI / Requires GUI

@@ -273,4 +273,4 @@
 | SAS | `statsoft-sas run program.sas` |
 | SPSS | `statsoft-spss run syntax.sps` |
 | SPSS (batch) | `statsoft-spss run-batch s1.sps s2.sps s3.sps` |
-| JMP | `statsoft-jmp run script.jsl` |
+| JMP (Windows, CLI) | `statsoft-jmp run script.jsl` — only executes user-provided JSL scripts, requires explicit user confirmation |

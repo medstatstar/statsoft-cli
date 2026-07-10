@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution (batch/silent mode), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi, etc.) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution of third-party statistical binaries in batch/silent mode (this runs external processes and may create temporary working files such as scripts and job/syntax files, and performs verification runs), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. JMP provides a Windows CLI (statsoft-jmp) and is executed only with explicit user-provided JSL scripts and confirmation. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
 triggers:
   - "configure SPSS"
   - "SPSS Statistics"
@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.1",
+    "version": "2.6.3",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -71,10 +71,10 @@ Many statistical software packages have CLI (Command Line Interface) execution m
    - **指定配置 / Specific**: 用户选择要配置的特定软件 / User selects specific software
    - **单软件配置 / Single**: 调用单个 `setup_*.ps1` / `setup_*.sh` 脚本 / Call individual setup script
 4. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件 / Route to platform-specific script, auto-hide incompatible software on non-Windows
-5. **保存配置 / Save Config** — 写入 `config.json` / Write to `config.json`
+5. **保存配置 / Save Config** — 默认仅检测、不写入 `config.json`（fail-closed；仅在显式 opt-in 时才持久化）/ Detection-only by default; no `config.json` write unless explicitly opted in
    - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。绝不会阻塞 agent。
    - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak`（带时间戳）
-   - **写入确认 / Write Confirmation** — 向用户展示将要写入的内容，确认后再写入
+   - **写入确认 / Write Confirmation** — 仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互回答 y 时持久化；默认不写入，绝不阻塞 agent。
 6. **写入记忆 / Write Memory** (需用户同意 / With user consent) — 询问后追加到 `~/.workbuddy/MEMORY.md` / Append to `~/.workbuddy/MEMORY.md` after confirmation
    - **环境变量修改说明 / Env Var Justification** — 在执行任何环境变量修改脚本前，必须向用户说明为何需要修改（例如："需要将 R 添加到 PATH 以便命令行调用"），并等待用户确认后再执行
 7. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template

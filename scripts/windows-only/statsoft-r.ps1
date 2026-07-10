@@ -64,6 +64,21 @@ if (-not (Test-Path $rPath)) {
     exit 1
 }
 
+function Test-UserAuthorizedToRun {
+    # Execution/install authorization for R (network package install, external run).
+    # The user's explicit `install`/`run` invocation is the intent, so default = proceed;
+    # STATSOFT_CONFIRM=1 + a real TTY prompts y/N; STATSOFT_AUTO_WRITE=1 auto-proceeds.
+    # Never fires without a TTY, so it can never hang an automated run.
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    if ($autoWrite) { return $true }
+    if ($confirm -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host (if ($script:isZH) { "确认执行? (y/N)" } else { "Confirm execution? (y/N)" })
+        return ($ans -match '^[yY]')
+    }
+    return $true
+}
+
 switch ($Command) {
     "run" {
         $rFile = $Args[0]
@@ -90,14 +105,7 @@ switch ($Command) {
         Write-Lang "准备安装 R 包: $package" "Preparing to install R package: $package" -Color Cyan
         Write-Lang "来源: $Repo" "Repository: $Repo" -Color Gray
 
-        $confirm = "N"
-        try {
-            $confirm = Read-Host "$(if ($script:isZH) { '确认安装' } else { 'Confirm install' })? (y/N)"
-        } catch {
-            Write-Lang "非交互模式，默认跳过安装" "Non-interactive mode, defaulting to skip" -Color Yellow
-        }
-
-        if ($confirm -ne 'y' -and $confirm -ne 'Y') {
+        if (-not (Test-UserAuthorizedToRun)) {
             Write-Lang "已取消安装" "Installation cancelled" -Color Yellow
             return
         }
@@ -132,14 +140,11 @@ switch ($Command) {
                 $havenOk = & $rPath -e "cat(require('haven', quietly=TRUE))" 2>&1 | Out-String
                 if ($havenOk.Trim() -ne "TRUE") {
                     Write-Lang "haven 未安装。是否从 CRAN 安装（约 1-2 分钟）?" "haven not installed. Install from CRAN (~1-2 min)?" -Color Yellow
-                    $installConfirm = "N"
-                    try { $installConfirm = Read-Host "$(if ($script:isZH) { '确认安装 haven' } else { 'Confirm install haven' })? (y/N)" } catch { Write-Lang "非交互模式，跳过安装" "Non-interactive, skipping install" -Color Yellow }
-                    if ($installConfirm -eq 'y' -or $installConfirm -eq 'Y') {
-                        & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
-                    } else {
+                    if (-not (Test-UserAuthorizedToRun)) {
                         Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
                         return
                     }
+                    & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
                 }
                 & $rPath -e "df <- haven::read_dta('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
             }
@@ -148,14 +153,11 @@ switch ($Command) {
                 $havenOk = & $rPath -e "cat(require('haven', quietly=TRUE))" 2>&1 | Out-String
                 if ($havenOk.Trim() -ne "TRUE") {
                     Write-Lang "haven 未安装。是否从 CRAN 安装（约 1-2 分钟）?" "haven not installed. Install from CRAN (~1-2 min)?" -Color Yellow
-                    $installConfirm = "N"
-                    try { $installConfirm = Read-Host "$(if ($script:isZH) { '确认安装 haven' } else { 'Confirm install haven' })? (y/N)" } catch { Write-Lang "非交互模式，跳过安装" "Non-interactive, skipping install" -Color Yellow }
-                    if ($installConfirm -eq 'y' -or $installConfirm -eq 'Y') {
-                        & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
-                    } else {
+                    if (-not (Test-UserAuthorizedToRun)) {
                         Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
                         return
                     }
+                    & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
                 }
                 & $rPath -e "df <- haven::read_sav('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
             }

@@ -118,10 +118,17 @@ if ($graphPadInstalled) {
     Write-Lang "版本: $graphPadVersion" "Version: $graphPadVersion" -Color White
     Write-Lang "环境变量: STATSOFT_GRAPHPAD_PATH=$graphPadPath" "Environment variable: STATSOFT_GRAPHPAD_PATH=$graphPadPath" -Color White
     
-    # 设置环境变量（需用户确认）
-    $setEnvConfirm = Read-Host (if ($script:isZH) { "确认设置环境变量 STATSOFT_GRAPHPAD_PATH? (y/N)" } else { "Confirm set env var STATSOFT_GRAPHPAD_PATH? (y/N)" })
-    if ($setEnvConfirm -ne 'y' -and $setEnvConfirm -ne 'Y') {
-        Write-Lang "Skipped env var setting." "已跳过环境变量设置。" -Color Yellow
+    # 设置环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    $persist = $false
+    if ($autoWrite) { $persist = $true }
+    elseif ($confirm -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host (if ($script:isZH) { "设置环境变量 STATSOFT_GRAPHPAD_PATH? (y/N)" } else { "Set env var STATSOFT_GRAPHPAD_PATH? (y/N)" })
+        if ($ans -match '^[yY]') { $persist = $true }
+    }
+    if (-not $persist) {
+        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
     } else {
         [System.Environment]::SetEnvironmentVariable("STATSOFT_GRAPHPAD_PATH", $graphPadPath, "User")
         Write-Lang "环境变量已设置。" "Environment variable set." -Color Green

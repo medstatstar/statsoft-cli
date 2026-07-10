@@ -17,6 +17,29 @@ def get_config():
             return json.load(f)
     return {}
 
+def user_authorized_to_run():
+    """Explicit opt-in before building/running an external Stan model.
+
+    Mirrors the skill-wide gate used for config writes:
+      * STATSOFT_AUTO_WRITE=1            -> proceed (agent/CI non-interactive run).
+      * STATSOFT_CONFIRM=1 AND a real TTY -> prompt y/N, default to skip.
+      * otherwise                        -> proceed only on a direct user invocation
+                                           (the user explicitly asked to run a model);
+                                           never blocks an automated run unexpectedly.
+    Returns True if the external build/run may proceed.
+    """
+    if os.environ.get("STATSOFT_AUTO_WRITE") == "1":
+        return True
+    if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
+        try:
+            sys.stdout.write("About to build & run a Stan model via external processes (make + compiled binary). Continue? (y/N) ")
+            sys.stdout.flush()
+            return sys.stdin.readline().strip().lower() in ("y", "yes")
+        except Exception:
+            return False
+    return True
+
+
 def find_cmdstan():
     """Locate CmdStan installation."""
     # 1. Try config.json
@@ -68,6 +91,11 @@ def run_model(model_file, data_file, output_dir=None):
     # Check model file
     if not os.path.isfile(model_file):
         print(f"ERROR: Model file {model_file} not found.")
+        sys.exit(1)
+
+    # Explicit opt-in before executing external build/run processes
+    if not user_authorized_to_run():
+        print("Cancelled: model run not authorized (set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 in a TTY).")
         sys.exit(1)
 
     # Build model
