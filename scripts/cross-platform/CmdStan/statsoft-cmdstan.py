@@ -31,13 +31,13 @@ def get_config():
 def user_authorized_to_run():
     """Explicit opt-in before building/running an external Stan model.
 
-    Mirrors the skill-wide gate used for config writes:
+    FAIL-CLOSED: returns False by default. Proceed ONLY when an explicit
+    opt-in is present, mirroring the skill-wide gate used for config writes:
       * STATSOFT_AUTO_WRITE=1            -> proceed (agent/CI non-interactive run).
-      * STATSOFT_CONFIRM=1 AND a real TTY -> prompt y/N, default to skip.
-      * otherwise                        -> proceed only on a direct user invocation
-                                           (the user explicitly asked to run a model);
-                                           never blocks an automated run unexpectedly.
-    Returns True if the external build/run may proceed.
+      * STATSOFT_CONFIRM=1 AND a real TTY -> prompt y/N; only 'y' proceeds.
+      * otherwise                        -> deny. An agent or upstream tool cannot
+                                           trigger a build/run unexpectedly.
+    Returns True only if the external build/run is explicitly authorized.
     """
     if os.environ.get("STATSOFT_AUTO_WRITE") == "1":
         return True
@@ -48,7 +48,7 @@ def user_authorized_to_run():
             return sys.stdin.readline().strip().lower() in ("y", "yes")
         except Exception:
             return False
-    return True
+    return False
 
 
 def find_cmdstan():
@@ -84,7 +84,7 @@ def cmdstan_info():
         stanc = os.path.join(path, "bin", "stanc")
         if os.path.isfile(stanc):
             ver = subprocess.run([stanc, "--version"], capture_output=True, text=True)
-            print(f"  stanc: {ver.stdout.strip()[:60]}")
+            print(f"  stanc: {_sanitize(ver.stdout.strip())[:60]}")
         makefile = os.path.join(path, "make", "local")
         if os.path.isfile(makefile):
             with open(makefile) as f:

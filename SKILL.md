@@ -1,25 +1,25 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). Capabilities: software detection (read-only system scanning), CLI execution of third-party statistical binaries in batch/silent mode (this runs external processes and may create temporary working files such as scripts and job/syntax files, and performs verification runs), configuration management (detection-only by default; writes config.json with timestamped backup ONLY when explicitly opted in via STATSOFT_AUTO_WRITE=1 or interactive STATSOFT_CONFIRM=1), user-scoped environment-variable writes, dependency installation & fetching (CRAN/Anaconda repositories), optional software installation, and batch scanning of installed statistical software. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation. JMP provides a Windows CLI (statsoft-jmp) and is executed only with explicit user-provided JSL scripts and confirmation. Statistica's setup script is detection-only (writes NO config.json) and its SVB-script execution is gated behind an explicit-confirmation runner (Test-UserAuthorizedToRun) identical to the SPSS/R runners. NOTE: setup actions perform persistent writes and may download/install software only after explicit user confirmation; the skill only activates on an explicit user request to configure or run a specific tool."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). ACTIVATION-ON-DEMAND only: the skill activates solely on an explicit user request to configure or run a specific named tool, and performs NO action otherwise. All capabilities are gated behind an explicit per-action opt-in (DEFAULT-DENY: STATSOFT_AUTO_WRITE=1 for non-interactive/agent use, or STATSOFT_CONFIRM=1 with a y/N prompt in a real TTY): (1) read-only software detection (system scanning that creates no persistent state); (2) CLI execution of third-party statistical binaries in batch/silent mode — runs external processes and may create TEMPORARY working files (scripts/job/syntax) that are disclosed and cleaned up; (3) configuration persistence to config.json with a timestamped backup, but ONLY when explicitly opted in (detection-only by default — no write otherwise); (4) dependency/package installation & fetching from CRAN/Anaconda; (5) optional software installation. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation, and their setup scripts NEVER write config or environment variables. JMP provides a Windows CLI (statsoft-jmp) executed only with explicit user-provided JSL scripts behind the same default-deny authorization gate as SPSS/R/Statistica. NOTE: network/install actions and any file/env writes occur ONLY after explicit opt-in; setup scripts are detection-only and do not persist state."
 triggers:
-  - "configure SPSS"
-  - "SPSS Statistics"
-  - "R statistical"
-  - "R command line"
-  - "R scripting"
-  - "R命令行"
-  - "configure Stata"
-  - "configure SAS"
-  - "统计软件 CLI"
-  - "连接统计软件命令行"
-  - "statsoft-cli"
-  - "connect statistical software CLI"
+  # Activation requires an EXPLICIT user intent to configure/run a SPECIFIC
+  # named tool. Broad mentions of R/SPSS/SAS/statistics alone do NOT
+  # activate the skill. Every scan, execution, install, and write is
+  # first gated by a confirmation / opt-in step (default-deny).
+  - "use statsoft-cli to configure SPSS"
+  - "run statsoft-cli"
+  - "statsoft-cli configure R"
+  - "use statsoft-cli to run a JMP JSL script"
+  - "statsoft-cli 配置 Stata"
+  - "statsoft-cli 运行 SPSS 语法"
+  - "call statsoft-cli for SAS"
+  - "connect statistical software CLI via statsoft-cli"
 metadata:
   {
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.4",
+    "version": "2.6.5",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -72,11 +72,11 @@ Many statistical software packages have CLI (Command Line Interface) execution m
    - **单软件配置 / Single**: 调用单个 `setup_*.ps1` / `setup_*.sh` 脚本 / Call individual setup script
 4. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件 / Route to platform-specific script, auto-hide incompatible software on non-Windows
 5. **保存配置 / Save Config** — 默认仅检测、不写入 `config.json`（fail-closed；仅在显式 opt-in 时才持久化）/ Detection-only by default; no `config.json` write unless explicitly opted in
-   - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。绝不会阻塞 agent。
-   - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak`（带时间戳）
-   - **写入确认 / Write Confirmation** — 仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互回答 y 时持久化；默认不写入，绝不阻塞 agent。
+   - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。任何未获显式授权的写入都被拒绝（default-deny）。
+   - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak.*`（带时间戳）
+   - **写入确认 / Write Confirmation** — 仅当 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1` 且交互回答 y 时持久化；默认不写入。
+   - **回滚 / Rollback** — 所有持久化状态仅位于 `config.json`（备份于 `config.json.bak.*`）；删除 `config.json` 即可彻底清除。无任何用户环境变量被本技能写入。
 6. **写入记忆 / Write Memory** (需用户同意 / With user consent) — 询问后追加到 `~/.workbuddy/MEMORY.md` / Append to `~/.workbuddy/MEMORY.md` after confirmation
-   - **环境变量修改说明 / Env Var Justification** — 在执行任何环境变量修改脚本前，必须向用户说明为何需要修改（例如："需要将 R 添加到 PATH 以便命令行调用"），并等待用户确认后再执行
 7. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template
 
 ---
@@ -121,7 +121,7 @@ When acting on an explicit user request, this skill runs third-party statistical
 - **Code Execution / 代码执行** — external processes (stats.com, Rscript, Stata, SAS, JMP JSL, CmdStan `make`/`sample`, …). All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, data files, and downloaded dependencies are treated as **untrusted**; they require explicit confirmation plus path / allowlist validation before execution.
 - **File Creation / 文件创建** — running produces temporary scripts, `.spj`/`.sps` job files, and output files in the user-specified working directory; these are expected artifacts of the requested run.
 - **Package Installation / 包安装** — CRAN / Anaconda installs require explicit confirmation (`STATSOFT_CONFIRM=1` + TTY, or a direct user install command); never silent.
-- **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` and environment-variable writes are **detection-only by default**; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. The config directory is created only at the moment of actual persistence. Agents are never blocked.
+- **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` writes are **detection-only by default** and are the ONLY persistent state this skill may create; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. The config directory is created only at the moment of actual persistence. **This skill NEVER writes user environment variables.** Agents are never blocked.
 
 GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection + manual-launch guidance — never driven via CLI / headless automation.
 
@@ -129,16 +129,16 @@ GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection +
 
 ## 触发短语 / Trigger Phrases
 
-**中文**: configure SPSS, R statistical, R command line, configure Stata, configure SAS, 统计软件 CLI, 连接统计软件命令行, statsoft-cli
+**中文**: 仅当用户显式要求用 statsoft-cli 配置/运行某款具名软件时激活（例如「用 statsoft-cli 配置 SPSS」「用 statsoft-cli 运行 JMP 脚本」）。仅提及 R / SPSS / 统计软件 本身不会激活本技能。每次扫描/执行/安装/写入前都有确认或 opt-in 闸门（default-deny）。
 
-**English**: configure SPSS, R statistical, R command line, R scripting, configure Stata, configure SAS, connect statistical software CLI, statsoft-cli
+**English**: Activates only on an explicit user request to configure/run a *specific named* tool via statsoft-cli (e.g. "use statsoft-cli to configure SPSS", "run statsoft-cli"). Mere mentions of R / SPSS / statistics do NOT activate it. Every scan/execution/install/write is first gated by a confirmation or opt-in step (default-deny).
 
 ---
 
 ## 激活边界 / Activation Boundary
 
 - 本技能**仅在用户显式请求**配置或运行某款统计软件时才会被激活；不会主动扫描、修改系统或安装软件。
-- 任何持久化写入（config.json、环境变量）与软件下载/安装，均须在执行前向用户说明并获得确认。默认**仅检测、不写入**——配置写入为 fail-closed：仅在非交互式下设 `STATSOFT_AUTO_WRITE=1`，或交互式下设 `STATSOFT_CONFIRM=1` 并回答 y 时才会持久化 config.json；严格模式可设 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。
+- 任何持久化写入（仅 config.json）与软件下载/安装，均须在执行前向用户说明并获得确认。默认**仅检测、不写入**——配置写入为 fail-closed：仅在非交互式下设 `STATSOFT_AUTO_WRITE=1`，或交互式下设 `STATSOFT_CONFIRM=1` 并回答 y 时才会持久化 config.json；严格模式可设 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。**本技能绝不写入用户环境变量。**
 - GUI-only 软件（AMOS、GraphPad Prism、JASP、jamovi 等）仅提供**检测 + 手动启动 GUI 指引**，本技能不通过 CLI/无头方式驱动其批处理。
 
 ## 语言 / Language
@@ -151,4 +151,4 @@ GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection +
 
 > 本技能执行**高风险操作**，详见 `references/trust-and-safety.md` / This skill performs **high-risk operations**. See `references/trust-and-safety.md` for details.
 
-**核心权限 / Core Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、环境变量修改 (user-scoped)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), environment variable modification (user-scoped), network access (CRAN/Anaconda repositories).
+**核心权限 / Core Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), network access (CRAN/Anaconda repositories).

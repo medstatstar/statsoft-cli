@@ -66,17 +66,44 @@ def _log(msg_cn, msg_en):
     print("[EN] " + msg_en)
 
 
-def _opt_in_confirm(prompt_cn, prompt_en):
-    """Execution authorization for the splash-prone stats.exe path.
+def _minimal_env(extra_path=None):
+    """Build a minimal environment for child SPSS/Python processes.
 
-    This gates RUNNING user-provided SPSS syntax (NOT config persistence),
-    so the user's explicit invocation is treated as intent:
-      * Default (agent/CI run, no STATSOFT_CONFIRM) = proceed.
-      * Strict mode (env STATSOFT_CONFIRM=1 AND a real interactive TTY) = prompt
-        y/N, default to skip. Never fires without a TTY, so it can never hang an
-        automated run.
-    Returns True if execution may proceed.
+    Avoids forwarding the full parent environment (which may contain API keys,
+    tokens, proxy credentials, or agent-specific secrets) into a third-party
+    interpreter. Only a small allow-list needed for process startup is copied;
+    PATH may be extended via extra_path.
     """
+    _ALLOWED = (
+        "PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP",
+        "USERPROFILE", "HOME", "LANG", "LC_ALL", "PYTHONIOENCODING",
+        "COMSPEC", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
+        "OS", "PATHEXT", "PYTHONPATH",
+    )
+    env = {}
+    for k in _ALLOWED:
+        v = os.environ.get(k)
+        if v is not None:
+            env[k] = v
+    if extra_path:
+        env["PATH"] = extra_path + os.pathsep + env.get("PATH", "")
+    return env
+
+
+def _opt_in_confirm(prompt_cn, prompt_en):
+    """Execution authorization for launching SPSS external processes
+    (stats.com / stats.exe / bundled Python) with user-provided job/syntax files.
+
+    FAIL-CLOSED: returns False by default. Proceed ONLY when an explicit opt-in
+    is present:
+      * STATSOFT_AUTO_WRITE=1            -> non-interactive / agent opt-in (proceed).
+      * STATSOFT_CONFIRM=1 AND a real TTY AND user answers y -> interactive confirm.
+    Any other case (incl. a plain user invocation without opt-in) -> deny, so an
+    agent or upstream tool cannot trigger third-party execution unexpectedly.
+    Returns True only if execution is explicitly authorized.
+    """
+    if os.environ.get("STATSOFT_AUTO_WRITE") == "1":
+        return True
     if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
         try:
             sys.stdout.write(prompt_cn + " / " + prompt_en + " (y/N) ")
@@ -85,7 +112,7 @@ def _opt_in_confirm(prompt_cn, prompt_en):
             return ans in ("y", "yes")
         except Exception:
             return False
-    return True
+    return False
 
 
 def _validate_path(path, kind):
@@ -127,6 +154,19 @@ def validate_syntax(syntax_text):
         if re.search(pat, syntax_text, re.IGNORECASE | re.MULTILINE):
             return False, "含受限命令: " + pat
     return True, ""
+
+
+def _validate_spj(spj_file):
+    """Reject .spj production-job files that embed forbidden SPSS syntax
+    (HOST COMMAND / INSERT FILE / PRESERVE / RESTORE). Executing a
+    user-supplied job must never run OS shell commands or read arbitrary
+    files."""
+    try:
+        with open(spj_file, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except Exception as e:
+        return False, "无法读取 .spj: " + str(e)
+    return validate_syntax(text)
 
 
 def _safe_wrapper_path(script_dir):
@@ -171,6 +211,11 @@ def run_console(spj_file, stats_com=None):
         return 1
     if not os.path.exists(spj_file):
         _log(".spj 文件不存在: " + spj_file, ".spj file not found: " + spj_file)
+        return 1
+
+    ok, reason = _validate_spj(spj_file)
+    if not ok:
+        _log("作业文件安全检查未通过: " + reason, "Job file security check failed: " + reason)
         return 1
 
     if stats_com is None:
@@ -237,8 +282,7 @@ def run_internal(sps_file, stats_python_path=None):
         _log("无法创建安全的包装脚本路径", "Cannot create safe wrapper script path")
         return 1
 
-    helper_home = os.path.dirname(stats_python_path).replace("\\", "/")
-    sps_file_forward = sps_file.replace("\\", "/")
+    helper_home = os.path.dirname(stats_python_path)
 
     with open(sps_file, encoding="utf-8", errors="replace") as f:
         syntax_text = f.read()
@@ -247,29 +291,32 @@ def run_internal(sps_file, stats_python_path=None):
         _log("语法安全检查未通过: " + reason, "Syntax security check failed: " + reason)
         return 1
 
-    wrapper_code = '''# -*- coding: utf-8 -*-
-import sys, os
-spss_pkg = "{helper}/Lib/site-packages"
-if spss_pkg not in sys.path: sys.path.insert(0, spss_pkg)
-os.environ["PATH"] = "{helper}" + os.pathsep + os.environ.get("PATH", "")
-import spss
-spss.StartSPSS()
-with open("{sps_file}", encoding="utf-8", errors="replace") as f:
-    spss.Submit(f.read())
-spss.StopSPSS()
-'''.format(helper=helper_home, sps_file=sps_file_forward)
+    # The syntax file path is passed as a command-line ARGUMENT (argv),
+    # never interpolated into the wrapper source -> no Python code injection
+    # via a crafted file path.
+    wrapper_code = (
+        "# -*- coding: utf-8 -*-\n"
+        "import sys, os\n"
+        "helper = sys.argv[1]\n"
+        "spss_pkg = os.path.join(helper, 'Lib', 'site-packages')\n"
+        "if spss_pkg not in sys.path: sys.path.insert(0, spss_pkg)\n"
+        "os.environ['PATH'] = helper + os.pathsep + os.environ.get('PATH', '')\n"
+        "import spss\n"
+        "spss.StartSPSS()\n"
+        "with open(sys.argv[2], encoding='utf-8', errors='replace') as f:\n"
+        "    spss.Submit(f.read())\n"
+        "spss.StopSPSS()\n"
+    )
 
     with open(wrapper, "w", encoding="utf-8") as f:
         f.write(wrapper_code)
 
     _log("正在通过 SPSS 内置 Python 运行语法（无 GUI/闪屏）...",
          "Running syntax via SPSS bundled Python (NO GUI, NO SPLASH)...")
-    run_env = os.environ.copy()
-    spss_home = os.path.dirname(stats_python_path)
-    run_env["PATH"] = spss_home + os.pathsep + run_env.get("PATH", "")
+    run_env = _minimal_env(helper_home)
 
     returncode, stdout, stderr = _run_silent(
-        [stats_python_path, wrapper], env=run_env, timeout=300)
+        [stats_python_path, wrapper, helper_home, sps_file], env=run_env, timeout=300)
 
     if stdout: print(stdout)
     if stderr: print("ERROR: " + stderr)
@@ -284,6 +331,11 @@ def run_exe(spj_file, stats_exe=None):
     """最后备选：通过 stats.exe 运行 Production Facility（可能有闪屏）"""
     if not os.path.exists(spj_file):
         _log(".spj 文件不存在: " + spj_file, ".spj file not found: " + spj_file)
+        return 1
+
+    ok, reason = _validate_spj(spj_file)
+    if not ok:
+        _log("作业文件安全检查未通过: " + reason, "Job file security check failed: " + reason)
         return 1
 
     if stats_exe is None:
@@ -336,8 +388,7 @@ def show_version(stats_python_path=None):
         return 1
     stats_python_path = validated
 
-    run_env = os.environ.copy()
-    run_env["PATH"] = os.path.dirname(stats_python_path) + os.pathsep + run_env.get("PATH", "")
+    run_env = _minimal_env(os.path.dirname(stats_python_path))
 
     returncode, stdout, stderr = _run_silent(
         [stats_python_path, "-c",

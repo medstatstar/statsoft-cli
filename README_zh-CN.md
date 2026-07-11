@@ -176,7 +176,7 @@ statsoft-cli/
 运行 Stata .do 文件（批处理模式）
 ```
 
-任何执行、安装、联网获取或持久化写入前，均需显式确认（交互）或显式 opt-in 环境变量（`STATSOFT_AUTO_WRITE=1` / `STATSOFT_CONFIRM=1`）。默认仅检测。
+任何执行、安装、联网获取或持久化写入前，均需显式确认（交互）或由用户预先设置的只读放行开关（`STATSOFT_AUTO_WRITE=1` / `STATSOFT_CONFIRM=1`，本技能只读取、绝不写入）。默认拒绝（default-deny），仅检测。本技能唯一的持久化状态是 `config.json`，绝不写入任何用户环境变量。
 
 非触发示例（视为普通对话，不激活）：
 

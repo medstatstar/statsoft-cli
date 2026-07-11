@@ -65,22 +65,27 @@ if (-not (Test-Path $rPath)) {
 }
 
 function Test-UserAuthorizedToRun {
-    # Execution/install authorization for R (network package install, external run).
-    # The user's explicit `install`/`run` invocation is the intent, so default = proceed;
-    # STATSOFT_CONFIRM=1 + a real TTY prompts y/N; STATSOFT_AUTO_WRITE=1 auto-proceeds.
-    # Never fires without a TTY, so it can never hang an automated run.
+    # Execution/install authorization gate for R (external run, network package
+    # install) — FAIL-CLOSED (default deny).
+    # Proceed ONLY when an explicit opt-in is present:
+    #   * STATSOFT_AUTO_WRITE=1                          -> non-interactive/agent opt-in
+    #   * STATSOFT_CONFIRM=1 AND a real TTY AND user answers y -> interactive confirm
     $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
     $confirm = $env:STATSOFT_CONFIRM -eq '1'
     if ($autoWrite) { return $true }
     if ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host (if ($script:isZH) { "确认执行? (y/N)" } else { "Confirm execution? (y/N)" })
+        $ans = Read-Host (if ($script:isZH) { "确认执行？该操作将运行第三方外部二进制 (y/N)" } else { "Confirm execution? This runs a third-party external binary (y/N)" })
         return ($ans -match '^[yY]')
     }
-    return $true
+    return $false
 }
 
 switch ($Command) {
     "run" {
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow
+            return
+        }
         $rFile = $Args[0]
         if (-not (Test-Path $rFile)) {
             Write-Error "$(if ($script:isZH) { 'R 脚本不存在' } else { 'R script not found' }): $rFile"
@@ -125,45 +130,55 @@ switch ($Command) {
             Write-Error "$(if ($script:isZH) { '数据文件不存在' } else { 'Data file not found' }): $dataFile"
             exit 1
         }
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Lang "已取消（未确认）" "Cancelled (not confirmed)." -Color Yellow
+            return
+        }
 
         $ext = [System.IO.Path]::GetExtension($dataFile).ToLower()
 
-        switch ($ext) {
-            ".csv" {
-                & $rPath -e "df <- read.csv('$dataFile', nrows=10); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
-            }
-            ".rds" {
-                & $rPath -e "df <- readRDS('$dataFile'); cat('Dimensions:', dim(df), '\n'); print(names(df)); print(head(df))" 2>&1
-            }
-            ".dta" {
-                Write-Lang "Stata (.dta) 文件需要 haven 包" "Stata (.dta) file requires haven package" -Color Yellow
-                $havenOk = & $rPath -e "cat(require('haven', quietly=TRUE))" 2>&1 | Out-String
-                if ($havenOk.Trim() -ne "TRUE") {
-                    Write-Lang "haven 未安装。是否从 CRAN 安装（约 1-2 分钟）?" "haven not installed. Install from CRAN (~1-2 min)?" -Color Yellow
-                    if (-not (Test-UserAuthorizedToRun)) {
-                        Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
-                        return
-                    }
-                    & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
+        # For Stata/SPSS formats, ensure the haven package is available.
+        if ($ext -eq ".dta" -or $ext -eq ".sav") {
+            Write-Lang "Stata/SPSS 文件需要 haven 包" "Stata/SPSS file requires the haven package" -Color Yellow
+            $havenOk = & $rPath -e "cat(require('haven', quietly=TRUE))" 2>&1 | Out-String
+            if ($havenOk.Trim() -ne "TRUE") {
+                Write-Lang "haven 未安装。是否从 CRAN 安装（约 1-2 分钟）?" "haven not installed. Install from CRAN (~1-2 min)?" -Color Yellow
+                if (-not (Test-UserAuthorizedToRun)) {
+                    Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
+                    return
                 }
-                & $rPath -e "df <- haven::read_dta('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
+                & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
             }
-            ".sav" {
-                Write-Lang "SPSS (.sav) 文件需要 haven 包" "SPSS (.sav) file requires haven package" -Color Yellow
-                $havenOk = & $rPath -e "cat(require('haven', quietly=TRUE))" 2>&1 | Out-String
-                if ($havenOk.Trim() -ne "TRUE") {
-                    Write-Lang "haven 未安装。是否从 CRAN 安装（约 1-2 分钟）?" "haven not installed. Install from CRAN (~1-2 min)?" -Color Yellow
-                    if (-not (Test-UserAuthorizedToRun)) {
-                        Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
-                        return
-                    }
-                    & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
-                }
-                & $rPath -e "df <- haven::read_sav('$dataFile'); cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n'); print(names(df)); print(summary(df))" 2>&1
-            }
-            default {
-                Write-Lang-Warning "不支持的文件格式: $ext" "Unsupported file format: $ext"
-            }
+        }
+
+        # Build a temporary R script; pass the data file path as a command-line
+        # ARGUMENT (NEVER interpolate it into source) -> no R code injection.
+        $readExpr = switch ($ext) {
+            ".csv"  { "df <- read.csv(args[1], nrows=10)" }
+            ".rds"  { "df <- readRDS(args[1])" }
+            ".dta"  { "df <- haven::read_dta(args[1])" }
+            ".sav"  { "df <- haven::read_sav(args[1])" }
+            default { $null }
+        }
+        if ($null -eq $readExpr) {
+            Write-Lang-Warning "不支持的文件格式: $ext" "Unsupported file format: $ext"
+            return
+        }
+        $rScript = @"
+args <- commandArgs(trailingOnly=TRUE)
+$readExpr
+cat('Rows:', nrow(df), '\nCols:', ncol(df), '\n')
+print(names(df))
+print(summary(df))
+"@
+        $tempR = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.R'
+        Write-Lang "创建临时 R 脚本（仅本次运行，结束后删除）:" "Creating a temporary R script (used only for this run, removed afterwards):" -Color Gray
+        Write-Host "  $tempR" -ForegroundColor Gray
+        try {
+            $rScript | Set-Content $tempR -Encoding UTF8
+            & $rPath $tempR "$dataFile" 2>&1
+        } finally {
+            Remove-Item $tempR -ErrorAction SilentlyContinue
         }
     }
     

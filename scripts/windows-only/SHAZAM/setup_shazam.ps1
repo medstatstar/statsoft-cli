@@ -29,7 +29,7 @@ function Save-StatSoftConfig {
     if ($autoWrite) {
         $persist = $true
     } elseif ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host (if ($script:isZH) { "Persist detected config to config.json? (y/N)" } else { "Persist detected config to config.json? (y/N)" })
+        $ans = Read-Host "Persist detected config to config.json? (y/N)"
         if ($ans -match '^[yY]') { $persist = $true }
     }
     if (-not $persist) {
@@ -43,14 +43,9 @@ function Save-StatSoftConfig {
     }
     $tmp = [System.IO.Path]::GetTempFileName()
     $Config | ConvertTo-Json -Depth 10 | Set-Content -Path $tmp -Encoding UTF8
-    $env:STATSOFT_AUTO_WRITE = "1"
     & python3 "$gate" "$ConfigPath" "$tmp"
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
-
-}
-
-
 
 Write-Host "=== SHAZAM Setup ===" -ForegroundColor Cyan
 

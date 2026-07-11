@@ -58,23 +58,26 @@ switch ($Command) {
             exit 1
         }
 
-        # 使用 Python prismWriter 只读获取数据结构 / Read-only via prismwriter
+        # Pass the PZFX path as a command-line ARGUMENT to Python (NEVER
+        # interpolate it into source) -> no Python code injection via a crafted
+        # file path. The temp script is disclosed and removed in a finally block.
+        Write-Host "[CN] 创建临时 Python 脚本（仅本次运行，结束后删除）:" -ForegroundColor Gray
+        $tempPy = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.py'
+        Write-Host "  $tempPy" -ForegroundColor Gray
         $pythonScript = @"
+import sys, json
 from prismwriter import PrismFile
-import json
-pf = PrismFile('$pzfxFile')
-info = {
-    'tables': list(pf.tables.keys()),
-    'metadata': pf.metadata
-}
+path = sys.argv[1]
+pf = PrismFile(path)
+info = {'tables': list(pf.tables.keys()), 'metadata': pf.metadata}
 print(json.dumps(info, indent=2))
 "@
-
-        $tempPy = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.py'
-        $pythonScript | Set-Content $tempPy -Encoding UTF8
-
-        python $tempPy 2>&1
-        Remove-Item $tempPy -ErrorAction SilentlyContinue
+        try {
+            $pythonScript | Set-Content $tempPy -Encoding UTF8
+            python $tempPy "$pzfxFile" 2>&1
+        } finally {
+            Remove-Item $tempPy -ErrorAction SilentlyContinue
+        }
     }
 
     "read-log" {

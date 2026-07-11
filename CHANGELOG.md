@@ -1,5 +1,20 @@
 # Changelog / 更新日志
 
+## v2.6.5 (2026-07-11)
+
+ClawHub SkillSpector 审计继续修复（v2.6.4 仍 `suspicious`，20 项发现；审计主题进一步升级到「默认拒绝授权 / 最小子进程环境 / 临时脚本注入 / 环境变量持久化 / 文档范围漂移」）。本轮按审计器 remediation 模式彻底修复：
+
+- **全部授权闸门改为默认拒绝（SDI-4，多处 MEDIUM）**：`Test-UserAuthorizedToRun`（`statsoft-spss.ps1` / `statsoft-statistica.ps1` / `statsoft-r.ps1`）与 `user_authorized_to_run`（`statsoft-cmdstan.py`）、`_opt_in_confirm`（`spss_helper.py`）由「默认 proceed」翻转为 **default-deny**：默认返回 False，仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1`+TTY 回答 y 时才放行。SPSS 授权提示补述「将执行第三方外部二进制」。
+- **SPSS 子进程最小环境（E2 HIGH）**：`spss_helper.py` 新增 `_minimal_env()`，以允许列表（PATH/SYSTEMROOT 等 + 必要 PYTHONPATH）构建子进程环境，替换 `run_internal` / `show_version` 中的 `os.environ.copy()`，防止把用户密钥泄漏给 SPSS 子进程。
+- **SPSS .spj 语法校验（AST4 MEDIUM）**：`spss_helper.py` 新增 `_validate_spj()`，在 `run_console` / `run_exe` 执行前拒绝 .spj/.sps 中的 `HOST COMMAND` / `INSERT FILE` / `PRESERVE` / `RESTORE` 等危险语法。
+- **SPSS run_internal 去插值（SQP-2）**：语法路径改为经 `sys.argv[2]` 传参，不再插值进包装脚本字面量。
+- **CmdStan 输出净化 + 默认拒绝（OH1 HIGH / SDI-4）**：`cmdstan_info` 的 `stanc --version` 输出经 `_sanitize()` 后再打印；`user_authorized_to_run` 默认拒绝。
+- **临时脚本改 argv 传参（SQP-2，JMP/GraphPad/R）**：`statsoft-jmp.ps1`（新增 `Test-UserAuthorizedToRun` + `Test-SafePath`）、`statsoft-graphpad.ps1`、`statsoft-r.ps1` 的 `data-info` 临时脚本改为经 `commandArgs`/`sys.argv`/安全路径校验传入数据文件路径，不再插值；披露临时文件并在 `finally` 清理。
+- **setup 脚本改为纯检测（SDI-1 HIGH，GraphPad/JMP/SPSS）**：`setup_graphpad.ps1` / `setup_jmp.ps1` / `setup_spss.ps1` 删除全部 `SetEnvironmentVariable(..., "User")` 写入，改为打印手动设置指引；头注释标注 DETECTION-ONLY。**本技能不再写入任何用户环境变量。**
+- **SHAZAM 强制放行移除（SDI-4）**：`setup_shazam.ps1` 删除调用 `write_config.py` 前强制 `$env:STATSOFT_AUTO_WRITE = "1"` 的越权行。
+- **文档范围收窄（SDI-1 / TP4）**：`references/version-specifics.md` 的 JASP `jaspTools` / AMOS Python 扩展改为 GUI-only 非自动化警告；NCSS / Origin CLI 段标注「仅供参考——检测 + 手动启动，不自动执行」。
+- **SKILL.md 收窄（TP4 / SQP-1 / RA2）**：`description` 重写为按需激活 + default-deny + 不写用户环境变量 + setup 仅检测；`triggers` 收窄为显式「用 statsoft-cli 配置/运行 X」句式；移除过时「环境变量修改说明」工作流步骤；信任边界声明 config.json 为唯一持久化状态。`README_zh-CN.md` 澄清 opt-in 开关为只读放行、非持久化写入。
+
 ## v2.6.4 (2026-07-10)
 
 ClawHub SkillSpector 审计继续修复（v2.6.3 仍 `suspicious`，15 项发现；扫描器已把审计主题扩展到注入 / 清单 / 信任边界 / 输出净化）。本轮定向修复：

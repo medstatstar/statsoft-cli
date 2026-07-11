@@ -1,6 +1,6 @@
 # setup_graphpad.ps1 — GraphPad Prism 检测与配置脚本
 # 用法: powershell -ExecutionPolicy Bypass -File setup_graphpad.ps1
-# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner. GUI-only software: detection/launch only, no CLI batch.
+# ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables. GUI-only software: detection/launch only, no CLI batch.
 
 # ============================================================
 # Language Detection
@@ -116,23 +116,15 @@ if ($graphPadInstalled) {
     Write-Host "[EN] === Configuration Result ===" -ForegroundColor Cyan
     Write-Lang "GraphPad Prism 路径: $graphPadPath" "GraphPad Prism path: $graphPadPath" -Color White
     Write-Lang "版本: $graphPadVersion" "Version: $graphPadVersion" -Color White
-    Write-Lang "环境变量: STATSOFT_GRAPHPAD_PATH=$graphPadPath" "Environment variable: STATSOFT_GRAPHPAD_PATH=$graphPadPath" -Color White
+    Write-Lang "持久化方式: 手动设置环境变量 STATSOFT_GRAPHPAD_PATH（本脚本不自动写入）" "To persist: set env var STATSOFT_GRAPHPAD_PATH manually (this script does NOT write it)" -Color White
     
-    # 设置环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
-    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
-    $confirm = $env:STATSOFT_CONFIRM -eq '1'
-    $persist = $false
-    if ($autoWrite) { $persist = $true }
-    elseif ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host (if ($script:isZH) { "设置环境变量 STATSOFT_GRAPHPAD_PATH? (y/N)" } else { "Set env var STATSOFT_GRAPHPAD_PATH? (y/N)" })
-        if ($ans -match '^[yY]') { $persist = $true }
-    }
-    if (-not $persist) {
-        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
-    } else {
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_GRAPHPAD_PATH", $graphPadPath, "User")
-        Write-Lang "环境变量已设置。" "Environment variable set." -Color Green
-    }
+    # This setup script is DETECTION-ONLY: it reports the detected path and
+    # prints manual configuration guidance. It does NOT modify any persistent
+    # state (no env-var writes, no config.json writes). The runner
+    # statsoft-graphpad.ps1 auto-detects GraphPad Prism from the paths above.
+    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置。如需持久化，请手动设置环境变量:" "`n[CN] Detection-only: no configuration is written. To persist, set the env var manually:" -ForegroundColor Yellow
+    Write-Host "  [PowerShell]  `$env:STATSOFT_GRAPHPAD_PATH = '$graphPadPath'" -ForegroundColor Gray
+    Write-Host "  [cmd]        set STATSOFT_GRAPHPAD_PATH=$graphPadPath" -ForegroundColor Gray
     
     # 显示调用示例
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan

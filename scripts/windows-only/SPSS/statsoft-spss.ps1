@@ -239,18 +239,20 @@ function New-SpssSpj {
 # Main dispatch
 # ============================================================
 function Test-UserAuthorizedToRun {
-    # Execution authorization for running SPSS (external command / file writes).
-    # The user's explicit `run`/`run-batch` invocation is the intent, so default = proceed;
-    # STATSOFT_CONFIRM=1 + a real TTY prompts y/N; STATSOFT_AUTO_WRITE=1 auto-proceeds.
-    # Never fires without a TTY, so it can never hang an automated run.
+    # Execution authorization gate — FAIL-CLOSED (default deny).
+    # Proceed ONLY when an explicit opt-in is present:
+    #   * STATSOFT_AUTO_WRITE=1                          -> non-interactive/agent opt-in
+    #   * STATSOFT_CONFIRM=1 AND a real TTY AND user answers y -> interactive confirm
+    # Any other case (incl. a plain user invocation without opt-in) -> deny, so
+    # an agent or upstream tool cannot trigger third-party execution unexpectedly.
     $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
     $confirm = $env:STATSOFT_CONFIRM -eq '1'
     if ($autoWrite) { return $true }
     if ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host (if ($script:isZH) { "确认运行 SPSS? (y/N)" } else { "Confirm running SPSS? (y/N)" })
+        $ans = Read-Host (if ($script:isZH) { "确认运行 SPSS？该操作将执行第三方外部二进制 (y/N)" } else { "Confirm running SPSS? This executes a third-party external binary (y/N)" })
         return ($ans -match '^[yY]')
     }
-    return $true
+    return $false
 }
 
 switch ($Command) {

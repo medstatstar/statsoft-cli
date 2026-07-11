@@ -240,12 +240,8 @@ descriptives <- jmv::descriptives(data = mydata, vars = c("var1", "var2"))
 > ⚠️ JASP **没有纯 CLI 模式**，无法静默批处理。本技能仅提供检测与手动启动 GUI 指引（GUI-only）。
 > JASP has **no pure CLI mode** and cannot run silently/batch. This skill provides detection and manual GUI-launch guidance only (GUI-only).
 
-**替代方案（R 脚本，无需 GUI） / Alternative (R script, no GUI)**: 使用 `jaspTools` R 包在后台调用 JASP 分析模块 / Use the `jaspTools` R package to run JASP modules in the background:
-```r
-library(jaspTools)
-data <- jaspTools::readOSR("data.csv")
-desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
-```
+> ⚠️ 本技能**不通过 R/jaspTools 在后台自动化 JASP**——JASP 为 GUI-only，仅做检测与手动启动指引。
+> This skill does NOT automate JASP via R/jaspTools in the background — JASP is GUI-only; detection + manual-launch guidance only.
 
 ---
 
@@ -281,7 +277,8 @@ pspp < analysis.sps
 > ⚠️ AMOS **没有 CLI 模式**，无法静默批处理。本技能仅提供检测与手动启动 GUI 指引（GUI-only）。
 > AMOS has **no CLI mode** and cannot run silently/batch. This skill provides detection and manual GUI-launch guidance only (GUI-only).
 
-如需后台调用，请使用 IBM SPSS Amos 官方 Python 扩展自行编写脚本（不在本技能自动范围内）/ For background automation, use the official IBM SPSS Amos Python extension on your own (outside this skill's automation scope).
+> ⚠️ AMOS 为 GUI-only，**本技能不提供后台自动化**（包括参考文档中给出的脚本示例）。如需自动化，请用户自行在技能范围外编写。
+> AMOS is GUI-only; this skill provides NO background automation (including any script shown in reference docs). For automation, the user must write it themselves outside this skill's scope.
 
 ---
 
@@ -650,12 +647,10 @@ microfit commands.txt
 | 2024 | Latest, batch mode support |
 | 2023 | Baseline |
 
-### NCSS CLI Usage
+### NCSS 调用 / NCSS Invocation
 
-```batch
-REM Run NCSS batch analysis
-"NCSS.exe" /B "analysis.ncss"
-```
+> ⚠️ Reference only — this skill provides detection + manual-launch guidance for NCSS and does NOT auto-execute its CLI. To run batch analysis manually:
+> `"NCSS.exe" /B "analysis.ncss"`
 
 ---
 
@@ -677,9 +672,7 @@ REM Run NCSS batch analysis
 | 2024 | Baseline |
 | 2023 | Older versions may have limited CLI support |
 
-### Origin CLI Usage
+### Origin 调用 / Origin Invocation
 
-```batch
-REM Run LabTalk script in batch mode
-origin97 -h script.ogs
-```
+> ⚠️ Reference only — this skill provides detection + manual-launch guidance for Origin and does NOT auto-execute its CLI. To run a LabTalk script manually:
+> `origin97 -h script.ogs`

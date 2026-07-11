@@ -1,7 +1,7 @@
 # setup_spss.ps1 — SPSS Statistics 检测与配置（后台静默运行）
 # 用法: powershell -ExecutionPolicy Bypass -File setup_spss.ps1 [-Version "26"]
 # 注意：SPSS 26+ 版主程序为 stats.exe，无 spsswin.exe
-# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
+# ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables.
 # Language: auto-detects system locale — Chinese on zh-* systems, English otherwise
 
 param(
@@ -230,34 +230,17 @@ if ($spssInstalled) {
     Write-Lang "  f-string: $fstringShort" "  f-string: $fstringShort"
 
     # ============================================================
-    # 8. Set environment variables
+    # 8. Persistence guidance (DETECTION-ONLY)
     # ============================================================
+    # This setup script is DETECTION-ONLY: it reports the detected paths
+    # and prints manual configuration guidance. It does NOT modify any
+    # persistent state (no env-var writes, no config.json writes).
     Write-Lang "" ""
-    Write-Lang "即将设置用户环境变量:" "About to set user environment variables:" -Color Yellow
-    Write-Host "  STATSOFT_SPSS_PATH=$spssHome"
-  Write-Lang "STATSOFT_SPSS_COM=$(if ($statsComExists) { $statsComPath } else { 'N/A' })" -Color White
-    Write-Host "  STATSOFT_SPSS_PYTHON=$pythonPath"
-    Write-Host "  STATSOFT_SPSS_FSTRING=$useFString"
-
-    # 设置环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
-    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
-    $confirm = $env:STATSOFT_CONFIRM -eq '1'
-    $persist = $false
-    if ($autoWrite) { $persist = $true }
-    elseif ($confirm -and -not [Console]::IsInputRedirected) {
-        $promptText = if ($script:isZH) { "确认设置环境变量? (y/N)" } else { "Confirm setting env vars? (y/N)" }
-        $ans = Read-Host $promptText
-        if ($ans -match '^[yY]') { $persist = $true }
-    }
-    if (-not $persist) {
-        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
-    } else {
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PATH", $spssHome, "User")
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_COM", $(if ($statsComExists) { $statsComPath } else { "" }), "User")
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_PYTHON", $pythonPath, "User")
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_SPSS_FSTRING", $useFString.ToString(), "User")
-        Write-Lang "环境变量已设置" "Environment variables set" -Color Green
-    }
+    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置。如需持久化，请手动设置以下环境变量：" "`n[EN] Detection-only: no configuration is written. To persist, set the env vars manually:" -Color Yellow
+    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_PATH = '$spssHome'" -ForegroundColor Gray
+    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_COM = '$statsComPath'" -ForegroundColor Gray
+    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_PYTHON = '$pythonPath'" -ForegroundColor Gray
+    Write-Host "  [cmd]         set STATSOFT_SPSS_PATH=$spssHome" -ForegroundColor Gray
 
     # ============================================================
     # 9. Show usage examples

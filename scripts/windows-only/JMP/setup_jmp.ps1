@@ -1,6 +1,6 @@
 # setup_jmp.ps1 — JMP 检测与配置脚本
 # 用法: powershell -ExecutionPolicy Bypass -File setup_jmp.ps1
-# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
+# ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables.
 
 # ============================================================
 # Language Detection
@@ -114,33 +114,21 @@ if ($jmpInstalled) {
     Write-Lang "JMP 路径: $jmpPath" "JMP path: $jmpPath" -Color White
     Write-Lang "版本: $jmpVersion" "Version: $jmpVersion" -Color White
     
-    # 请求用户确认后再修改环境变量（fail-closed：默认仅检测，不写入；仅当显式 opt-in 才持久化）
-    Write-Lang "`n[CN] 即将设置用户环境变量:" "`n[CN] 即将设置用户环境变量:" -ForegroundColor Yellow
-    Write-Lang "[EN] About to set environment variables:" "[EN] About to set environment variables:" -ForegroundColor Yellow
-    Write-Host "  STATSOFT_JMP_PATH=$jmpPath" -ForegroundColor Gray
-
-    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
-    $confirm = $env:STATSOFT_CONFIRM -eq '1'
-    $persist = $false
-    if ($autoWrite) { $persist = $true }
-    elseif ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host (if ($script:isZH) { "确认设置环境变量? (y/N)" } else { "Confirm setting env vars? (y/N)" })
-        if ($ans -match '^[yY]') { $persist = $true }
-    }
-    if (-not $persist) {
-        Write-Lang "仅检测：未修改环境变量。设置 STATSOFT_AUTO_WRITE=1 持久化，或 STATSOFT_CONFIRM=1 交互确认。" "Detection-only: env var NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
-    } else {
-        [System.Environment]::SetEnvironmentVariable("STATSOFT_JMP_PATH", $jmpPath, "User")
-  Write-Lang "[OK] [CN] 环境变量已设置" "[EN] Environment variable set" -Color Green
-    }
+    # This setup script is DETECTION-ONLY: it reports the detected path and
+    # prints manual configuration guidance. It does NOT modify any persistent
+    # state (no env-var writes, no config.json writes) — the runner
+    # statsoft-jmp.ps1 auto-detects JMP from the common paths above.
+    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置。如需持久化，请手动设置环境变量:" "`n[CN] Detection-only: no configuration is written. To persist, set the env var manually:" -ForegroundColor Yellow
+    Write-Host "  [PowerShell]  `$env:STATSOFT_JMP_PATH = '$jmpPath'" -ForegroundColor Gray
+    Write-Host "  [cmd]        set STATSOFT_JMP_PATH=$jmpPath" -ForegroundColor Gray
     
     # 显示调用示例
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan
     Write-Host "[EN] === Usage Examples ===" -ForegroundColor Cyan
     Write-Lang "运行 JSL 脚本:" "Run JSL script:" -Color White
-  Write-Lang "`"$jmpPath`"" "R `" -Color White
+    Write-Host "  `"$jmpPath`" script.jsl"
     Write-Lang "" ""
     Write-Lang "静默模式:" "Silent mode:" -Color White
-  Write-Lang "`"$jmpPath`"" "S /R `" -Color White
+    Write-Host "  `"$jmpPath`" -jsl script.jsl"
     Write-Lang "" ""
 }
