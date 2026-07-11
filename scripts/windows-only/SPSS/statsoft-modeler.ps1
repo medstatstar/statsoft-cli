@@ -109,6 +109,20 @@ function Invoke-Clemb {
     return $proc.ExitCode
 }
 
+# Parse an OPTIONAL, user-supplied "-log <path>" from remaining args.
+# Logging is opt-in: by default no persistent log file is written (clemb runs
+# with -nolog and stdout/stderr are captured/printed above). A log file is
+# created ONLY when the user explicitly asks for one, and its path is disclosed.
+function Get-LogArg {
+    param([string[]]$A)
+    for ($i = 0; $i -lt $A.Count; $i++) {
+        if (($A[$i] -eq '-log' -or $A[$i] -eq '--log-file') -and ($i + 1) -lt $A.Count) {
+            return $A[$i + 1]
+        }
+    }
+    return $null
+}
+
 switch ($Command) {
     "info" {
         Write-Host "`n=== SPSS Modeler environment ===" -ForegroundColor Yellow
@@ -125,8 +139,13 @@ switch ($Command) {
         if ($Args.Count -eq 0) { Write-Error "Missing stream file path."; exit 1 }
         $streamFile = $Args[0]
         if (-not (Test-Path $streamFile)) { Write-Error "Stream file not found: $streamFile"; exit 1 }
-        $logFile = Join-Path $PWD "modeler_run.log"
-        $rc = Invoke-Clemb @{ "stream" = $streamFile } $logFile
+        $userLog = Get-LogArg $Args
+        if ($userLog) {
+            Write-Host "[statsoft-modeler] Writing log to (user-specified): $userLog" -ForegroundColor Gray
+            $rc = Invoke-Clemb @{ "stream" = $streamFile } $userLog
+        } else {
+            $rc = Invoke-Clemb @{ "stream" = $streamFile; "nolog" = $true } $null
+        }
         exit $rc
     }
 
@@ -134,8 +153,13 @@ switch ($Command) {
         if ($Args.Count -eq 0) { Write-Error "Missing script file path."; exit 1 }
         $scriptFile = $Args[0]
         if (-not (Test-Path $scriptFile)) { Write-Error "Script file not found: $scriptFile"; exit 1 }
-        $logFile = Join-Path $PWD "modeler_script.log"
-        $rc = Invoke-Clemb @{ "script" = $scriptFile; "scriptlang" = "python" } $logFile
+        $userLog = Get-LogArg $Args
+        if ($userLog) {
+            Write-Host "[statsoft-modeler] Writing log to (user-specified): $userLog" -ForegroundColor Gray
+            $rc = Invoke-Clemb @{ "script" = $scriptFile; "scriptlang" = "python" } $userLog
+        } else {
+            $rc = Invoke-Clemb @{ "script" = $scriptFile; "scriptlang" = "python"; "nolog" = $true } $null
+        }
         exit $rc
     }
 
@@ -143,8 +167,13 @@ switch ($Command) {
         if ($Args.Count -eq 0) { Write-Error "Missing stream file path."; exit 1 }
         $streamFile = $Args[0]
         if (-not (Test-Path $streamFile)) { Write-Error "Stream file not found: $streamFile"; exit 1 }
-        $logFile = Join-Path $PWD "modeler_server.log"
-        $rc = Invoke-Clemb @{ "stream" = $streamFile; "server" = $true; "hostname" = "localhost"; "port" = "80" } $logFile
+        $userLog = Get-LogArg $Args
+        if ($userLog) {
+            Write-Host "[statsoft-modeler] Writing log to (user-specified): $userLog" -ForegroundColor Gray
+            $rc = Invoke-Clemb @{ "stream" = $streamFile; "server" = $true; "hostname" = "localhost"; "port" = "80" } $userLog
+        } else {
+            $rc = Invoke-Clemb @{ "stream" = $streamFile; "server" = $true; "hostname" = "localhost"; "port" = "80"; "nolog" = $true } $null
+        }
         exit $rc
     }
 

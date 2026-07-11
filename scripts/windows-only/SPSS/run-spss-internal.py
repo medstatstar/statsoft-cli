@@ -2,7 +2,14 @@
 # run-spss-internal.py — Run SPSS syntax via SPSS built-in Python (no GUI)
 # Usage: "C:\Program Files\IBM\SPSS\Statistics\XX\Python3\python.exe" run-spss-internal.py <sps_file>
 # Note: 动态扫描任意盘符下的 SPSS 安装目录 / Dynamic scan SPSS on any drive
-# Safety: 过滤危险指令（HOST COMMAND 等）/ Filter dangerous directives
+#
+# TRUSTED-INPUT-ONLY: This helper submits the given .sps syntax to the SPSS
+# processor via spss.Submit(). The syntax file is executed as code — supply
+# ONLY files you authored/trust. validate_syntax() below is a best-effort
+# tripwire that blocks a LIMITED, hardcoded set of obviously dangerous line
+# patterns (e.g. HOST COMMAND). It is NOT a comprehensive sandbox and does
+# NOT guarantee safety against obfuscated/alternate syntax. Do not rely on it
+# to sanitize untrusted input.
 
 import sys
 import os
@@ -17,8 +24,14 @@ def log(msg_cn, msg_en=None):
 
 def validate_syntax(syntax):
     """
-    Validate SPSS syntax for safety.
-    Reject scripts containing HOST COMMAND or other dangerous directives.
+    Best-effort tripwire, NOT a security guarantee.
+
+    Blocks a LIMITED, hardcoded set of obviously dangerous line patterns
+    (HOST / INSERT FILE / PRESERVE / RESTORE / COMPUTE...EXECUTE). This is a
+    coarse denylist that can be bypassed by obfuscated or alternate syntax
+    forms; it does not validate SPSS syntax at the statement level and must
+    not be treated as a sanitizer for untrusted input. Callers must only pass
+    trusted, user-authored .sps files.
     """
     dangerous_patterns = [
         r'^\s*HOST\s+COMMAND\s*=\s*',

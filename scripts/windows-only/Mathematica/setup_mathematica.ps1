@@ -48,8 +48,6 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
-}
-
 
 
 $ErrorActionPreference = "Stop"

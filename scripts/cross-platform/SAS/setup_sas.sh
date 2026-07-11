@@ -217,14 +217,14 @@ main() {
         echo "  2. Installation path?"
     fi
 
-    local manual_path
-    read -p "$(LANG_ZH "输入 SAS 路径" "Enter SAS path")" manual_path
-    if [[ -n "$manual_path" ]] && [[ -d "$manual_path" ]]; then
-        SAS_CMD="$manual_path/sas"
-        [[ "$WB_OS" == "windows" ]] && SAS_CMD="$manual_path/sas.exe"
-        save_config
-        verify_sas
-        return $?
+    # Detection-only: do NOT solicit a manual path or write config here. If SAS is
+    # installed in a non-standard location, the user configures it explicitly.
+    if [[ "$SCRIPT_LANG" == "zh" ]]; then
+        echo "  3. 若已安装但未检测到，请在 config.json 的 SAS.Path 中手动填写路径，"
+        echo "     或设置环境变量 STATSOFT_AUTO_WRITE=1 后重新运行本脚本以持久化检测结果。"
+    else
+        echo "  3. If installed but not detected, set SAS.Path manually in config.json,"
+        echo "     or re-run this script with STATSOFT_AUTO_WRITE=1 to persist a detected result."
     fi
 
     return 1

@@ -24,6 +24,8 @@ import os
 import sys
 import re
 import subprocess
+import tempfile
+import shutil
 
 # ============================================================
 # 动态路径发现
@@ -169,15 +171,6 @@ def _validate_spj(spj_file):
     return validate_syntax(text)
 
 
-def _safe_wrapper_path(script_dir):
-    """获取安全的包装脚本路径"""
-    real_dir = os.path.realpath(script_dir)
-    wrapper = os.path.join(real_dir, "_spss_runner.py")
-    if not os.path.realpath(wrapper).startswith(real_dir):
-        return None
-    return wrapper
-
-
 def _run_silent(cmd, env=None, timeout=300):
     """受控执行：仅接受 list 形式的命令（禁止 shell 字符串）。调用方须先校验可执行文件。"""
     if not isinstance(cmd, list) or not cmd:
@@ -276,12 +269,6 @@ def run_internal(sps_file, stats_python_path=None):
     ver_match = re.search(r'statistics[/\\](\d+)[/\\]', stats_python_path.lower())
     spss_version = ver_match.group(1) if ver_match else "26"
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    wrapper = _safe_wrapper_path(script_dir)
-    if wrapper is None:
-        _log("无法创建安全的包装脚本路径", "Cannot create safe wrapper script path")
-        return 1
-
     helper_home = os.path.dirname(stats_python_path)
 
     with open(sps_file, encoding="utf-8", errors="replace") as f:
@@ -291,6 +278,8 @@ def run_internal(sps_file, stats_python_path=None):
         _log("语法安全检查未通过: " + reason, "Syntax security check failed: " + reason)
         return 1
 
+    # The runner wrapper is written to a PRIVATE temp directory (0700) and
+    # deleted after execution -> no undeclared persistent state left on disk.
     # The syntax file path is passed as a command-line ARGUMENT (argv),
     # never interpolated into the wrapper source -> no Python code injection
     # via a crafted file path.
@@ -308,19 +297,26 @@ def run_internal(sps_file, stats_python_path=None):
         "spss.StopSPSS()\n"
     )
 
-    with open(wrapper, "w", encoding="utf-8") as f:
-        f.write(wrapper_code)
+    tmp_dir = tempfile.mkdtemp(prefix="statsoft_spss_")
+    wrapper = os.path.join(tmp_dir, "_spss_runner.py")
+    _log("临时运行脚本（执行后自动删除）: " + wrapper,
+         "Temporary runner script (auto-deleted after run): " + wrapper)
+    try:
+        with open(wrapper, "w", encoding="utf-8") as f:
+            f.write(wrapper_code)
 
-    _log("正在通过 SPSS 内置 Python 运行语法（无 GUI/闪屏）...",
-         "Running syntax via SPSS bundled Python (NO GUI, NO SPLASH)...")
-    run_env = _minimal_env(helper_home)
+        _log("正在通过 SPSS 内置 Python 运行语法（无 GUI/闪屏）...",
+             "Running syntax via SPSS bundled Python (NO GUI, NO SPLASH)...")
+        run_env = _minimal_env(helper_home)
 
-    returncode, stdout, stderr = _run_silent(
-        [stats_python_path, wrapper, helper_home, sps_file], env=run_env, timeout=300)
+        returncode, stdout, stderr = _run_silent(
+            [stats_python_path, wrapper, helper_home, sps_file], env=run_env, timeout=300)
 
-    if stdout: print(stdout)
-    if stderr: print("ERROR: " + stderr)
-    return returncode
+        if stdout: print(stdout)
+        if stderr: print("ERROR: " + stderr)
+        return returncode
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 # ============================================================
@@ -413,14 +409,28 @@ def check_sps(sps_file):
 
 
 def create_spj(sps_file, output_dir=None):
-    """创建标准 .spj 文件（SPSS 26+ 新格式，正斜杠路径）"""
+    """创建标准 .spj 文件（SPSS 26+ 新格式，正斜杠路径）。
+
+    这是一个持久化文件写入操作，因此与执行动作一样受 default-deny opt-in
+    闸门保护：默认拒绝写入，仅当 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1
+    且交互确认时才写盘。输出路径被约束在 .sps 所在目录（或显式提供的
+    output_dir）内，并在写入前明确披露目标路径。"""
     sps_abs = os.path.abspath(sps_file).replace("\\", "/")
     base_name = os.path.splitext(os.path.basename(sps_file))[0]
+    sps_parent = os.path.dirname(os.path.abspath(sps_file))
     if output_dir is None:
-        output_dir = os.path.dirname(os.path.abspath(sps_file))
-    output_dir = os.path.abspath(output_dir).replace("\\", "/")
+        output_dir = sps_parent
+    output_dir_abs = os.path.abspath(output_dir)
+    output_dir = output_dir_abs.replace("\\", "/")
     spj_file = os.path.join(output_dir, base_name + ".spj").replace("\\", "/")
     spv_file = os.path.join(output_dir, base_name + ".spv").replace("\\", "/")
+
+    # Disclose the write target and require explicit opt-in (default-deny).
+    if not _opt_in_confirm(
+            "⚠️ 即将写入作业文件 .spj: " + spj_file + " ，是否继续？",
+            "⚠️ About to WRITE job file .spj: " + spj_file + " . Continue?"):
+        _log("已取消 .spj 写入（未确认）", "Cancelled .spj write (not confirmed).")
+        return None
 
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <job xmlns="http://www.ibm.com/software/analytics/spss/xml/production"
@@ -487,7 +497,7 @@ def main():
             _log("请提供 .sps 文件路径", "Please provide .sps file path")
             sys.exit(1)
         spj = create_spj(sps_file, output_dir)
-        sys.exit(0)
+        sys.exit(0 if spj else 1)
     elif cmd == "check":
         sps_file = sys.argv[2] if len(sys.argv) > 2 else None
         if sps_file is None:

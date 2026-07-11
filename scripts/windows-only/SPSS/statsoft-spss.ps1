@@ -315,14 +315,28 @@ switch ($Command) {
     "data-info" {
         $savFile = $Args[0]
         if (-not $savFile -or -not (Test-Path $savFile)) { Write-Error "数据文件不存在 / Data file not found"; exit 1 }
+        # data-info launches an external Python interpreter, so it passes the
+        # SAME default-deny execution gate as run/run-batch (SDI-1/SDI-4).
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            exit 1
+        }
         $helperPy = Join-Path $scriptDir "_data_info.py"
         if (-not (Test-Path $helperPy)) { Write-Error "缺少辅助脚本 _data_info.py / Missing helper _data_info.py"; exit 1 }
-        # Resolve a concrete interpreter to an absolute path (SDI-2 fix):
-        # avoid bare `python.exe` PATH resolution, which can pick up an unexpected
-        # interpreter. The path is passed to the helper as a safe argv argument.
+        # Prefer the SPSS-bundled interpreter ($statsPython) to keep execution
+        # within the declared SPSS trust boundary; fall back to a resolved
+        # absolute host python.exe only if the bundled one is unavailable.
+        # The path is passed to the helper as a safe argv argument (no interpolation).
         $pyExe = $null
-        $cmd = Get-Command python.exe -ErrorAction SilentlyContinue
-        if ($cmd) { $pyExe = $cmd.Source }
+        if ($statsPython -and (Test-Path $statsPython)) {
+            $pyExe = $statsPython
+        } else {
+            $cmd = Get-Command python.exe -ErrorAction SilentlyContinue
+            if ($cmd) {
+                $pyExe = $cmd.Source
+                Write-Warning "使用宿主 Python（非 SPSS 内置）/ Using host Python (not SPSS-bundled): $pyExe"
+            }
+        }
         if (-not $pyExe) { Write-Error "未找到 Python / Python not found"; exit 1 }
         & $pyExe $helperPy $savFile
     }

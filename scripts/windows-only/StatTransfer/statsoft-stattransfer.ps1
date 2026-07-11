@@ -156,30 +156,36 @@ switch ($Command) {
 
         $startTime = Get-Date
 
-        $process = Start-Process -FilePath $stExePath `
-            -ArgumentList $cmdArgs `
-            -NoNewWindow `
-            -Wait `
-            -PassThru `
-            -RedirectStandardError (Join-Path $env:TEMP "stattransfer-stderr.txt")
+        # Use a securely-created, uniquely-named temp file for stderr capture
+        # (New-TemporaryFile creates a random name in %TEMP%), disclosed here
+        # and always removed in the finally block below — no predictable temp
+        # filename that other local users/processes could pre-place or read.
+        $stderrFile = (New-TemporaryFile).FullName
+        Write-Host "  临时错误日志（执行后自动删除）/ Temp stderr (auto-deleted): $stderrFile" -ForegroundColor Gray
+        try {
+            $process = Start-Process -FilePath $stExePath `
+                -ArgumentList $cmdArgs `
+                -NoNewWindow `
+                -Wait `
+                -PassThru `
+                -RedirectStandardError $stderrFile
 
-        $duration = (Get-Date) - $startTime
-        Write-Host ""
-        Write-Host "[CN] 完成 (耗时: $($duration.TotalSeconds.ToString('F1'))秒)" -ForegroundColor Green
-        Write-Host "[EN] Done (duration: $($duration.TotalSeconds.ToString('F1'))s)" -ForegroundColor Green
-        Write-Host "退出码 / Exit code: $($process.ExitCode)" -ForegroundColor Gray
+            $duration = (Get-Date) - $startTime
+            Write-Host ""
+            Write-Host "[CN] 完成 (耗时: $($duration.TotalSeconds.ToString('F1'))秒)" -ForegroundColor Green
+            Write-Host "[EN] Done (duration: $($duration.TotalSeconds.ToString('F1'))s)" -ForegroundColor Green
+            Write-Host "退出码 / Exit code: $($process.ExitCode)" -ForegroundColor Gray
 
-        if ($process.ExitCode -ne 0) {
-            $stderrFile = Join-Path $env:TEMP "stattransfer-stderr.txt"
-            if (Test-Path $stderrFile) {
+            if ($process.ExitCode -ne 0 -and (Test-Path $stderrFile)) {
                 $stderrContent = Get-Content $stderrFile -Raw
-                if ($stderrContent.Trim()) {
+                if ($stderrContent -and $stderrContent.Trim()) {
                     Write-Host "[CN] 错误信息:" -ForegroundColor Red
                     Write-Host "[EN] Error details:" -ForegroundColor Red
                     Write-Host $stderrContent -ForegroundColor Red
                 }
-                Remove-Item $stderrFile -ErrorAction SilentlyContinue
             }
+        } finally {
+            Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
         }
     }
 

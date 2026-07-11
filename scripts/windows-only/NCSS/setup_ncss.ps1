@@ -49,8 +49,6 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
-}
-
 
 
 Write-Host "=== NCSS Setup ===" -ForegroundColor Cyan

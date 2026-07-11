@@ -47,6 +47,41 @@ function Write-Lang-Warning {
     }
 }
 
+function Test-UserAuthorizedToRun {
+    # Execution authorization gate — FAIL-CLOSED (default deny).
+    # Proceed ONLY when an explicit opt-in is present:
+    #   * STATSOFT_AUTO_WRITE=1                          -> non-interactive/agent opt-in
+    #   * STATSOFT_CONFIRM=1 AND a real TTY AND user answers y -> interactive confirm
+    # Any other case (incl. a plain user invocation without opt-in) -> deny, so
+    # an agent or upstream tool cannot trigger third-party execution unexpectedly.
+    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+    $confirm = $env:STATSOFT_CONFIRM -eq '1'
+    if ($autoWrite) { return $true }
+    if ($confirm -and -not [Console]::IsInputRedirected) {
+        $prompt = if ($script:isZH) { "确认运行 SAS？该操作将执行第三方外部二进制 (y/N)" } else { "Confirm running SAS? This executes a third-party external binary (y/N)" }
+        $ans = Read-Host $prompt
+        return ($ans -match '^[yY]')
+    }
+    return $false
+}
+
+function Resolve-SafeLogPath {
+    # Constrain user-supplied log output to a plain filename inside the current
+    # working directory. Reject absolute/rooted paths and parent traversal so a
+    # caller cannot write an arbitrary file elsewhere on disk (SDI-1).
+    param(
+        [string]$Requested,
+        [string]$DefaultName
+    )
+    if (-not $Requested) { return (Join-Path $PWD $DefaultName) }
+    if ([System.IO.Path]::IsPathRooted($Requested) -or $Requested -match '[\\/]|\.\.') {
+        $leaf = Split-Path $Requested -Leaf
+        Write-Lang-Warning "已忽略不安全的日志路径，仅使用文件名并写入当前目录: $leaf" "Ignored unsafe log path; using filename in current directory only: $leaf"
+        return (Join-Path $PWD $leaf)
+    }
+    return (Join-Path $PWD $Requested)
+}
+
 # 读取配置
 $configPath = "$PSScriptRoot\..\config.json"
 if (-not (Test-Path $configPath)) {
@@ -64,17 +99,22 @@ if (-not (Test-Path $sasPath)) {
 
 switch ($Command) {
     "run" {
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow
+            exit 1
+        }
         $sasFile = $Args[0]
         if (-not (Test-Path $sasFile)) {
             Write-Error "$(if ($script:isZH) { 'SAS 程序不存在' } else { 'SAS program not found' }): $sasFile"
             exit 1
         }
         
-        $logPath = if ($LogFile) { $LogFile } else { Join-Path $PWD "sas-log.log" }
-        $printPath = if ($LogFile) { $LogFile -replace '\.log$', '.lst' } else { Join-Path $PWD "sas-output.lst" }
+        $logPath = Resolve-SafeLogPath -Requested $LogFile -DefaultName "sas-log.log"
+        $printPath = ($logPath -replace '\.log$', '.lst')
+        if ($printPath -eq $logPath) { $printPath = "$logPath.lst" }
         
         Write-Lang "执行 SAS 程序: $sasFile" "Executing SAS program: $sasFile" -Color Cyan
-        Write-Lang "日志输出: $logPath" "Log output: $logPath" -Color Gray
+        Write-Lang "日志输出（将写入当前目录）: $logPath" "Log output (written to current directory): $logPath" -Color Gray
         
         & $sasPath -batch -nosplash -sysin $sasFile -log $logPath -print $printPath
         

@@ -7,7 +7,6 @@ triggers:
   # activate the skill. Every scan, execution, install, and write is
   # first gated by a confirmation / opt-in step (default-deny).
   - "use statsoft-cli to configure SPSS"
-  - "run statsoft-cli"
   - "statsoft-cli configure R"
   - "use statsoft-cli to run a JMP JSL script"
   - "statsoft-cli 配置 Stata"
@@ -19,7 +18,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.5",
+    "version": "2.6.6",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -119,7 +118,7 @@ Many statistical software packages have CLI (Command Line Interface) execution m
 When acting on an explicit user request, this skill runs third-party statistical binaries, creates temporary scripts / job files, reads and executes user-supplied syntax / JSL / SPSS / SAS / Stata / R inputs, and may install dependencies over the network. These are **high-risk operations**:
 
 - **Code Execution / 代码执行** — external processes (stats.com, Rscript, Stata, SAS, JMP JSL, CmdStan `make`/`sample`, …). All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, data files, and downloaded dependencies are treated as **untrusted**; they require explicit confirmation plus path / allowlist validation before execution.
-- **File Creation / 文件创建** — running produces temporary scripts, `.spj`/`.sps` job files, and output files in the user-specified working directory; these are expected artifacts of the requested run.
+- **File Creation / 文件创建** — running produces short-lived temporary scripts / job files (e.g. `.spj`/`.sps`, Python/R/JSL wrappers), which are created in a private temp directory and **removed after the run**. Result / log files are written to the user's working directory only when explicitly requested (e.g. an explicit `--log-file`), and any user-supplied log path is constrained to a filename in the current directory (no absolute paths or parent traversal). These are the expected, disclosed artifacts of the requested run.
 - **Package Installation / 包安装** — CRAN / Anaconda installs require explicit confirmation (`STATSOFT_CONFIRM=1` + TTY, or a direct user install command); never silent.
 - **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` writes are **detection-only by default** and are the ONLY persistent state this skill may create; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. The config directory is created only at the moment of actual persistence. **This skill NEVER writes user environment variables.** Agents are never blocked.
 
@@ -131,7 +130,7 @@ GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection +
 
 **中文**: 仅当用户显式要求用 statsoft-cli 配置/运行某款具名软件时激活（例如「用 statsoft-cli 配置 SPSS」「用 statsoft-cli 运行 JMP 脚本」）。仅提及 R / SPSS / 统计软件 本身不会激活本技能。每次扫描/执行/安装/写入前都有确认或 opt-in 闸门（default-deny）。
 
-**English**: Activates only on an explicit user request to configure/run a *specific named* tool via statsoft-cli (e.g. "use statsoft-cli to configure SPSS", "run statsoft-cli"). Mere mentions of R / SPSS / statistics do NOT activate it. Every scan/execution/install/write is first gated by a confirmation or opt-in step (default-deny).
+**English**: Activates only on an explicit user request to configure/run a *specific named* tool via statsoft-cli (e.g. "use statsoft-cli to configure SPSS", "use statsoft-cli to run my SPSS syntax"). Mere mentions of R / SPSS / statistics do NOT activate it. Every scan/execution/install/write is first gated by a confirmation or opt-in step (default-deny).
 
 ---
 

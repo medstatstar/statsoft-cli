@@ -6,6 +6,10 @@
 
 Verify that the SPSS splash-free call method works correctly.
 
+> ⚠️ **副作用提示 / Side effects**：运行本测试会**执行第三方 SPSS 二进制**，并在磁盘上**写入文件** `test-data.sav`（约 5 条记录）。这是测试的预期产物，仅供手动执行；请勿在自动化流程中静默运行。测试完成后请参见文末「清理 / Cleanup」删除该文件。
+>
+> Running this test **executes the third-party SPSS binary** and **writes a file** `test-data.sav` (~5 rows) to disk. This is an expected artifact of a manually-run test — do not run it silently in automation. See "Cleanup" at the end to remove it afterward.
+
 ## 测试方法 / Test Method
 
 ### 首选方式（完全无闪屏）/ Preferred Method (Completely Splash-free)
@@ -73,6 +77,14 @@ import pyreadstat
 df, meta = pyreadstat.read_sav('[SKILL_DIR]/test-data.sav')
 print(df)
 "
+```
+
+## 清理 / Cleanup
+
+测试会写入 `test-data.sav`。测试完成后删除该文件即可清除所有磁盘副作用 / The test writes `test-data.sav`; delete it after the test to remove all disk side effects:
+
+```bash
+rm -f "[SKILL_DIR]/test-data.sav"
 ```
 
 ## 注意事项 / Notes

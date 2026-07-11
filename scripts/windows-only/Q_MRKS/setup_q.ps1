@@ -47,10 +47,6 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
-}
-
-
-param()
 
 $configPath = Join-Path $PSScriptRoot "..\config.json"
 

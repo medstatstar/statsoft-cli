@@ -103,10 +103,17 @@ verify_stata() {
         return 1
     fi
 
-    cd /tmp
-    LANG_ZH "display 1" "display 1"
-    "$STATA_CMD" /b do test_stata.do &>/dev/null 2>&1
-    local exit_code=$?
+    # Run a trivial verification inside a private temp dir with a self-generated
+    # do-file, then remove it. This avoids changing into world-writable /tmp as the
+    # working directory and never executes a do-file that a third party may have
+    # planted in a shared location (SDI-4).
+    local verify_dir do_file exit_code
+    verify_dir=$(mktemp -d "${TMPDIR:-/tmp}/statsoft_stata.XXXXXX") || return 1
+    do_file="$verify_dir/verify.do"
+    printf 'display 1\nexit, clear\n' > "$do_file"
+    ( cd "$verify_dir" && "$STATA_CMD" /b do "$do_file" ) >/dev/null 2>&1
+    exit_code=$?
+    rm -rf "$verify_dir"
 
     return $exit_code
 }

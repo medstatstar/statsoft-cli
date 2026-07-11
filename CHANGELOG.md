@@ -1,5 +1,16 @@
 # Changelog / 更新日志
 
+## v2.6.6 (2026-07-11)
+
+ClawHub SkillSpector 审计继续修复（v2.6.5 仍 `suspicious`，17 项发现；审计器进一步聚焦临时/日志文件写入、过度承诺的"安全过滤"措辞、以及触发词过宽）。本轮定向修复：
+
+- **SPSS 包装脚本改临时目录 + 清理（SDI-1 HIGH，`spss_helper.py`）**：`run_internal` 的 `_spss_runner.py` 包装脚本改写入 `tempfile.mkdtemp()` 私有目录，`try/finally` 中 `shutil.rmtree` 清理，不再在技能目录留下持久化包装文件；`create_spj` 增加 opt-in 写入闸门（披露 .spj 路径，未确认返回 None）。
+- **SPSS 语法校验去除过度承诺（SDI-4，`run-spss-internal.py`）**：头注释与 `validate_syntax` docstring 重写为"TRUSTED-INPUT-ONLY / 有限黑名单绊线，非安全保证、可被绕过"，消除"危险指令已过滤"的虚假安全感。
+- **PowerShell 临时/日志文件（SDI-1，多处）**：`statsoft-modeler.ps1` 默认 `nolog`（新增 `Get-LogArg`，仅用户显式 `-log` 时才写日志）；`statsoft-stattransfer.ps1` 的 stderr 改用 `New-TemporaryFile` + `finally` 删除；`statsoft-spss.ps1` 的 `data-info` 增加执行授权闸门并优先使用 SPSS 内置解释器（非通用 `python.exe`）。
+- **SAS/EViews 授权闸门 + 日志路径约束（SDI-1 / SQP-2）**：`statsoft-sas.ps1` 新增 `Test-UserAuthorizedToRun`（default-deny）与 `Resolve-SafeLogPath`（拒绝绝对路径/父级穿越，仅允许当前目录文件名）；`statsoft-eviews.ps1` 新增默认拒绝授权闸门并将 `.prg` 明确标注为可执行代码。
+- **setup shell 脚本（SDI-1/4）**：`setup_sas.sh` 在"未检测到"回退分支不再交互式索要手动路径 / 写入配置，仅打印手动配置指引；`setup_stata.sh` 的 `verify_stata` 改用 `mktemp -d` 私有目录 + 自生成 `verify.do` + 全路径调用 + `rm -rf` 清理，不再 `cd /tmp` 执行硬编码 do-file。
+- **文档一致性（TP4 / RA2 / TR2）**：`SKILL.md` 移除过宽触发词 `"run statsoft-cli"`（TR2 Shadow Command Trigger），信任边界"文件创建"段披露临时文件即用即删、日志仅显式请求时写入且路径受限；`tests/README.md` 在测试目的处前置"执行第三方二进制 + 写入 test-data.sav"副作用提示并新增清理步骤。
+
 ## v2.6.5 (2026-07-11)
 
 ClawHub SkillSpector 审计继续修复（v2.6.4 仍 `suspicious`，20 项发现；审计主题进一步升级到「默认拒绝授权 / 最小子进程环境 / 临时脚本注入 / 环境变量持久化 / 文档范围漂移」）。本轮按审计器 remediation 模式彻底修复：
