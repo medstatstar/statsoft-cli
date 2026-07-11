@@ -176,7 +176,12 @@ statsoft-cli/
 运行 Stata .do 文件（批处理模式）
 ```
 
-任何执行、安装、联网获取或持久化写入前，均需显式确认（交互）或由用户预先设置的只读放行开关（`STATSOFT_AUTO_WRITE=1` / `STATSOFT_CONFIRM=1`，本技能只读取、绝不写入）。默认拒绝（default-deny），仅检测。本技能唯一的持久化状态是 `config.json`，绝不写入任何用户环境变量。
+授权与持久化模型（明确区分，避免歧义）：
+
+- **环境变量 / opt-in 开关**：`STATSOFT_AUTO_WRITE` 与 `STATSOFT_CONFIRM` 由**用户预先设置**，本技能**只读取、绝不写入**这些开关或任何其它环境变量。
+- **唯一可写入的文件**：本技能唯一会持久化的文件是它自己目录下的 `config.json`；且**仅在显式 opt-in 之后**才写入——即 `STATSOFT_AUTO_WRITE=1`（非交互/agent），或 `STATSOFT_CONFIRM=1` 且在真实终端回答 `y`。写入前会备份为 `config.json.bak.*`（带时间戳），删除 `config.json` 即可完全回滚。
+- **默认行为**：默认拒绝（default-deny），**仅检测、不写入**。任何执行、安装、联网获取，同样都需要上述显式 opt-in。
+- 本技能**不写入** `~/.workbuddy/MEMORY.md` 或任何技能目录以外的位置。
 
 非触发示例（视为普通对话，不激活）：
 

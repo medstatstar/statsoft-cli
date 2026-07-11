@@ -413,14 +413,31 @@ def create_spj(sps_file, output_dir=None):
 
     这是一个持久化文件写入操作，因此与执行动作一样受 default-deny opt-in
     闸门保护：默认拒绝写入，仅当 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1
-    且交互确认时才写盘。输出路径被约束在 .sps 所在目录（或显式提供的
-    output_dir）内，并在写入前明确披露目标路径。"""
+    且交互确认时才写盘。
+
+    输出路径被强制约束（containment）在 .sps 所在目录（allowed base）之内：
+    output_dir 必须等于该目录或为其子目录，任何指向其它位置（含 `..` 上跳、
+    绝对路径逃逸）的请求都会被拒绝，避免在授权后向任意可达目录写入 (SDI-4)。
+    写入前会明确披露目标路径，且已存在同名文件时需再次确认覆盖。"""
     sps_abs = os.path.abspath(sps_file).replace("\\", "/")
     base_name = os.path.splitext(os.path.basename(sps_file))[0]
-    sps_parent = os.path.dirname(os.path.abspath(sps_file))
+    # Allowed base directory = the canonical parent of the .sps file.
+    allowed_base = os.path.realpath(os.path.dirname(os.path.abspath(sps_file)))
     if output_dir is None:
-        output_dir = sps_parent
-    output_dir_abs = os.path.abspath(output_dir)
+        output_dir = allowed_base
+    output_dir_abs = os.path.realpath(os.path.abspath(output_dir))
+
+    # Containment check: output_dir_abs must be allowed_base or a subdirectory.
+    try:
+        common = os.path.commonpath([allowed_base, output_dir_abs])
+    except ValueError:
+        # Different drives on Windows -> not containable.
+        common = None
+    if common != allowed_base:
+        _log("已拒绝不安全的输出目录（必须位于 .sps 所在目录内）: " + output_dir_abs,
+             "Rejected unsafe output_dir (must be within the .sps directory): " + output_dir_abs)
+        return None
+
     output_dir = output_dir_abs.replace("\\", "/")
     spj_file = os.path.join(output_dir, base_name + ".spj").replace("\\", "/")
     spv_file = os.path.join(output_dir, base_name + ".spv").replace("\\", "/")
@@ -431,6 +448,14 @@ def create_spj(sps_file, output_dir=None):
             "⚠️ About to WRITE job file .spj: " + spj_file + " . Continue?"):
         _log("已取消 .spj 写入（未确认）", "Cancelled .spj write (not confirmed).")
         return None
+
+    # If a file already exists at the target, require an extra overwrite confirm.
+    if os.path.exists(spj_file):
+        if not _opt_in_confirm(
+                "⚠️ 目标 .spj 已存在，是否覆盖: " + spj_file + " ？",
+                "⚠️ Target .spj already exists. Overwrite " + spj_file + " ?"):
+            _log("已取消 .spj 覆盖（未确认）", "Cancelled .spj overwrite (not confirmed).")
+            return None
 
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <job xmlns="http://www.ibm.com/software/analytics/spss/xml/production"

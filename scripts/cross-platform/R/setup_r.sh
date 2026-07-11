@@ -206,18 +206,23 @@ scan_packages() {
 
     log_info "$(LANG_ZH "扫描已安装 R 包..." "Scanning installed R packages...")"
 
-    # Package list is written to an ephemeral temp file by default (detection-only).
-    # Persistent caching to disk is OPT-IN via STATSOFT_CACHE=1 (avoids writing
-    # outside the agent's working scope without explicit consent).
-    local pkg_list_file
-    if [[ "${STATSOFT_CACHE:-0}" == "1" ]]; then
-        local cache_dir="${WORKSPACE_DIR:-$ROOT_DIR/.cache}/.statsoft-cli-cache"
-        mkdir -p "$cache_dir"
-        find "$cache_dir" -name 'r_packages_*.txt' -mtime +7 -delete 2>/dev/null || true
-        pkg_list_file="$cache_dir/r_packages_$(date +%Y%m%d).txt"
-    else
-        pkg_list_file="$(mktemp -t r_packages.XXXXXX.txt 2>/dev/null || echo /tmp/r_packages_$$.txt)"
+    # The package inventory is strictly EPHEMERAL: it is written into a private,
+    # securely-created temp directory and deleted the moment this function returns
+    # (RETURN trap below), on both success and error paths. We do NOT persist the
+    # inventory to any cache, workspace, or predictable path — an installed-package
+    # list can reveal sensitive project/research/security tooling, so it must never
+    # be left on disk (SDI-1/SDI-4).
+    local scan_tmp
+    scan_tmp="$(mktemp -d "${TMPDIR:-/tmp}/statsoft_rpkg.XXXXXX" 2>/dev/null)"
+    if [[ -z "$scan_tmp" || ! -d "$scan_tmp" ]]; then
+        log_error "$(LANG_ZH "无法创建安全的临时目录，已跳过包扫描" "Could not create a secure temp directory; skipping package scan")"
+        return 1
     fi
+    # Guarantee cleanup when the function returns (normal or early), so no
+    # inventory file is ever left behind.
+    trap 'rm -rf "$scan_tmp" 2>/dev/null' RETURN
+    chmod 700 "$scan_tmp" 2>/dev/null || true
+    local pkg_list_file="$scan_tmp/packages.txt"
 
     "$R_CMD" -e "cat(installed.packages()[,'Package'], sep='\n')" 2>/dev/null > "$pkg_list_file"
 
@@ -273,14 +278,11 @@ scan_packages() {
     done
 
     LANG_ZH "" ""
-    if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        LANG_ZH "完整列表: ${pkg_list_file}" "完整列表: ${pkg_list_file}"
-    else
-        LANG_ZH "Full list: ${pkg_list_file}" "Full list: ${pkg_list_file}"
-    fi
+    LANG_ZH "（包清单仅在内存/临时目录中处理，不落盘保存）" "(The package inventory is processed ephemerally and is not saved to disk.)"
     echo "============================================"
 
     export R_PACKAGE_COUNT=$total_count
+    # scan_tmp is removed by the RETURN trap set above.
 }
 
 save_config() {

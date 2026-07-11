@@ -1,9 +1,19 @@
-# statsoft-sas.ps1 — SAS CLI 包装器（高级模式）
-# 用法:
-#   statsoft-sas run <sas_file> [--log-file <path>]
-#   statsoft-sas data-info <sas_file> [--vars var1 var2]
-#   statsoft-sas read-log <log_path>
-# ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner.
+# statsoft-sas.ps1 — SAS EXECUTION wrapper (NOT a setup/detection tool).
+# This script INVOKES the third-party SAS binary and CREATES temporary/log files.
+# It does NOT modify config.json or environment variables.
+#
+# Commands:
+#   run <sas_file> [-LogFile <name>]  EXECUTES SAS on the given program; writes a
+#                                     .log/.lst in the current directory.
+#                                     Requires explicit authorization (default-deny).
+#   data-info <sas_file>              EXECUTES SAS (proc contents) via a temporary
+#                                     .sas file (auto-deleted). Requires the same
+#                                     authorization gate as `run`.
+#   read-log <log_path>              Read-only: prints an existing SAS log. No execution.
+#
+# Authorization (for `run` and `data-info`): FAIL-CLOSED. Proceeds ONLY when
+#   STATSOFT_AUTO_WRITE=1, or STATSOFT_CONFIRM=1 on a TTY answered `y`.
+# Log/temp paths are constrained to the current working directory (no traversal).
 
 param(
     [Parameter(Position=0)]
@@ -93,7 +103,7 @@ $config = Get-Content $configPath | ConvertFrom-Json
 $sasPath = $config.SAS.Path
 
 if (-not (Test-Path $sasPath)) {
-    Write-Error "$(if ($script=isZH) { 'SAS 可执行文件不存在' } else { 'SAS executable not found' }): $sasPath"
+    Write-Error "$(if ($script:isZH) { 'SAS 可执行文件不存在' } else { 'SAS executable not found' }): $sasPath"
     exit 1
 }
 
@@ -126,20 +136,32 @@ switch ($Command) {
     }
     
     "data-info" {
+        # data-info EXECUTES the SAS binary and writes a temporary .sas file, so it
+        # is gated by the same default-deny authorization as `run` (SDI-1).
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow
+            exit 1
+        }
         $sasFile = $Args[0]
         if (-not (Test-Path $sasFile)) {
             Write-Error "$(if ($script:isZH) { 'SAS 程序不存在' } else { 'SAS program not found' }): $sasFile"
             exit 1
         }
-        
+
         $tempSas = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.sas'
-        @"
+        Write-Lang "执行 SAS（proc contents），将创建临时文件并在结束后删除" "Executing SAS (proc contents); a temporary file is created and deleted afterward." -Color Cyan
+        try {
+            @"
 proc contents data=sashelp.class;
 run;
 "@ | Set-Content $tempSas -Encoding UTF8
-        
-        & $sasPath -batch -nosplash -sysin $tempSas 2>&1
-        Remove-Item $tempSas -ErrorAction SilentlyContinue
+
+            & $sasPath -batch -nosplash -sysin $tempSas 2>&1
+        }
+        finally {
+            # Always clean up the temp file, even on failure/interrupt.
+            Remove-Item $tempSas -ErrorAction SilentlyContinue
+        }
     }
     
     "read-log" {

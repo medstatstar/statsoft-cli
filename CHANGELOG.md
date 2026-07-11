@@ -1,5 +1,19 @@
 # Changelog / 更新日志
 
+## v2.6.7 (2026-07-11)
+
+ClawHub SkillSpector 审计继续修复（v2.6.6 仍 `suspicious`，16 项发现；审计聚焦 data-info 授权缺口、参数注入、Prism 文件写入示例、文档持久化一致性、临时/缓存文件与广度枚举）。本轮按 remediation 逐条修复：
+
+- **SAS `data-info` 补授权闸门 + try/finally（SDI-1 HIGH，`statsoft-sas.ps1`）**：`data-info` 分支此前不经 `Test-UserAuthorizedToRun` 即执行 SAS 并写临时 `.sas`，现与 `run` 一致先做 default-deny 授权，且临时文件用 `try/finally` 保证清理；文件头注释重写为准确描述"SAS 执行包装器 + 临时/日志写入 + 哪些命令需授权"（SDI-4）。修正 `$script=isZH` 笔误。
+- **CmdStan 参数消毒（OH1 HIGH，`statsoft-cmdstan.py`）**：新增 `_safe_arg()`，对回显的 `model_file`/`data_file` 及重建的命令行做 shell 引用 + 去 ANSI/控制字符 + 折叠换行/回车/制表，防止恶意文件名向终端/日志注入或伪造记录。
+- **GraphPad Prism 自相矛盾示例移除（SDI-1/SDI-4 HIGH，`command-examples.md`）**：删除写 `.pzfx` 的 `prismWriter` 代码示例，改为明确声明本技能不创建/读取/修改任何 Prism 文件（含 `.pzfx`），此类操作超出技能范围。
+- **spss_helper output_dir 收敛（SDI-4，`spss_helper.py`）**：`create_spj` 将 `.sps` 父目录设为 allowed base，用 `os.path.realpath` + `commonpath` 强制 output_dir 必须等于或位于其下，拒绝 `..`/绝对路径逃逸；已存在目标文件时二次确认覆盖。
+- **setup_r.sh 包清单不落盘（SDI-1/SDI-4，`setup_r.sh`）**：移除 `STATSOFT_CACHE` 持久缓存分支；改用 `mktemp -d` 私有目录（`chmod 700`）+ `RETURN` trap 保证函数返回时（含出错）删除，包清单严格临时、不再打印临时路径。
+- **scan_all.ps1 收窄枚举范围（SDI-1/SDI-4，`scan_all.ps1`）**：新增 `-Target <name>` 单产品探测（按需、免主机级同意）；无 `-Target` 的全量枚举保留显式 opt-in 同意闸门并修正误导性注释（如实说明会枚举多款产品）；顺带修复多处 `Get-Nlis*` 笔误（应为 `Get-Nsis*`）。
+- **SPSS Modeler 移除 server-run（SDI-1/SDI-4，`statsoft-modeler.ps1`）**：删除超范围的 `server-run` 远程执行模式及 server/hostname/port 等选项，仅保留 `-local` 本地执行，消除文档-实现不一致（usage 声称支持 `-hostname/-port` 实则硬编码 localhost:80）。
+- **example_workflow.md 去广义触发（SQP-1，`tests/example_workflow.md`）**：将"用一句自然语言触发整条流水线"改写为逐步显式调用 + 每步前确认 + 脚本白名单 + 隔离工作目录 + dry-run 审阅 + 禁止隐式数据传递。
+- **文档持久化模型一致化（TP4 / SDI-4 / RA2，`SKILL.md`/`README.md`/`README_zh-CN.md`）**：统一表述为"绝不写环境变量/opt-in 开关，唯一可持久化文件为技能目录下 `config.json`（仅显式 opt-in 后写入，带时间戳备份，删除即回滚），不写 `~/.workbuddy/MEMORY.md`"；移除 SKILL.md 中写入 `~/.workbuddy/MEMORY.md` 的工作流步骤以缩小影响面；GUI-only 段补充"不创建/修改其项目文件（含 Prism `.pzfx`）"。
+
 ## v2.6.6 (2026-07-11)
 
 ClawHub SkillSpector 审计继续修复（v2.6.5 仍 `suspicious`，17 项发现；审计器进一步聚焦临时/日志文件写入、过度承诺的"安全过滤"措辞、以及触发词过宽）。本轮定向修复：

@@ -1,15 +1,16 @@
-# statsoft-modeler.ps1 -- SPSS Modeler CLI wrapper (batch mode)
-# Uses clemb.exe (CLEmbedded Modeler)
+# statsoft-modeler.ps1 -- SPSS Modeler LOCAL CLI wrapper (batch mode)
+# Uses clemb.exe (CLEmbedded Modeler) in -local mode ONLY.
+# This wrapper performs LOCAL execution only; it does NOT connect to any
+# SPSS Modeler Server (remote/server execution is out of scope for this skill).
 #
 # Usage:
 #   statsoft-modeler run <stream.str> [-log <file>] [-scriptlang python|legacy]
 #   statsoft-modeler run-script <script.txt> [-log <file>] [-scriptlang python|legacy]
-#   statsoft-modeler server-run <stream.str> -hostname <host> -port <port> [-log <file>]
 #   statsoft-modeler info
 
 param(
     [Parameter(Position=0)]
-    [ValidateSet("run", "run-script", "server-run", "info")]
+    [ValidateSet("run", "run-script", "info")]
     [string]$Command,
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -73,13 +74,8 @@ function Invoke-Clemb {
     if ($Options["model"])     { $argList += '-model "{0}"'  -f $Options["model"] }
     if ($Options["scriptlang"]){ $argList += '-scriptlang "{0}"' -f $Options["scriptlang"] }
 
-    if ($Options["server"])    { $argList += "-server" }
-    if ($Options["hostname"])  { $argList += '-hostname "{0}"' -f $Options["hostname"] }
-    if ($Options["port"])      { $argList += "-port $($Options["port"])" }
-    if ($Options["username"])  { $argList += '-username "{0}"' -f $Options["username"] }
-    if ($Options["password"])  { $argList += '-password "{0}"' -f $Options["password"] }
-    if ($Options["use_ssl"])   { $argList += "-use_ssl" }
-    if ($Options["cluster"])   { $argList += '-cluster "{0}"' -f $Options["cluster"] }
+    # NOTE: server/remote-connection options are intentionally NOT supported.
+    # This wrapper runs clemb in -local mode only (see header).
 
     if ($LogFile)              { $argList += '-log "{0}"' -f $LogFile }
     if ($Options["appendlog"]) { $argList += "-appendlog" }
@@ -163,22 +159,8 @@ switch ($Command) {
         exit $rc
     }
 
-    "server-run" {
-        if ($Args.Count -eq 0) { Write-Error "Missing stream file path."; exit 1 }
-        $streamFile = $Args[0]
-        if (-not (Test-Path $streamFile)) { Write-Error "Stream file not found: $streamFile"; exit 1 }
-        $userLog = Get-LogArg $Args
-        if ($userLog) {
-            Write-Host "[statsoft-modeler] Writing log to (user-specified): $userLog" -ForegroundColor Gray
-            $rc = Invoke-Clemb @{ "stream" = $streamFile; "server" = $true; "hostname" = "localhost"; "port" = "80" } $userLog
-        } else {
-            $rc = Invoke-Clemb @{ "stream" = $streamFile; "server" = $true; "hostname" = "localhost"; "port" = "80"; "nolog" = $true } $null
-        }
-        exit $rc
-    }
-
     default {
         Write-Error "Unknown command: $Command"
-        Write-Host "Usage: statsoft-modeler (run|run-script|server-run|info) [args]"
+        Write-Host "Usage: statsoft-modeler (run|run-script|info) [args]"
     }
 }

@@ -174,6 +174,8 @@ Run a Stata .do file in batch mode
 
 Before any execution, install, network fetch, or persistent write, the skill requires explicit confirmation (interactive) or an opt-in environment flag (`STATSOFT_AUTO_WRITE=1` / `STATSOFT_CONFIRM=1`). Read-only detection is the default.
 
+Authorization & persistence model (explicit, to avoid ambiguity): the opt-in flags above are set **by the user** — the skill only **reads** them and **never writes** them or any other environment variable. The **only** file the skill may persist is its own `config.json`, and **only after** the explicit opt-in described above (with a timestamped `config.json.bak.*` backup; delete `config.json` to roll back). The skill does **not** write `~/.workbuddy/MEMORY.md` or anything outside its own directory.
+
 Non-trigger examples (treated as ordinary conversation, NOT activated):
 
 ```

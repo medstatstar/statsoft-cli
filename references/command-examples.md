@@ -361,20 +361,17 @@ Exit();
 
 ## GraphPad Prism
 
-⚠️ **重要限制**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。本技能**不提供**任何 `prism.exe` 命令行调用或自动化；它仅能检测 Prism 并给出**手动启动 GUI 的指引**（由你自己打开 Prism）。
+⚠️ **重要限制（GUI-only，超出本技能范围）**：GraphPad Prism **没有 CLI 模式**，调用时**会弹出 GUI**，无法避免。
 
-### 文件格式辅助（非自动化）：Python `prismWriter`
+**本技能对 Prism 的能力仅限于**：
+- 检测本机是否安装了 Prism；
+- 给出**手动启动 GUI 的指引**（由你自己打开 Prism）。
 
-`prismWriter` 是一个纯 Python 库，仅用于**读写 `.pzfx` 数据文件**（解析/生成 XML），**不涉及启动或驱动 Prism 进程**。它属于手动数据格式辅助工具，不是对 Prism 的批处理自动化。使用前须由用户明确提供待处理的文件，且不得用于未授权的文件写入。
+**本技能明确不做以下事情**（即使在 opt-in 之后）：
+- 不调用 `prism.exe` 命令行或以任何方式自动化/驱动 Prism 进程；
+- **不创建、不读取、不修改任何 Prism 相关文件（含 `.pzfx` 项目/数据文件）**。
 
-```python
-# 手动读写 .pzfx 数据文件（不启动 Prism GUI，不驱动 Prism）
-from prismwriter import Project
-
-p = Project("template.pzfx")   # 用户明确提供的文件
-# 写入数据、执行分析...
-p.save("output.pzfx")
-```
+> 说明：`.pzfx` 是 XML 格式，社区有第三方纯 Python 库（如 `prismWriter`）可解析/生成该格式。这类文件读写**不属于本技能的允许行为**，本技能不封装、不调用、不代为执行此类写文件操作。若你确有需求，请在本技能之外自行、手动使用相关库，并自行对文件写入负责。
 
 ---
 

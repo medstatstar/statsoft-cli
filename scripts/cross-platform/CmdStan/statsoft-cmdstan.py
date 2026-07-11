@@ -7,7 +7,7 @@ Usage:
     statsoft-cmdstan install [-v <version>]
     statsoft-cmdstan info
 """
-import argparse, json, os, re, subprocess, sys
+import argparse, json, os, re, shlex, subprocess, sys
 
 _ANSI_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]|\x1b\][^\x07]*\x07|[\x00-\x08\x0b\x0c\x0e-\x1f]')
 
@@ -18,6 +18,18 @@ def _sanitize(text):
     if not text:
         return text
     return _ANSI_RE.sub('', text)
+
+
+def _safe_arg(value):
+    """Safely encode a user-controlled value (e.g. a file path) for display.
+
+    A malicious filename could embed terminal escape sequences, newlines, or
+    log-forging characters. We first shell-quote the value (so spaces/special
+    chars are visibly delimited), strip ANSI/control bytes, and finally collapse
+    newlines/carriage-returns/tabs to spaces so echoing it to a terminal or log
+    on a single line cannot inject or forge content (OH1 fix)."""
+    s = _sanitize(shlex.quote(str(value)))
+    return s.replace('\r', ' ').replace('\n', ' ').replace('\t', ' ')
 
 
 def get_config():
@@ -110,7 +122,7 @@ def run_model(model_file, data_file, output_dir=None):
         sys.exit(1)
 
     # Build model
-    print(f"Building model: {model_file}")
+    print(f"Building model: {_safe_arg(model_file)}")
     build = subprocess.run([
         "make", "-C", path, os.path.join(os.getcwd(), os.path.basename(model_file)).replace(".stan", "")
     ], capture_output=True, text=True)
@@ -119,12 +131,14 @@ def run_model(model_file, data_file, output_dir=None):
         sys.exit(1)
 
     # Run
-    print(f"Running model with data: {data_file}")
+    print(f"Running model with data: {_safe_arg(data_file)}")
     args = [os.path.join(path, "bin", os.path.basename(model_file).replace(".stan", ""))]
     args += ["sample", f"num_samples=2000", f"num_warmup=1000"]
     if data_file:
         args.append(f"data file={data_file}")
-    print(f"Command: {' '.join(args)}")
+    # Encode every argument safely before echoing the reconstructed command line,
+    # so a crafted model_file/data_file cannot inject terminal/log content (OH1).
+    print("Command: " + " ".join(_safe_arg(a) for a in args))
 
     proc = subprocess.run(args, capture_output=True, text=True)
     print(_sanitize(proc.stdout))

@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). ACTIVATION-ON-DEMAND only: the skill activates solely on an explicit user request to configure or run a specific named tool, and performs NO action otherwise. All capabilities are gated behind an explicit per-action opt-in (DEFAULT-DENY: STATSOFT_AUTO_WRITE=1 for non-interactive/agent use, or STATSOFT_CONFIRM=1 with a y/N prompt in a real TTY): (1) read-only software detection (system scanning that creates no persistent state); (2) CLI execution of third-party statistical binaries in batch/silent mode — runs external processes and may create TEMPORARY working files (scripts/job/syntax) that are disclosed and cleaned up; (3) configuration persistence to config.json with a timestamped backup, but ONLY when explicitly opted in (detection-only by default — no write otherwise); (4) dependency/package installation & fetching from CRAN/Anaconda; (5) optional software installation. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation, and their setup scripts NEVER write config or environment variables. JMP provides a Windows CLI (statsoft-jmp) executed only with explicit user-provided JSL scripts behind the same default-deny authorization gate as SPSS/R/Statistica. NOTE: network/install actions and any file/env writes occur ONLY after explicit opt-in; setup scripts are detection-only and do not persist state."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34 packages: R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), Bayesian, ML, and more. Bilingual (中文/English). ACTIVATION-ON-DEMAND only: the skill activates solely on an explicit user request to configure or run a specific named tool, and performs NO action otherwise. All capabilities are gated behind an explicit per-action opt-in (DEFAULT-DENY: STATSOFT_AUTO_WRITE=1 for non-interactive/agent use, or STATSOFT_CONFIRM=1 with a y/N prompt in a real TTY): (1) read-only software detection (system scanning that creates no persistent state); (2) CLI execution of third-party statistical binaries in batch/silent mode — runs external processes and may create TEMPORARY working files (scripts/job/syntax) that are disclosed and cleaned up; (3) configuration persistence to config.json with a timestamped backup, but ONLY when explicitly opted in (detection-only by default — no write otherwise); (4) dependency/package installation & fetching from CRAN/Anaconda; (5) optional software installation. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation, does NOT create/modify their project/data files (e.g. Prism .pzfx), and their setup scripts do not persist state by default. JMP provides a Windows CLI (statsoft-jmp) executed only with explicit user-provided JSL scripts behind the same default-deny authorization gate as SPSS/R/Statistica. CONSISTENT PERSISTENCE MODEL: the skill NEVER writes environment variables or opt-in/authorization flags; the ONLY file it may persist is config.json, and ONLY after an explicit per-action opt-in (timestamped backup + rollback by deleting config.json). All setup/detection scripts are detection-only BY DEFAULT and write config.json solely under that same opt-in; network/install actions also occur ONLY after explicit opt-in."
 triggers:
   # Activation requires an EXPLICIT user intent to configure/run a SPECIFIC
   # named tool. Broad mentions of R/SPSS/SAS/statistics alone do NOT
@@ -18,7 +18,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.6",
+    "version": "2.6.7",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "environment_variable_modification", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
@@ -74,9 +74,9 @@ Many statistical software packages have CLI (Command Line Interface) execution m
    - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。任何未获显式授权的写入都被拒绝（default-deny）。
    - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak.*`（带时间戳）
    - **写入确认 / Write Confirmation** — 仅当 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1` 且交互回答 y 时持久化；默认不写入。
-   - **回滚 / Rollback** — 所有持久化状态仅位于 `config.json`（备份于 `config.json.bak.*`）；删除 `config.json` 即可彻底清除。无任何用户环境变量被本技能写入。
-6. **写入记忆 / Write Memory** (需用户同意 / With user consent) — 询问后追加到 `~/.workbuddy/MEMORY.md` / Append to `~/.workbuddy/MEMORY.md` after confirmation
-7. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template
+   - **回滚 / Rollback** — 本技能**唯一**会持久化的文件是它自己目录下的 `config.json`（备份于 `config.json.bak.*`）；删除 `config.json` 即可彻底、可审计地回滚。本技能**不写入**任何用户环境变量、opt-in 标志，也**不写入** `~/.workbuddy/MEMORY.md` 或其它技能目录外的位置（缩小影响面 / narrow blast radius, RA2）。
+   - **写入披露 / Write disclosure** — 每次持久化前都会在带内（in-band）明确列出将要写入的文件与内容，而不仅依赖环境变量隐式批准。
+6. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template
 
 ---
 
@@ -122,7 +122,7 @@ When acting on an explicit user request, this skill runs third-party statistical
 - **Package Installation / 包安装** — CRAN / Anaconda installs require explicit confirmation (`STATSOFT_CONFIRM=1` + TTY, or a direct user install command); never silent.
 - **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` writes are **detection-only by default** and are the ONLY persistent state this skill may create; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. The config directory is created only at the moment of actual persistence. **This skill NEVER writes user environment variables.** Agents are never blocked.
 
-GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection + manual-launch guidance — never driven via CLI / headless automation.
+GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection + manual-launch guidance — never driven via CLI / headless automation, and this skill never creates or modifies their project/data files (including GraphPad Prism `.pzfx`).
 
 ---
 

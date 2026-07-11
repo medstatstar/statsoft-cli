@@ -148,23 +148,46 @@ Run SAS program test_sas_report.sas
 > ⚠️ **安全提示 / Safety**: 以下命令会依次执行外部脚本（R/SPSS/Stata/SAS）并在本地生成/覆盖文件。执行前请审阅所有被引用的脚本与输出路径，建议在隔离的工作目录中以最小权限运行。
 > ⚠️ **Safety**: the commands below execute external scripts (R/SPSS/Stata/SAS) and create or overwrite local files. Review every referenced script and output path before running, and prefer an isolated working directory with least privilege.
 
-## Complete Workflow Command / 完整工作流命令
+## Multi-step Workflow — one explicit step at a time / 多步骤工作流（逐步显式执行）
 
-In AI Agent conversation, you can trigger the entire workflow with natural language:
+> ⚠️ **Do NOT trigger a whole pipeline from a single broad prompt.** Each step
+> executes an external statistical binary and may create/overwrite files, so it
+> must be invoked **explicitly and individually**, with review between steps.
+> 请勿用一句宽泛的自然语言指令触发整条流水线。每一步都会执行外部统计软件并可能
+> 创建/覆盖文件，必须**逐条显式调用**，并在步骤之间进行审阅。
 
-在 AI Agent 对话中，您可以用自然语言触发整个工作流：
+**Required practice for a multi-tool analysis / 多工具分析的必须做法**:
+
+1. **Invoke each tool explicitly, one command per step** — name the exact script
+   and the exact command. Do not ask the agent to "run the whole workflow".
+   逐步显式调用，每步一条命令，指明确切脚本与命令，不要让 agent "自动跑完整流程"。
+2. **Confirm before each step** — review the referenced script and the intended
+   output path, and give explicit approval before that step runs.
+   每步前确认——审阅被引用脚本与预期输出路径后再显式批准。
+3. **No implicit data passing** — if the output of one step feeds the next,
+   state that path explicitly; the agent must not infer and chain files silently.
+   不做隐式数据传递——若上一步输出作为下一步输入，请显式给出路径。
+4. **Allowlist script paths & isolate the working directory** — run only the
+   named scripts, in a dedicated, least-privilege working directory.
+   仅允许命名脚本，并在独立、最小权限的工作目录中运行。
+5. **Dry-run / review first** — ask the agent to enumerate every command and every
+   output file it *would* run/write, and approve that list, before any execution.
+   先做 dry-run/审阅——让 agent 列出将执行的每条命令与将写入的每个文件并批准后再执行。
+
+Example of the explicit, per-step style (run and confirm each separately):
+逐步显式调用示例（分别执行并确认每一步）：
 
 ```
-Analyze customer churn factors:
-1. Clean data with R (use test_r_cleaning.R)
-2. Generate descriptive stats with SPSS (use test_spss_descriptive.sps)
-3. Run regression with Stata (use test_stata_regression.do)
-4. Generate final report with SAS (use test_sas_report.sas)
+Step 1 (confirm first): Clean data — run test_r_cleaning.R, output to ./work/clean.csv
+Step 2 (confirm first): Descriptive stats — run test_spss_descriptive.sps on ./work/clean.csv
+Step 3 (confirm first): Regression — run test_stata_regression.do on ./work/clean.csv
+Step 4 (confirm first): Report — run test_sas_report.sas
 ```
 
-The AI Agent will execute these steps sequentially, passing data between software as needed.
+The agent must stop after each step for your review; it must not auto-chain steps
+or pass data between tools without your explicit approval.
 
-AI Agent 将按顺序执行这些步骤，根据需要在不同软件之间传递数据。
+Agent 必须在每一步后停下等待您审阅；不得自动串联步骤或在未获显式批准时于工具间传递数据。
 
 ---
 
