@@ -18,3 +18,8 @@ __pycache__/
 config.json.bak_*
 *.zip
 *.tar.gz
+
+# Local scan artifacts (never publish)
+scan_*.json
+scan_*.txt
+scan_*.err
