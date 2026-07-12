@@ -145,10 +145,17 @@ if (-not $amosExe) {
     $pyScript = Join-Path $scriptDir "setup_amos.py"
     if (Test-Path $pyScript) {
         Write-Lang "[!] Running Python helper to search for AMOS..." "[!] Running Python helper to search for AMOS..." -ForegroundColor Yellow
-        & python $pyScript 2>&1
+        # Pass an EXPLICIT persistence intent to the helper. Default = detection-only.
+        # Mirror the same gate used by Save-StatSoftConfig: only forward --consent
+        # when the user has already opted in; otherwise forward --no-write so the
+        # helper can NEVER persist config.json without explicit authorization.
+        $helperArgs = @($pyScript)
+        $authorized = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
+        if ($authorized) { $helperArgs += '--consent' } else { $helperArgs += '--no-write' }
+        & python @helperArgs 2>&1
         if ($LASTEXITCODE -eq 0) {
-            # Python script succeeded, reload config
-            if (Test-Path $configPath) {
+            # Only reload config if it was actually authorized to be written.
+            if ($authorized -and (Test-Path $configPath)) {
                 $config = Get-Content $configPath -Raw | ConvertFrom-Json
             }
             Write-Lang "Done." "Done." -ForegroundColor Green
@@ -156,7 +163,7 @@ if (-not $amosExe) {
         }
     }
 
-  Write-Lang "[!] [CN] 未检测到 AMOS 安装" "[EN] AMOS installation not detected." -Color Yellow
+    Write-Lang "[!] [CN] 未检测到 AMOS 安装" "[EN] AMOS installation not detected." -Color Yellow
     Write-Lang "请使用 -AmosPath 参数指定 AMOS 安装路径" "Please use -AmosPath to specify the AMOS installation path" -Color White
     Write-Host '示例 / Example: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"'
     exit 0

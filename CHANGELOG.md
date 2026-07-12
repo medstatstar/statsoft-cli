@@ -1,5 +1,20 @@
 # Changelog / 更新日志
 
+## v2.6.9 (2026-07-12)
+
+ClawHub SkillSpector 审计继续修复（v2.6.8 仍 `suspicious`，13 项发现；v2.6.7 的 25 项已清零，本轮聚焦声明-实现一致性与剩余执行/写入闸门缺口）。本轮逐条修复：
+
+- **TP4/HIGH `SKILL.md` 描述声明对齐**：在 `description` 显式披露全部真实行为——HOST-WIDE 主机级软件清单（只读扫描、不落盘）、第三方二进制执行（含 setup 验证阶段）、可选依赖/软件安装流程、以及 config.json 持久化（唯一可持久化文件、限于技能目录）；消除"tightly constrained"表述与实际广行为的自相矛盾。
+- **RA2/MEDIUM `SKILL.md` 持久化模型**：明确声明持久化最小化、仅显式 opt-in、限于技能目录、不含敏感数据、备份/回滚确定性；与既有 fail-closed 段一致。
+- **SDI-1/SDI-4 `setup_sas.sh` 临时文件清理**：验证步骤改用 `mktemp -d` 私有临时目录 + `trap EXIT` 清理，不再在 `/tmp` 残留 `test_sas.sas/.log/.lst`（此前泄露执行痕迹）。
+- **SDI-1 `setup_stata.sh` 手动路径校验**：手动回退不再接受任意目录作为 `STATA_CMD`；解析为真实可执行文件（`-f`+`-x`，或在给定目录内搜索已知 Stata 可执行名），校验失败则拒绝保存，避免把被破坏/受攻击者影响的路径持久化进 config.json。
+- **SDI-1 `setup_amos.ps1` 辅助脚本闸门**：调用 `setup_amos.py` 时显式传 `--consent`（已授权）或 `--no-write`（默认检测态），不再仅靠继承环境变量；仅当确实授权时才重载 config.json。
+- **SDI-1 `setup_amos.py` 显式持久化开关**：新增 `--consent`/`--no-write` 参数；`--no-write` 永远赢得检测态，且向集中式 `write_config.py` 透传 `--consent`，绝不自我授权。
+- **SDI-1/SDI-4 `statsoft-spss.ps1` version 闸门**：`version` 命令启动 SPSS 内置 Python 并拉起 SPSS 引擎（第三方代码执行），现与 `run/run-batch/data-info` 一致先过 `Test-UserAuthorizedToRun` 默认拒绝闸门；同步修正 `data-info` 注释枚举所有需授权命令。
+- **SDI-1 `statsoft-stattransfer.ps1` run/batch 写入闸门**：新增 `Test-StatTransferAuthorized` 默认拒绝闸门（STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 交互确认），在创建输出目录/执行转换前强制校验；并新增 `STATSOFT_DRY_RUN=1` 试运行模式（只报告计划、不写文件、不执行）。
+- **SDI-4/SQP-3 `tests/example_workflow.md` 去隐含串联**：核心优势表将"无缝集成/AI Agent handles data passing"改为"用户批准的数据交接（绝不隐式串联）"，"single conversation"改为"引导式多轮（每步显式确认，非一次性流水线）"，并加醒目提示"无显式批准不运行任何步骤、不在工具间传递数据"。
+- **SQP-2 `references/completion-prompts.md` H2O 警告**：在 H2O 示例前新增安全提示，说明 `h2o.init()` 会启动本地 H2O 服务器（JVM、可能监听端口）、`h2o.import_file()` 会把数据集传入该服务，需显式用户确认方可运行。
+
 ## v2.6.8 (2026-07-12)
 
 ClawHub SkillSpector 审计继续修复（v2.6.7 仍 `suspicious`，25 项发现；其中 v2.6.6 的 16 项已清零，本轮聚焦新增/未覆盖文件：文档声明与实现一致性、GUI-only 文件写入、MEMORY.md 误述、远程执行示例、以及 10 个 setup 脚本的自授权环境变量）。

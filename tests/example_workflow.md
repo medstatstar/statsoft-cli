@@ -196,9 +196,11 @@ Agent 必须在每一步后停下等待您审阅；不得自动串联步骤或�
 | Benefit / 优势 | Description / 说明 |
 |----------------|-------------------|
 | 🔄 **Code Reuse / 代码复用** | Leverage historical assets without rewriting |
-| 🔗 **Seamless Integration / 无缝集成** | AI Agent handles data passing between software |
-| ⚡ **Efficiency / 高效** | Execute entire workflow in a single conversation |
+| 🔗 **User-Approved Handoff / 用户批准的数据交接** | AI Agent supports explicit, per-step-approved data handoff between tools — never implicit/automatic chaining |
+| ⚡ **Guided Multi-Turn / 引导式多轮** | One ongoing session with explicit confirmation before each step — "single conversation" means guided, not one-shot pipeline execution |
 | 📊 **Best Tool for Each Task / 任务最优工具** | Use R for cleaning, SPSS for stats, Stata for regression, SAS for reporting |
+
+> ⚠️ **No step runs and no data passes between tools without your explicit approval.** Each step stops for your review; the agent never auto-chains steps or transfers data implicitly.
 
 ---
 

@@ -133,9 +133,19 @@ verify_sas() {
         return 0
     fi
 
-    cd /tmp
-    echo "proc options; run;" > test_sas.sas
-    "$SAS_CMD" -sysin test_sas.sas -log test_sas.log -print test_sas.lst &>/dev/null 2>&1
+    # Run SAS verification inside a unique, private temp dir and clean it up on
+    # exit — never leave test_sas.sas/.log/.lst behind in world-writable /tmp
+    # (disclosed artifacts, removed after use; SDI-1/SDI-4).
+    (
+      local _sas_tmp
+      _sas_tmp="$(mktemp -d 2>/dev/null || echo "/tmp/statsoft_sas_$$")"
+      mkdir -p "$_sas_tmp" || exit 1
+      trap 'rm -rf "$_sas_tmp"' EXIT
+      cd "$_sas_tmp" || exit 1
+      echo "proc options; run;" > test_sas.sas
+      "$SAS_CMD" -sysin test_sas.sas -log test_sas.log -print test_sas.lst &>/dev/null 2>&1
+      exit $?
+    )
     local exit_code=$?
 
     return $exit_code

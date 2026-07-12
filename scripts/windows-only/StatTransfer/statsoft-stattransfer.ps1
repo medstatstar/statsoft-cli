@@ -60,6 +60,20 @@ if (-not $isPathValid) {
     exit 1
 }
 
+# Default-deny authorization gate for file-WRITING operations (run/batch).
+# A conversion writes files to disk via a third-party binary, so it requires
+# explicit opt-in: STATSOFT_AUTO_WRITE=1 (non-interactive/agent), or
+# STATSOFT_CONFIRM=1 with an interactive y/N prompt in a real TTY.
+# Returns $true only when authorized; defaults to $false (fail-closed) (SDI-1).
+function Test-StatTransferAuthorized {
+    if ($env:STATSOFT_AUTO_WRITE -eq '1') { return $true }
+    if ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected) {
+        $ans = Read-Host "[CN] 确认执行转换并写入输出文件? (y/N) [EN] Confirm conversion and file write? (y/N)"
+        return ($ans -match '^[yY]')
+    }
+    return $false
+}
+
 switch ($Command) {
     "version" {
         Write-Host "[CN] === StatTransfer 版本信息 ===" -ForegroundColor Cyan
@@ -129,6 +143,20 @@ switch ($Command) {
         if (-not (Test-Path $outputFile -IsValid)) {
             Write-Error "[CN] 输出路径格式无效: $outputFile"
             Write-Error "[EN] Output path format invalid: $outputFile"
+            exit 1
+        }
+
+        # Dry-run: report what WOULD happen, write nothing, execute nothing (SDI-1).
+        if ($env:STATSOFT_DRY_RUN -eq '1') {
+            Write-Host "[CN] 试运行（不写入任何文件、不执行转换）: $inputFile -> $outputFile" -ForegroundColor Yellow
+            Write-Host "[EN] Dry-run (no files written, no conversion executed): $inputFile -> $outputFile" -ForegroundColor Yellow
+            exit 0
+        }
+
+        # Default-deny gate: a file-writing conversion requires explicit opt-in.
+        if (-not (Test-StatTransferAuthorized)) {
+            Write-Error "[CN] 未授权写入 / Write not authorized (default-deny). 设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"
+            Write-Error "[EN] Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
             exit 1
         }
 
@@ -203,6 +231,20 @@ switch ($Command) {
         # 解析通配符目录
         $inputDir = Split-Path $inputPattern -Parent
         $inputFilter = Split-Path $inputPattern -Leaf
+
+        # Dry-run: report the plan only, create nothing, convert nothing (SDI-1).
+        if ($env:STATSOFT_DRY_RUN -eq '1') {
+            Write-Host "[CN] 试运行（不写入任何文件、不执行转换）: $inputPattern -> $outputDir" -ForegroundColor Yellow
+            Write-Host "[EN] Dry-run (no files written, no conversion executed): $inputPattern -> $outputDir" -ForegroundColor Yellow
+            exit 0
+        }
+
+        # Default-deny gate: batch file-writing conversions require explicit opt-in.
+        if (-not (Test-StatTransferAuthorized)) {
+            Write-Error "[CN] 未授权写入 / Write not authorized (default-deny). 设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"
+            Write-Error "[EN] Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            exit 1
+        }
 
         if (-not (Test-Path $outputDir)) {
             New-Item -ItemType Directory -Path $outputDir -Force | Out-Null

@@ -444,12 +444,15 @@ predictions = model(data)
 - 💡 适合大规模机器学习、AutoML、深度学习
 
 📋 推荐使用方式（Python）：
+
+> ⚠️ **安全提示 / Security note**: `h2o.init()` 会在本地启动一个 H2O 服务器（JVM 进程），可能监听本地端口（默认 54321）；`h2o.import_file("data.csv")` 会将数据集内容传入该服务进程。执行前需获得你的显式确认；不要在未授权情况下自动运行。 / `h2o.init()` launches a local H2O server (a JVM process) and may open a listening port (default 54321); `h2o.import_file()` transfers your dataset contents into that service. Require explicit user confirmation before running — never auto-execute.
+
 ```python
 import h2o
-h2o.init()                          # 启动 H2O 服务器（后台）
-h2o.import_file("data.csv")         # 上传数据
+h2o.init()                          # 启动 H2O 服务器（后台）/ launches local H2O server (JVM)
+h2o.import_file("data.csv")         # 上传数据 / uploads dataset into the H2O service
 # ... AutoML 训练 ...
-h2o.shutdown()                      # 关闭服务器
+h2o.shutdown()                      # 关闭服务器 / shut down the server
 ```
 
 ⚠️ 注意事项：

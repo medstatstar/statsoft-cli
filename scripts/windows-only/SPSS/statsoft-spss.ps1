@@ -315,8 +315,10 @@ switch ($Command) {
     "data-info" {
         $savFile = $Args[0]
         if (-not $savFile -or -not (Test-Path $savFile)) { Write-Error "数据文件不存在 / Data file not found"; exit 1 }
-        # data-info launches an external Python interpreter, so it passes the
-        # SAME default-deny execution gate as run/run-batch (SDI-1/SDI-4).
+        # data-info AND version both launch an external Python interpreter (the
+        # SPSS engine), so they pass the SAME default-deny execution gate as
+        # run/run-batch (SDI-1/SDI-4). Every command that starts a third-party
+        # binary is gated here.
         if (-not (Test-UserAuthorizedToRun)) {
             Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
             exit 1
@@ -342,6 +344,13 @@ switch ($Command) {
     }
 
     "version" {
+        # version launches the SPSS-bundled Python interpreter and starts the
+        # SPSS engine (third-party code execution), so it MUST pass the SAME
+        # default-deny gate as run/run-batch/data-info (SDI-1/SDI-4).
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            exit 1
+        }
         if (-not $statsPython) { Write-Error "未找到内置 Python / bundled Python not found"; exit 1 }
         & $statsPython -c "import spss; spss.StartSPSS(); print(getattr(spss,'__version__','unknown')); spss.StopSPSS()"
     }

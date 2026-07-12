@@ -78,9 +78,27 @@ def get_file_version(exe_path):
 def main():
     print("[Python] === AMOS Detection ===\n")
 
+    # Parse arguments: an optional positional <install_dir> plus explicit
+    # persistence flags.
+    #   --no-write -> detection-only, never persist config.json (default-safe).
+    #   --consent  -> explicit opt-in; persist config.json via the gate.
+    # When neither flag is given, fall back to the environment gate
+    # (STATSOFT_AUTO_WRITE / STATSOFT_CONFIRM) — never self-grant authorization.
+    manual_dir = None
+    cli_consent = False
+    cli_no_write = False
+    for a in sys.argv[1:]:
+        if a == "--consent":
+            cli_consent = True
+        elif a == "--no-write":
+            cli_no_write = True
+        elif a.startswith("--"):
+            continue
+        elif manual_dir is None:
+            manual_dir = a
+
     # If command-line argument provided, use it directly
-    if len(sys.argv) > 1:
-        manual_dir = sys.argv[1]
+    if manual_dir is not None:
         exe = os.path.join(manual_dir, "amos.exe")
         if os.path.isfile(exe):
             root = manual_dir
@@ -120,26 +138,32 @@ def main():
     }
 
     # Route persistence through the single auditable gate (write_config.py).
-    # Fail-closed by default: persist ONLY on explicit opt-in.
+    # Fail-closed by default: persist ONLY on explicit opt-in. CLI flags take
+    # precedence over the environment gate; --no-write always wins (detection-only).
     import subprocess
     gate = os.path.join(script_dir, "..", "..", "common", "write_config.py")
     payload = json.dumps(config, ensure_ascii=False)
-    _auto_write = os.environ.get("STATSOFT_AUTO_WRITE") == "1"
-    _confirm_env = os.environ.get("STATSOFT_CONFIRM") == "1"
     _persist = False
-    if _auto_write:
-        _persist = True
-    elif _confirm_env and sys.stdin.isatty():
-        sys.stdout.write("Persist detected config to config.json? (y/N) ")
-        sys.stdout.flush()
-        _ans = sys.stdin.readline().strip().lower()
-        _persist = _ans in ("y", "yes")
+    if not cli_no_write:
+        if cli_consent:
+            _persist = True
+        elif os.environ.get("STATSOFT_AUTO_WRITE") == "1":
+            _persist = True
+        elif os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
+            sys.stdout.write("Persist detected config to config.json? (y/N) ")
+            sys.stdout.flush()
+            _ans = sys.stdin.readline().strip().lower()
+            _persist = _ans in ("y", "yes")
     if not _persist:
-        print("Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt.")
+        print("Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, pass --consent, or STATSOFT_CONFIRM=1 for an interactive prompt.")
     else:
         try:
+            cmd = [sys.executable, gate, config_path]
+            # Propagate the explicit opt-in to the centralized gate.
+            if cli_consent or os.environ.get("STATSOFT_AUTO_WRITE") == "1":
+                cmd.append("--consent")
             proc = subprocess.run(
-                [sys.executable, gate, config_path],
+                cmd,
                 input=payload,
                 capture_output=True,
                 text=True,

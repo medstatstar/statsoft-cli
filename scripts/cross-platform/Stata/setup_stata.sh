@@ -202,10 +202,35 @@ main() {
         echo "  BE = 基础版 (Basic Edition)"
     fi
 
-    local manual_path
-    read -p "$(LANG_ZH "输入 Stata 路径 (例如: /usr/local/stata18)" "Enter Stata path (e.g., /usr/local/stata18)"): " manual_path
-    if [[ -n "$manual_path" ]] && [[ -d "$manual_path" ]]; then
-        STATA_CMD="$manual_path"
+    local manual_path resolved
+    read -p "$(LANG_ZH "输入 Stata 路径 (例如: /usr/local/stata18 或其下的可执行文件)" "Enter Stata path (e.g. /usr/local/stata18 or the executable within it)"): " manual_path
+    if [[ -n "$manual_path" ]]; then
+        # Never persist a bare directory as the executable. Resolve to a real
+        # Stata binary (-f and -x), or search the given directory for a known
+        # Stata executable name (SDI-1).
+        resolved=""
+        if [[ -f "$manual_path" && -x "$manual_path" ]]; then
+            resolved="$manual_path"
+        elif [[ -d "$manual_path" ]]; then
+            for _exe in "StataMP-64" "StataSE-64" "StataBE-64" "StataMP" "StataSE" "StataBE" "stata-mp" "stata-se" "stata"; do
+                if [[ -x "$manual_path/$_exe" ]]; then
+                    resolved="$manual_path/$_exe"; break
+                fi
+                if [[ -x "$manual_path/$_exe.exe" ]]; then
+                    resolved="$manual_path/$_exe.exe"; break
+                fi
+            done
+        fi
+        if [[ -z "$resolved" ]]; then
+            log_error "$(LANG_ZH "路径未指向有效的 Stata 可执行文件，放弃保存" "Path does not resolve to a valid Stata executable; not saving")"
+            return 1
+        fi
+        STATA_CMD="$resolved"
+        case "$(basename "$resolved")" in
+            *MP*|*mp*) STATA_EDITION="MP" ;;
+            *SE*|*se*) STATA_EDITION="SE" ;;
+            *)         STATA_EDITION="BE" ;;
+        esac
         save_config
         verify_stata
         return $?
