@@ -18,7 +18,11 @@ ORANGE_VERSION="3.36"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== Orange 数据挖掘平台配置 ===" "=== Orange Setup ==="
-LANG_ZH "版本: $ORANGE_VERSION" "Version: $ORANGE_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $ORANGE_VERSION" "Version: $ORANGE_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect Orange installation
 ORANGE_BIN=""
@@ -64,6 +68,8 @@ config['Orange'] = {
     'platform': 'all',
     'mode': 'simple'
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$ORANGE_VERSION" "$ORANGE_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

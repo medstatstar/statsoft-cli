@@ -72,6 +72,22 @@ def main():
         return 2
 
     target_path = args[0]
+
+    # Single-path enforcement (SDI-1 / SDI-4): the ONLY acceptable write target
+    # is the canonical config.json at the skill root. Compute it from this
+    # file's location: scripts/common/write_config.py -> skill root = ../../
+    # Any caller-supplied path that does not resolve to this canonical path is
+    # rejected outright, so a buggy or malicious wrapper cannot redirect writes
+    # to an arbitrary location or turn this helper into a generic file writer.
+    _self_dir = os.path.dirname(os.path.abspath(__file__))
+    canonical_cfg = os.path.normpath(os.path.join(_self_dir, "..", "..", "config.json"))
+    target_abs = os.path.normpath(os.path.abspath(target_path))
+    if target_abs != canonical_cfg:
+        sys.stderr.write(
+            "write_config.py: target path rejected — persistence is restricted to the "
+            "canonical skill-root config.json (%s). Got: %s\n" % (canonical_cfg, target_path)
+        )
+        return 2
     json_src = _read_json(args[1] if len(args) > 1 else None,
                           from_stdin=(len(args) < 2))
 

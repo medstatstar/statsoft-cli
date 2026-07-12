@@ -37,8 +37,16 @@ fi
 
 PSPP_DIR="$(dirname "$PSPP_BIN")"
 
-LANG_ZH "PSPP: $PSPP_BIN" "PSPP: $PSPP_BIN"
-LANG_ZH "Dir: $PSPP_DIR" "Dir: $PSPP_DIR"
+if statsoft_reveal; then
+    LANG_ZH "PSPP: $PSPP_BIN" "PSPP: $PSPP_BIN"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+if statsoft_reveal; then
+    LANG_ZH "Dir: $PSPP_DIR" "Dir: $PSPP_DIR"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 if command -v python3 &>/dev/null; then
     _NEW_CFG=$(python3 - <<EOF
@@ -55,6 +63,8 @@ cfg["PSPP"] = {
     "version": "unknown",
     "platform": "all"
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

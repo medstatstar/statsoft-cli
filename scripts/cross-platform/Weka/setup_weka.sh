@@ -46,8 +46,16 @@ if [ -f "$WEKA_DIR/weka.jar" ]; then
     [ -z "$VERSION" ] && VERSION="installed"
 fi
 
-LANG_ZH "Weka: $WEKA_DIR" "Weka: $WEKA_DIR"
-LANG_ZH "版本: ${VERSION:-unknown}" "Version: ${VERSION:-unknown}"
+if statsoft_reveal; then
+    LANG_ZH "Weka: $WEKA_DIR" "Weka: $WEKA_DIR"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+if statsoft_reveal; then
+    LANG_ZH "版本: ${VERSION:-unknown}" "Version: ${VERSION:-unknown}"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Write to config
 if command -v python3 &>/dev/null; then
@@ -64,6 +72,8 @@ cfg["Weka"] = {
     "version": "${VERSION:-unknown}",
     "platform": "all"
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

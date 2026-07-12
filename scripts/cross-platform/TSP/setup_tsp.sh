@@ -18,7 +18,11 @@ TSP_VERSION="5.0"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== TSP 时间序列分析配置 ===" "=== TSP Setup ==="
-LANG_ZH "版本: $TSP_VERSION" "Version: $TSP_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $TSP_VERSION" "Version: $TSP_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect TSP installation
 TSP_BIN=""
@@ -33,7 +37,11 @@ elif [ -f "/opt/tsp/tsp" ]; then
 fi
 
 if [ -n "$TSP_BIN" ]; then
-    LANG_ZH "找到 TSP: $TSP_BIN" "Found TSP: $TSP_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 TSP: $TSP_BIN" "Found TSP: $TSP_BIN"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 else
     LANG_ZH "未找到 TSP。" "TSP not found."
     LANG_ZH "安装：从 https://www.tsp.com/ 下载" "Install: Download from https://www.tsp.com/"
@@ -53,6 +61,8 @@ config['TSP'] = {
     'platform': 'all',
     'mode': 'simple'
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$TSP_VERSION" "$TSP_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

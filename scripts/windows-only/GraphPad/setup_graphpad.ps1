@@ -17,6 +17,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 
 
@@ -45,8 +51,16 @@ foreach ($dir in $commonPaths) {
         $graphPadInstalled = $true
         $graphPadPath = $exe
         $graphPadVersion = ($dir -split 'Prism ')[-1].Trim()
-        Write-Lang "[OK] [CN] 检测到 GraphPad Prism $graphPadVersion : $graphPadPath" "[OK] [CN] 检测到 GraphPad Prism $graphPadVersion : $graphPadPath" -ForegroundColor Green
-        Write-Lang "[OK] [EN] GraphPad Prism $graphPadVersion detected: $graphPadPath" "[OK] [EN] GraphPad Prism $graphPadVersion detected: $graphPadPath" -ForegroundColor Green
+        if (Test-StatSoftReveal) {
+            Write-Lang "[OK] [CN] 检测到 GraphPad Prism $graphPadVersion : $graphPadPath" "[OK] [CN] 检测到 GraphPad Prism $graphPadVersion : $graphPadPath" -ForegroundColor Green
+        } else {
+            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+        }
+        if (Test-StatSoftReveal) {
+            Write-Lang "[OK] [EN] GraphPad Prism $graphPadVersion detected: $graphPadPath" "[OK] [EN] GraphPad Prism $graphPadVersion detected: $graphPadPath" -ForegroundColor Green
+        } else {
+            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+        }
         break
     }
 }
@@ -72,8 +86,16 @@ if (-not $graphPadInstalled) {
                         $graphPadInstalled = $true
                         $graphPadPath = $exe
                         $graphPadVersion = ($installDir -split 'Prism ')[-1].Trim()
-                        Write-Lang "[OK] [CN] 从注册表找到 GraphPad : $graphPadPath" "[OK] [CN] 从注册表找到 GraphPad : $graphPadPath" -ForegroundColor Green
-                        Write-Lang "[OK] [EN] Found GraphPad from registry: $graphPadPath" "[OK] [EN] Found GraphPad from registry: $graphPadPath" -ForegroundColor Green
+                        if (Test-StatSoftReveal) {
+                            Write-Lang "[OK] [CN] 从注册表找到 GraphPad : $graphPadPath" "[OK] [CN] 从注册表找到 GraphPad : $graphPadPath" -ForegroundColor Green
+                        } else {
+                            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+                        }
+                        if (Test-StatSoftReveal) {
+                            Write-Lang "[OK] [EN] Found GraphPad from registry: $graphPadPath" "[OK] [EN] Found GraphPad from registry: $graphPadPath" -ForegroundColor Green
+                        } else {
+                            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+                        }
                         break
                     }
                 }
@@ -104,8 +126,16 @@ if (-not $graphPadInstalled) {
             $graphPadInstalled = $true
             $graphPadPath = $exe
             $graphPadVersion = ($manualPath -split 'Prism ')[-1].Trim()
-            Write-Lang "[OK] [CN] 已确认 GraphPad Prism 路径: $graphPadPath" "[OK] [CN] 已确认 GraphPad Prism 路径: $graphPadPath" -ForegroundColor Green
-            Write-Lang "[OK] [EN] GraphPad Prism path confirmed: $graphPadPath" "[OK] [EN] GraphPad Prism path confirmed: $graphPadPath" -ForegroundColor Green
+            if (Test-StatSoftReveal) {
+                Write-Lang "[OK] [CN] 已确认 GraphPad Prism 路径: $graphPadPath" "[OK] [CN] 已确认 GraphPad Prism 路径: $graphPadPath" -ForegroundColor Green
+            } else {
+                Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+            }
+            if (Test-StatSoftReveal) {
+                Write-Lang "[OK] [EN] GraphPad Prism path confirmed: $graphPadPath" "[OK] [EN] GraphPad Prism path confirmed: $graphPadPath" -ForegroundColor Green
+            } else {
+                Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+            }
         }
     }
 }
@@ -114,8 +144,16 @@ if (-not $graphPadInstalled) {
 if ($graphPadInstalled) {
     Write-Host "`n[CN] === 配置结果 ===" -ForegroundColor Cyan
     Write-Host "[EN] === Configuration Result ===" -ForegroundColor Cyan
-    Write-Lang "GraphPad Prism 路径: $graphPadPath" "GraphPad Prism path: $graphPadPath" -Color White
-    Write-Lang "版本: $graphPadVersion" "Version: $graphPadVersion" -Color White
+    if (Test-StatSoftReveal) {
+        Write-Lang "GraphPad Prism 路径: $graphPadPath" "GraphPad Prism path: $graphPadPath" -Color White
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
+    if (Test-StatSoftReveal) {
+        Write-Lang "版本: $graphPadVersion" "Version: $graphPadVersion" -Color White
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     # This setup script is DETECTION-ONLY: it reports the detected path and
     # prints manual configuration guidance. It does NOT modify any persistent
     # state (no env-var writes, no config.json writes). The runner
@@ -132,7 +170,11 @@ if ($graphPadInstalled) {
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan
     Write-Host "[EN] === Usage Examples ===" -ForegroundColor Cyan
     Write-Lang "打开 .pzfx 文件:" "Open .pzfx file:" -Color White
-    Write-Host "  `"$graphPadPath`" `"C:\path\to\file.pzfx`""
+    if (Test-StatSoftReveal) {
+        Write-Host "  `"$graphPadPath`" `"C:\path\to\file.pzfx`""
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     Write-Lang "" ""
     Write-Lang "Python 自动化 (prismWriter):" "Python automation (prismWriter):" -Color White
     Write-Host "  pip install prismwriter"

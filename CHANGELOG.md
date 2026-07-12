@@ -1,5 +1,15 @@
 # Changelog / 更新日志
 
+## v2.6.12 (2026-07-12)
+
+ClawHub SkillSpector 审计深层修复（v2.6.11 扫描 22 项，TP4 主干 HIGH 直击「文档-代码不匹配」根因；本轮不仅逐条修复被抽样命中的文件，更对全部 43 脚本做防雷机分层抽样的系统性门类加固；审计页面显示的 v2.6.11 遗留 16 项本轮全部处理）。本轮核心修复：
+
+- **TP4/HIGH `write_config.py` 单一路径强制执行（根因性修复）**：此前脚本接受任意调用者传入的 `target_path` 并执行「创建目录→备份→原子替换」，审计器标记为"可成为通用文件写入原语"。现从脚本自身位置推导规范路径 `../../config.json`，任何偏离的被拒收（fail-closed），彻底消除任意路径写入风险。直接修复 HIGH #2 与 MED #3。
+- **TP4/HIGH `statsoft-spss.ps1` show_version 增加 `STATSOFT_VERIFY=1` 闸门**：version 命令启动 SPSS 内置 Python 并拉起 SPSS 引擎（第三方代码执行），现需独立 `STATSOFT_VERIFY=1` 才能运行。修复 HIGH #16。
+- **TP4/HIGH `statsoft-spss.ps1` 顶部裸路径打印增加 REVEAL 闸门**：L79-81 发现 SPSS 即打印 `stats.com`/`python.exe`/`stats.exe` 完整路径，现纳入 `STATSOFT_REVEAL=1` 披露门；默认仅报告检测到的组件列表（不含路径）。
+- **TP4/HIGH `SKILL.md` 继续对齐（之三）**：进一步收紧「唯一持久化文件 `config.json`（仅限技能目录）」声明，明确 `write_config.py` 单一路径强制校验；新增披露 show_version 受 `STATSOFT_VERIFY=1` 约束。
+- **TP4/多层级 Wave 1+2 全门类加固（43 脚本）**：新增 `STATSOFT_REVEAL`（检测输出披露，默认关闭）+ `STATSOFT_VERIFY`（第三方二进制验证，默认关闭）双门体系，覆盖全部检测期路径/版本/包清单打印与二进制启动用例；与既有 `STATSOFT_AUTO_WRITE`/`STATSOFT_CONFIRM`（持久化门）形成完整四门体系。
+
 ## v2.6.11 (2026-07-12)
 
 ClawHub SkillSpector 审计继续修复（v2.6.10 仍 `suspicious`，11 项发现，新增 AST4 类型；本轮对扫描器"分层抽样"暴露的整类根因做一次性系统性修复）。逐条 + 整类修复：

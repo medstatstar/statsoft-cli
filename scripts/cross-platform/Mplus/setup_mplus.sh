@@ -37,8 +37,16 @@ fi
 
 MPLUS_DIR="$(dirname "$MPLUS_BIN")"
 
-LANG_ZH "Mplus: $MPLUS_BIN" "Mplus: $MPLUS_BIN"
-LANG_ZH "Dir: $MPLUS_DIR" "Dir: $MPLUS_DIR"
+if statsoft_reveal; then
+    LANG_ZH "Mplus: $MPLUS_BIN" "Mplus: $MPLUS_BIN"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+if statsoft_reveal; then
+    LANG_ZH "Dir: $MPLUS_DIR" "Dir: $MPLUS_DIR"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 if command -v python3 &>/dev/null; then
     _NEW_CFG=$(python3 - <<EOF
@@ -55,6 +63,8 @@ cfg["Mplus"] = {
     "version": "unknown",
     "platform": "macos"
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

@@ -136,6 +136,31 @@ def _validate_path(path, kind):
     return None
 
 
+def _detect_locale():
+    """Auto-detect the SPSS <locale> from the host environment so we never
+    hard-code a region that would change parsing/encoding/reproducibility
+    (SQP-3). Returns (country, language) for a zh host, or None to let SPSS
+    inherit the system/user environment (locale element omitted)."""
+    import locale as _locale
+    try:
+        lang, _enc = _locale.getdefaultlocale()
+    except Exception:
+        lang = None
+    if not lang:
+        env_lang = (os.environ.get("LANG") or os.environ.get("LC_ALL")
+                    or os.environ.get("LANGUAGE") or "")
+        lang = env_lang.split(".")[0] if env_lang else None
+    if not lang:
+        return None
+    parts = lang.replace("_", "-").split("-")
+    language = parts[0].lower()
+    country = parts[1].upper() if len(parts) > 1 else None
+    if language in ("zh", "cn"):
+        return ("CN", "zh")
+    # Non-Chinese host: omit the locale element so SPSS inherits the environment.
+    return None
+
+
 def validate_syntax(syntax_text):
     """Validate SPSS syntax safety before execution. Returns (ok, reason).
 
@@ -415,29 +440,41 @@ def create_spj(sps_file, output_dir=None):
     闸门保护：默认拒绝写入，仅当 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1
     且交互确认时才写盘。
 
-    输出路径被强制约束（containment）在 .sps 所在目录（allowed base）之内：
-    output_dir 必须等于该目录或为其子目录，任何指向其它位置（含 `..` 上跳、
-    绝对路径逃逸）的请求都会被拒绝，避免在授权后向任意可达目录写入 (SDI-4)。
-    写入前会明确披露目标路径，且已存在同名文件时需再次确认覆盖。"""
+    默认输出路径为一次性临时目录（ephemeral，路径会被披露），不在用户工作区
+    落盘持久文件，与 manifest「唯一持久文件是 config.json」一致 (SDI-1/SDI-3/TP4)。
+    若用户显式传入 output_dir，则要求与执行相同的 per-run opt-in 确认，并强制
+    containment 在 .sps 所在目录内（禁止 `..` 上跳/绝对路径逃逸），写入前披露
+    目标路径，已存在同名文件时需再次确认覆盖。"""
     sps_abs = os.path.abspath(sps_file).replace("\\", "/")
     base_name = os.path.splitext(os.path.basename(sps_file))[0]
     # Allowed base directory = the canonical parent of the .sps file.
     allowed_base = os.path.realpath(os.path.dirname(os.path.abspath(sps_file)))
+    # DEFAULT is an EPHEMERAL temp directory (auto-managed, path disclosed below)
+    # so create-spj does NOT leave a durable artifact in the user's working area
+    # by default — this aligns with the manifest's "the only persistent file is
+    # config.json" (SDI-1/SDI-3/TP4). An explicit output_dir (user-controlled) is
+    # still permitted, but only after the per-run opt-in confirm and the
+    # containment check below.
     if output_dir is None:
-        output_dir = allowed_base
+        output_dir = os.path.join(tempfile.gettempdir(), "statsoft_spj_output")
     output_dir_abs = os.path.realpath(os.path.abspath(output_dir))
 
-    # Containment check: output_dir_abs must be allowed_base or a subdirectory.
-    try:
-        common = os.path.commonpath([allowed_base, output_dir_abs])
-    except ValueError:
-        # Different drives on Windows -> not containable.
-        common = None
-    if common != allowed_base:
-        _log("已拒绝不安全的输出目录（必须位于 .sps 所在目录内）: " + output_dir_abs,
-             "Rejected unsafe output_dir (must be within the .sps directory): " + output_dir_abs)
-        return None
+    # Containment check applies only to an explicit (user-controlled) output_dir:
+    # it must stay within the .sps directory (no escape). The temp default is
+    # exempt because it intentionally lives outside the project tree and is
+    # cleaned by the OS.
+    temp_root = os.path.realpath(tempfile.gettempdir())
+    if output_dir_abs != temp_root:
+        try:
+            common = os.path.commonpath([allowed_base, output_dir_abs])
+        except ValueError:
+            common = None
+        if common != allowed_base:
+            _log("已拒绝不安全的输出目录（必须位于 .sps 所在目录内）: " + output_dir_abs,
+                 "Rejected unsafe output_dir (must be within the .sps directory): " + output_dir_abs)
+            return None
 
+    os.makedirs(output_dir_abs, exist_ok=True)
     output_dir = output_dir_abs.replace("\\", "/")
     spj_file = os.path.join(output_dir, base_name + ".spj").replace("\\", "/")
     spv_file = os.path.join(output_dir, base_name + ".spv").replace("\\", "/")
@@ -457,6 +494,15 @@ def create_spj(sps_file, output_dir=None):
             _log("已取消 .spj 覆盖（未确认）", "Cancelled .spj overwrite (not confirmed).")
             return None
 
+    # Locale: auto-detected (never hard-coded) per SQP-3. For a zh host we emit
+    # the CN/zh locale; otherwise we OMIT the locale element so SPSS inherits the
+    # system/user environment (avoids forcing an unexpected locale/encoding).
+    loc = _detect_locale()
+    if loc:
+        locale_elem = '  <locale charset="UTF-8" country="%s" language="%s"/>' % loc
+    else:
+        locale_elem = "  <!-- locale omitted: SPSS inherits the system/user environment -->"
+
     xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <job xmlns="http://www.ibm.com/software/analytics/spss/xml/production"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -466,11 +512,11 @@ def create_spj(sps_file, output_dir=None):
      unicode="true"
      xsi:schemaLocation="http://www.ibm.com/software/analytics/spss/xml/production 
      http://www.ibm.com/software/analytics/spss/xml/production/production-1.4.xsd">
-  <locale charset="UTF-8" country="CN" language="zh"/>
+{locale}
   <output outputFormat="viewer" outputPath="{spv}"/>
   <syntax syntaxPath="{sps}"/>
 </job>
-'''.format(spv=spv_file, sps=sps_abs)
+'''.format(locale=locale_elem, spv=spv_file, sps=sps_abs)
 
     with open(spj_file, "w", encoding="utf-8") as f:
         f.write(xml)

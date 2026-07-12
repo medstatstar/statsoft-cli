@@ -60,7 +60,11 @@ detect_sas() {
                 SAS_CMD="$dir/$sas_name"
                 SAS_VERSION="${dir##*SASFoundation/}"
                 SAS_VERSION="${SAS_VERSION%%/*}"
-                log_success "$(LANG_ZH "检测到 SAS $SAS_VERSION: $SAS_CMD" "Detected SAS $SAS_VERSION: $SAS_CMD")"
+                if statsoft_reveal; then
+                    log_success "$(LANG_ZH "检测到 SAS $SAS_VERSION: $SAS_CMD" "Detected SAS $SAS_VERSION: $SAS_CMD")"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         done
@@ -84,7 +88,11 @@ detect_sas() {
                         SAS_CMD="$exe"
                         SAS_VERSION="${install_dir##*SASFoundation/}"
                         SAS_VERSION="${SAS_VERSION%%/*}"
-                        log_success "$(LANG_ZH "从注册表检测到 SAS: $SAS_CMD" "Detected SAS via registry: $SAS_CMD")"
+                        if statsoft_reveal; then
+                            log_success "$(LANG_ZH "从注册表检测到 SAS: $SAS_CMD" "Detected SAS via registry: $SAS_CMD")"
+                        else
+                            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                        fi
                         return 0
                     fi
                 fi
@@ -95,12 +103,18 @@ detect_sas() {
     # Try command -v as fallback
     if command -v sas &>/dev/null; then
         SAS_CMD="$(command -v sas)"
-        log_success "$(LANG_ZH "在 PATH 中检测到 SAS: $SAS_CMD" "Detected SAS in PATH: $SAS_CMD")"
+        if statsoft_reveal; then
+            log_success "$(LANG_ZH "在 PATH 中检测到 SAS: $SAS_CMD" "Detected SAS in PATH: $SAS_CMD")"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         return 0
     fi
 
     return 1
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 verify_sas() {
     if [[ -z "$SAS_CMD" ]]; then
@@ -111,10 +125,18 @@ verify_sas() {
     echo "============================================"
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
         echo "  警告: 即将执行 SAS 验证"
-        echo "  将运行: $SAS_CMD -sysin test_sas.sas"
+        if statsoft_reveal; then
+            echo "  将运行: $SAS_CMD -sysin test_sas.sas"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
     else
         echo "  WARNING: About to execute SAS verification"
-        echo "  Will run: $SAS_CMD -sysin test_sas.sas"
+        if statsoft_reveal; then
+            echo "  Will run: $SAS_CMD -sysin test_sas.sas"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
     fi
     echo "============================================"
     LANG_ZH "" ""
@@ -194,24 +216,44 @@ main() {
     LANG_ZH "" ""
 
     if detect_sas; then
-        log_success "$(LANG_ZH "SAS 已检测到: $SAS_CMD" "SAS detected: $SAS_CMD")"
+        if statsoft_reveal; then
+            log_success "$(LANG_ZH "SAS 已检测到: $SAS_CMD" "SAS detected: $SAS_CMD")"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         save_config
         verify_sas
         LANG_ZH "" ""
         if [[ "$SCRIPT_LANG" == "zh" ]]; then
             echo "=== 批处理调用示例 ==="
             LANG_ZH "简单批处理:" "简单批处理:"
-            echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
+            if statsoft_reveal; then
+                echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
             LANG_ZH "" ""
             LANG_ZH "静默批处理 (无界面):" "静默批处理 (无界面):"
-            echo "  $SAS_CMD -batch -nosplash -sysin \"path/to/program.sas\" -log \"path/to/output.log\""
+            if statsoft_reveal; then
+                echo "  $SAS_CMD -batch -nosplash -sysin \"path/to/program.sas\" -log \"path/to/output.log\""
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         else
             echo "=== 批处理调用示例 ==="
             LANG_ZH "简单批处理:" "Simple batch:"
-            echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
+            if statsoft_reveal; then
+                echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
             LANG_ZH "" ""
             LANG_ZH "静默批处理 (无界面):" "Silent batch (no GUI):"
-            echo "  $SAS_CMD -batch -nosplash -sysin \"path/to/program.sas\" -log \"path/to/output.log\""
+            if statsoft_reveal; then
+                echo "  $SAS_CMD -batch -nosplash -sysin \"path/to/program.sas\" -log \"path/to/output.log\""
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         fi
         return 0
     fi

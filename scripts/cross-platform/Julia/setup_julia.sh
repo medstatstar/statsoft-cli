@@ -44,7 +44,12 @@ detect_julia() {
         fi
     fi
     
-    LANG_ZH "$julia_cmd" "$julia_cmd"
+    if statsoft_reveal; then
+        LANG_ZH "$julia_cmd" "$julia_cmd"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 
 # 主流程
@@ -53,7 +58,11 @@ main() {
     
     if [ -n "$julia_path" ]; then
     LANG_ZH "✅ 检测到 Julia 安装:" "Julia installation detected:"
-        LANG_ZH "  路径: $julia_path" "Path: $julia_path"
+        if statsoft_reveal; then
+            LANG_ZH "  路径: $julia_path" "Path: $julia_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         
         # Version verification launches the detected third-party binary.
         # It runs ONLY when explicitly opted in (STATSOFT_VERIFY=1); default
@@ -62,26 +71,46 @@ main() {
         if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
             version=$($julia_path --version 2>&1 | head -1)
         fi
-    LANG_ZH "  版本: $version" "Version: $version"
+    if statsoft_reveal; then
+        LANG_ZH "  版本: $version" "Version: $version"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
         
         # 输出配置信息（供 AI Agent 读取）
         LANG_ZH "" ""
     LANG_ZH "=== 配置信息" "Configuration Info ==="
-        LANG_ZH "JULIA_PATH=$julia_path" "JULIA_PATH=$julia_path"
-        LANG_ZH "JULIA_VERSION=$version" "JULIA_VERSION=$version"
+        if statsoft_reveal; then
+            LANG_ZH "JULIA_PATH=$julia_path" "JULIA_PATH=$julia_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
+        if statsoft_reveal; then
+            LANG_ZH "JULIA_VERSION=$version" "JULIA_VERSION=$version"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "JULIA_OS=$WB_OS" "JULIA_OS=$WB_OS"
         LANG_ZH "JULIA_ARCH=$WB_ARCH" "JULIA_ARCH=$WB_ARCH"
         # 输出使用说明
         LANG_ZH "" ""
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
         LANG_ZH "批处理命令:" "Batch command:"
-        echo "  $julia_path script.jl"
+        if statsoft_reveal; then
+            echo "  $julia_path script.jl"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         
         # 输出使用说明
         LANG_ZH "" ""
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
         LANG_ZH "批处理命令（完全无 GUI）/ Batch command (completely GUI-free):" "批处理命令（完全无 GUI）/ Batch command (completely GUI-free):"
-        echo "  $julia_path script.jl"
+        if statsoft_reveal; then
+            echo "  $julia_path script.jl"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "" ""
     LANG_ZH "脚本示例" "Script example:"
         echo "  # script.jl"
@@ -114,12 +143,20 @@ main() {
             echo "  1. 访问 Julia 官网: https://julialang.org/downloads/"
             echo "  2. 下载 Windows 安装包（.exe）"
             echo "  3. 运行安装程序，按默认设置安装"
-            echo "  4. 安装完成后，julia.exe 通常在 C:\\Users\\[USER]\\AppData\\Local\\Programs\\Julia-XX.X.X\\bin\\"
+            if statsoft_reveal; then
+                echo "  4. 安装完成后，julia.exe 通常在 C:\\Users\\[USER]\\AppData\\Local\\Programs\\Julia-XX.X.X\\bin\\"
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         elif [ "$WB_OS" = "mac" ]; then
     LANG_ZH "macOS 安装步骤" "macOS installation steps:"
             echo "  1. 使用 Homebrew: brew install julia"
             echo "  2. 或下载 .dmg 安装包: https://julialang.org/downloads/"
-            echo "  3. 安装完成后，命令行工具在 /Applications/Julia-*.app/Contents/Resources/julia/bin/julia"
+            if statsoft_reveal; then
+                echo "  3. 安装完成后，命令行工具在 /Applications/Julia-*.app/Contents/Resources/julia/bin/julia"
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         else
     LANG_ZH "Linux 安装步骤" "Linux installation steps:"
             echo "  Ubuntu/Debian: sudo apt install julia"

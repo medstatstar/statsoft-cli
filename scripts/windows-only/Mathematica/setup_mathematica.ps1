@@ -47,6 +47,10 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
+# Disclosure gate (default-deny): reveal install paths/versions only on opt-in.
+$statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
+$statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
+
 
 
 $ErrorActionPreference = "Stop"
@@ -103,23 +107,29 @@ if (-not $mathKernel -and -not $wolframScript) {
     exit 1
 }
 
-# Get version info
-$version = "unknown"
-if ($wolframScript) {
-    try {
-        $versionOutput = & $wolframScript -code "`$VersionNumber" 2>&1
-        $version = $versionOutput.Trim()
-    } catch {
-        $version = "unknown"
+# Get version info (third-party binary launch is gated behind STATSOFT_VERIFY)
+$version = "unknown (set STATSOFT_VERIFY=1 to query)"
+if ($statsoftVerify) {
+    if ($wolframScript) {
+        try {
+            $versionOutput = & $wolframScript -code "`$VersionNumber" 2>&1
+            $version = $versionOutput.Trim()
+        } catch {
+            $version = "unknown"
+        }
+    } elseif ($mathKernel) {
+        $version = (Get-Item $mathKernel).Directory.Name
     }
-} elseif ($mathKernel) {
-    $version = (Get-Item $mathKernel).Directory.Name
 }
 
-Write-Lang "MathKernel: $mathKernel" "MathKernel: $mathKernel" -ForegroundColor Green
-Write-Lang "WolframScript: $wolframScript" "WolframScript: $wolframScript" -ForegroundColor Green
-Write-Lang "Install Dir: $installDir" "Install Dir: $installDir" -ForegroundColor Green
-Write-Lang "Version: $version" "Version: $version" -ForegroundColor Green
+if ($statsoftReveal) {
+    Write-Lang "MathKernel: $mathKernel" "MathKernel: $mathKernel" -ForegroundColor Green
+    Write-Lang "WolframScript: $wolframScript" "WolframScript: $wolframScript" -ForegroundColor Green
+    Write-Lang "Install Dir: $installDir" "Install Dir: $installDir" -ForegroundColor Green
+    Write-Lang "Version: $version" "Version: $version" -ForegroundColor Green
+} else {
+    Write-Lang "Mathematica detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)." "Mathematica detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
 
 $configPath = Join-Path $PSScriptRoot "..\config.json"
 if (Test-Path $configPath) {

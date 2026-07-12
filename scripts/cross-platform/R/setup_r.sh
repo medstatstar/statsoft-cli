@@ -26,6 +26,10 @@ log_warn() { echo "[WARN] $1" >&2; }
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
+# Disclosure/verification gates (default-deny).
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
+
 R_CMD=""
 R_VERSION=""
 
@@ -37,7 +41,11 @@ detect_r() {
         else
             R_VERSION="unknown (set STATSOFT_VERIFY=1 to query)"
         fi
-        log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
+        if statsoft_reveal; then
+            log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
+        else
+            log_success "$(LANG_ZH "检测到 R（详细信息已隐藏，设置 STATSOFT_REVEAL=1 查看）" "R detected (details hidden; set STATSOFT_REVEAL=1 to reveal)")"
+        fi
         return 0
     fi
 
@@ -73,7 +81,11 @@ detect_r() {
                 else
                     R_VERSION="unknown (set STATSOFT_VERIFY=1 to query)"
                 fi
-                log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
+                if statsoft_reveal; then
+            log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
+        else
+            log_success "$(LANG_ZH "检测到 R（详细信息已隐藏，设置 STATSOFT_REVEAL=1 查看）" "R detected (details hidden; set STATSOFT_REVEAL=1 to reveal)")"
+        fi
                 return 0
             fi
         done
@@ -212,6 +224,14 @@ scan_packages() {
         return 1
     fi
 
+    # Inventory disclosure gate (SDI-3): package scanning both launches Rscript
+    # and prints the package list, which reveals sensitive research/security
+    # tooling. Without STATSOFT_REVEAL=1 we skip entirely (no launch, no output).
+    if ! statsoft_reveal; then
+        log_info "$(LANG_ZH "已跳过 R 包清单（设置 STATSOFT_REVEAL=1 以查看）" "Skipped R package inventory (set STATSOFT_REVEAL=1 to view)")"
+        return 0
+    fi
+
     log_info "$(LANG_ZH "扫描已安装 R 包..." "Scanning installed R packages...")"
 
     # The package inventory is strictly EPHEMERAL: it is written into a private,
@@ -295,7 +315,20 @@ scan_packages() {
 
 save_config() {
     local config_file="${1:-$ROOT_DIR/../config.json}"
+    # Canonicalize + validate the detected path before persisting (SDI-3):
+    # resolve to a real path and confirm it is an actual Rscript executable, so
+    # we never store an attacker-controlled or non-existent location.
     local r_path="${R_CMD:-not installed}"
+    if [[ -n "$R_CMD" ]]; then
+        local r_resolved
+        r_resolved="$(realpath "$R_CMD" 2>/dev/null || echo "$R_CMD")"
+        if [[ -x "$r_resolved" || -x "$r_resolved.exe" ]]; then
+            r_path="$r_resolved"
+        else
+            log_warn "$(LANG_ZH "R 路径不可执行，跳过持久化" "R path not executable; skipping persist")"
+            return 1
+        fi
+    fi
 
     # 1) Build the desired config (read-only) — do NOT write here.
     # 2) Delegate persistence to the centralized fail-closed gate (write_config.py).

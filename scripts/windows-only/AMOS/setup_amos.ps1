@@ -17,6 +17,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 function Save-StatSoftConfig {
     param(
@@ -72,7 +78,11 @@ if (Test-Path $configPath) {
 if ($AmosPath -and (Test-Path (Join-Path $AmosPath "amos.exe"))) {
     $amosExe = Join-Path $AmosPath "amos.exe"
     $installPath = $AmosPath
-    Write-Lang "[OK] Using provided path: $installPath" "[OK] Using provided path: $installPath" -ForegroundColor Green
+    if (Test-StatSoftReveal) {
+        Write-Lang "[OK] Using provided path: $installPath" "[OK] Using provided path: $installPath" -ForegroundColor Green
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
     # Search for AMOS
     $searchPaths = @(
@@ -165,7 +175,11 @@ if (-not $amosExe) {
 
     Write-Lang "[!] [CN] 未检测到 AMOS 安装" "[EN] AMOS installation not detected." -Color Yellow
     Write-Lang "请使用 -AmosPath 参数指定 AMOS 安装路径" "Please use -AmosPath to specify the AMOS installation path" -Color White
-    Write-Host '示例 / Example: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"'
+    if (Test-StatSoftReveal) {
+        Write-Host '示例 / Example: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"'
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     exit 0
 }
 
@@ -178,8 +192,16 @@ try {
     $ver = "unknown"
 }
 
-Write-Lang "AMOS: $amosExe" "AMOS: $amosExe" -ForegroundColor Green
-Write-Lang "Version: $ver" "Version: $ver"
+if (Test-StatSoftReveal) {
+    Write-Lang "AMOS: $amosExe" "AMOS: $amosExe" -ForegroundColor Green
+} else {
+    Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
+if (Test-StatSoftReveal) {
+    Write-Lang "Version: $ver" "Version: $ver"
+} else {
+    Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
 
 # Update config
 $config["AMOS"] = [ordered]@{

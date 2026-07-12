@@ -16,6 +16,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 function Save-StatSoftConfig {
     param(
@@ -66,7 +72,11 @@ foreach ($p in $installPaths) {
 }
 
 if ($shazamExe) {
-    Write-Lang "Found SHAZAM: $shazamExe" "Found SHAZAM: $shazamExe" -ForegroundColor Green
+    if (Test-StatSoftReveal) {
+        Write-Lang "Found SHAZAM: $shazamExe" "Found SHAZAM: $shazamExe" -ForegroundColor Green
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
   Write-Lang "SHAZAM not found. Please install from https:" "/www.econometrics.com/" -Color Yellow
 }

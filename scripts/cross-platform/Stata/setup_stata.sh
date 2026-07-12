@@ -89,7 +89,11 @@ detect_stata() {
                 fi
                 STATA_VERSION="${dir##*Stata}"
                 STATA_VERSION="${STATA_VERSION%%/*}"
-                log_success "$(LANG_ZH "检测到 Stata $STATA_VERSION ($STATA_EDITION): $STATA_CMD" "Detected Stata $STATA_VERSION ($STATA_EDITION): $STATA_CMD")"
+                if statsoft_reveal; then
+                    log_success "$(LANG_ZH "检测到 Stata $STATA_VERSION ($STATA_EDITION): $STATA_CMD" "Detected Stata $STATA_VERSION ($STATA_EDITION): $STATA_CMD")"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         done
@@ -97,6 +101,8 @@ detect_stata() {
 
     return 1
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 verify_stata() {
     if [[ -z "$STATA_CMD" ]]; then

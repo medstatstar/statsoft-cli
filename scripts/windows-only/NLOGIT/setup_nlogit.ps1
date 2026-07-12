@@ -48,6 +48,10 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
+# Disclosure gate (default-deny): reveal install paths/versions only on opt-in.
+$statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
+$statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
+
 Write-Host "=== NLOGIT Setup ===" -ForegroundColor Cyan
 
 $installPaths = @(
@@ -67,7 +71,11 @@ foreach ($p in $installPaths) {
 }
 
 if ($nlogitExe) {
-    Write-Lang "Found NLOGIT: $nlogitExe" "Found NLOGIT: $nlogitExe" -ForegroundColor Green
+    if ($statsoftReveal) {
+        Write-Lang "Found NLOGIT: $nlogitExe" "Found NLOGIT: $nlogitExe" -ForegroundColor Green
+    } else {
+        Write-Lang "NLOGIT detected (path hidden; set STATSOFT_REVEAL=1 to reveal)." "NLOGIT detected (path hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
   Write-Lang "NLOGIT not found. Please install from https:" "/limdep.com/" -Color Yellow
 }
@@ -77,7 +85,7 @@ $config = Get-Content $configPath -Raw | ConvertFrom-Json
 if ($nlogitExe) {
     $config | Add-Member -NotePropertyName "NLOGIT" -NotePropertyValue @{
         installed = $true
-        version = "6.0"
+        version = "unknown (set STATSOFT_VERIFY=1 to query)"
         path = $nlogitExe
         platform = "windows"
         mode = "simple"

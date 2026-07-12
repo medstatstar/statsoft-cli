@@ -28,6 +28,7 @@ NC='\033[0m' # No Color
 # 日志函数
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 
 log_warn() {
@@ -61,8 +62,16 @@ detect_stattransfer() {
     # 首先检查 PATH
     if command -v st &> /dev/null; then
         st_path=$(command -v st)
-        log_info "在 PATH 中找到 StatTransfer: $st_path"
-        LANG_ZH "$st_path" "$st_path"
+        if statsoft_reveal; then
+            log_info "在 PATH 中找到 StatTransfer: $st_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
+        if statsoft_reveal; then
+            LANG_ZH "$st_path" "$st_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         return 0
     fi
     
@@ -76,8 +85,16 @@ detect_stattransfer() {
         for path in "${win_paths[@]}"; do
             if [[ -f "$path" ]]; then
                 st_path="$path"
-                log_info "找到 StatTransfer: $st_path"
-                LANG_ZH "$st_path" "$st_path"
+                if statsoft_reveal; then
+                    log_info "找到 StatTransfer: $st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
+                if statsoft_reveal; then
+                    LANG_ZH "$st_path" "$st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         done
@@ -90,8 +107,16 @@ detect_stattransfer() {
         for path in "${mac_paths[@]}"; do
             if [[ -f "$path" ]]; then
                 st_path="$path"
-                log_info "找到 StatTransfer: $st_path"
-                LANG_ZH "$st_path" "$st_path"
+                if statsoft_reveal; then
+                    log_info "找到 StatTransfer: $st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
+                if statsoft_reveal; then
+                    LANG_ZH "$st_path" "$st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         done
@@ -104,8 +129,16 @@ detect_stattransfer() {
         for path in "${linux_paths[@]}"; do
             if [[ -f "$path" ]]; then
                 st_path="$path"
-                log_info "找到 StatTransfer: $st_path"
-                LANG_ZH "$st_path" "$st_path"
+                if statsoft_reveal; then
+                    log_info "找到 StatTransfer: $st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
+                if statsoft_reveal; then
+                    LANG_ZH "$st_path" "$st_path"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         done
@@ -129,7 +162,11 @@ verify_stattransfer() {
     
     # 检查可执行文件
     if [[ ! -f "$st_path" ]] && [[ ! -f "$st_path.exe" ]]; then
-        log_error "StatTransfer 可执行文件不存在: $st_path"
+        if statsoft_reveal; then
+            log_error "StatTransfer 可执行文件不存在: $st_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         return 1
     fi
     
@@ -146,7 +183,11 @@ verify_stattransfer() {
     fi
     
     if [[ -n "$version_output" ]]; then
-        log_info "StatTransfer 版本信息: $version_output"
+        if statsoft_reveal; then
+            log_info "StatTransfer 版本信息: $version_output"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
     else
         log_warn "无法获取 StatTransfer 版本信息"
     fi
@@ -265,10 +306,18 @@ main() {
     log_info ""
     log_info "📋 推荐使用方式:"
     log_info "  # 单文件转换"
-    log_info "  \"$st_path\" in.sas7bdat out.dta"
+    if statsoft_reveal; then
+        log_info "  \"$st_path\" in.sas7bdat out.dta"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
     log_info ""
     log_info "  # 批量转换"
-    log_info "  \"$st_path\" in\\*.sav out\\*.dta"
+    if statsoft_reveal; then
+        log_info "  \"$st_path\" in\\*.sav out\\*.dta"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
     
     return 0
 }

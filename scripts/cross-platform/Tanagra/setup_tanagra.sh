@@ -11,6 +11,10 @@ fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
+# Disclosure/verification gates (default-deny).
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
+
 # Setup script for Tanagra Data Mining
 # Open source data mining and machine learning
 
@@ -18,7 +22,9 @@ TANAGRA_VERSION="1.8"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== Tanagra 数据挖掘工具配置 ===" "=== Tanagra Setup ==="
-LANG_ZH "版本: $TANAGRA_VERSION" "Version: $TANAGRA_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $TANAGRA_VERSION" "Version: $TANAGRA_VERSION"
+fi
 
 # Detect Tanagra installation
 TANAGRA_BIN=""
@@ -33,7 +39,11 @@ elif [ -f "/opt/tanagra/tanagra" ]; then
 fi
 
 if [ -n "$TANAGRA_BIN" ]; then
-    LANG_ZH "找到 Tanagra: $TANAGRA_BIN" "Found Tanagra: $TANAGRA_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 Tanagra: $TANAGRA_BIN" "Found Tanagra: $TANAGRA_BIN"
+    else
+        LANG_ZH "找到 Tanagra（路径已隐藏，设置 STATSOFT_REVEAL=1 查看）" "Found Tanagra (path hidden; set STATSOFT_REVEAL=1 to reveal)"
+    fi
 else
     LANG_ZH "未找到 Tanagra。" "Tanagra not found."
     LANG_ZH "安装：从 http://data.mines-paristech.fr/tanagra/ 下载" "Install: Download from http://data.mines-paristech.fr/tanagra/"
@@ -48,7 +58,7 @@ import json, sys
 with open(sys.argv[1], 'r') as f:
     config = json.load(f)
 config['Tanagra'] = {
-    'version': sys.argv[2],
+    'version': 'unknown (set STATSOFT_VERIFY=1 to verify)',
     'path': sys.argv[3],
     'platform': 'all',
     'mode': 'simple'

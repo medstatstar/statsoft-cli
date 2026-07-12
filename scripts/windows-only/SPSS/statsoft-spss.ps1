@@ -76,9 +76,22 @@ if (-not $statsPython -and -not $statsCom) {
     Write-Warning "[CN] 未检测到 SPSS / [EN] SPSS not found"; exit 1
 }
 
-if ($statsCom)   { Write-Host "[CN] stats.com: $statsCom" -ForegroundColor Cyan }
-if ($statsPython) { Write-Host "[CN] Python: $statsPython" -ForegroundColor Cyan }
-if ($statsExe)    { Write-Host "[CN] stats.exe: $statsExe" -ForegroundColor Cyan }
+# Detection-phase disclosure gate (SDI-3 / SDI-4): binaries paths are detailed
+# inventory data — revealed only when STATSOFT_REVEAL=1. Default detection
+# reports only the boolean installed result (no path, no version detail).
+if ($env:STATSOFT_REVEAL -eq '1') {
+    if ($statsCom)   { Write-Host "[CN] stats.com: $statsCom" -ForegroundColor Cyan }
+    if ($statsPython) { Write-Host "[CN] Python: $statsPython" -ForegroundColor Cyan }
+    if ($statsExe)    { Write-Host "[CN] stats.exe: $statsExe" -ForegroundColor Cyan }
+} else {
+    $found = @()
+    if ($statsCom)   { $found += "stats.com" }
+    if ($statsPython) { $found += "bundled-python" }
+    if ($statsExe)    { $found += "stats.exe" }
+    if ($found.Count -gt 0) {
+        Write-Host "[CN] 检测到 SPSS / [EN] SPSS detected: $($found -join ', ') (set STATSOFT_REVEAL=1 to reveal paths)" -ForegroundColor Cyan
+    }
+}
 
 # ============================================================
 # 首选：stats.com 控制台版（无闪屏）
@@ -355,9 +368,15 @@ switch ($Command) {
     "version" {
         # version launches the SPSS-bundled Python interpreter and starts the
         # SPSS engine (third-party code execution), so it MUST pass the SAME
-        # default-deny gate as run/run-batch/data-info (SDI-1/SDI-4).
+        # default-deny gate as run/run-batch/data-info (SDI-1/SDI-4), AND it
+        # requires the verification opt-in STATSOFT_VERIFY=1 because it
+        # executes the external SPSS engine for a --version query.
         if (-not (Test-UserAuthorizedToRun)) {
             Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            exit 1
+        }
+        if ($env:STATSOFT_VERIFY -ne '1') {
+            Write-Error "version 需要 STATSOFT_VERIFY=1 以启动第三方 SPSS 引擎进行版本查询 / version requires STATSOFT_VERIFY=1 to launch the third-party SPSS engine for a version query (default-deny)."
             exit 1
         }
         if (-not $statsPython) { Write-Error "未找到内置 Python / bundled Python not found"; exit 1 }

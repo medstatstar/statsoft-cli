@@ -224,10 +224,10 @@ See SKILL.md core permissions section for SPSS invocation details.
 - ⚠️ 使用时会有以下现象：调用时弹出 GUI 界面，用户需手动操作
 - 🖱️ 本技能仅提供**检测 + 手动启动 GUI 指引**，不通过 CLI/无头方式驱动其批处理
 
-**只读替代方案 / Read-only alternative**：
+**纯解析替代方案 / Parsing-only alternative**：
 | 方案 | 说明 |
 |------|------|
-| Python `prismWriter` | 只读读取/校验 .pzfx 文件结构（无需启动 GUI） |
+| Python `prismWriter` 库 | 可**解析** .pzfx 结构（读取/校验），无需启动 GUI；该库本身也具备**生成** .pzfx 的写能力，但本技能**绝不调用、不封装其任何写文件操作**（与 command-examples.md 一致：.pzfx 读写不在本技能允许范围内，如需请在本技能之外手动进行并自行负责） |
 
 > 详细配置信息和注意事项请参考 [ADDITIONAL_SOFTWARE.md → GraphPad Prism](ADDITIONAL_SOFTWARE.md#graphpad-prism)
 

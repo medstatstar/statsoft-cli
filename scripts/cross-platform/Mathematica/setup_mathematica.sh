@@ -34,7 +34,11 @@ detect_mathematica() {
     if command -v wolframscript &>/dev/null; then
         WOLFRAMSCRIPT="$(which wolframscript)"
         INSTALL_DIR="$(dirname "$(dirname "$WOLFRAMSCRIPT")")"
-        LANG_ZH "[OK] Found wolframscript: $WOLFRAMSCRIPT" "[OK] Found wolframscript: $WOLFRAMSCRIPT"
+        if statsoft_reveal; then
+            LANG_ZH "[OK] Found wolframscript: $WOLFRAMSCRIPT" "[OK] Found wolframscript: $WOLFRAMSCRIPT"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         return 0
     fi
 
@@ -74,7 +78,11 @@ detect_mathematica() {
             if [[ -x "$base_path/wolframscript" ]]; then
                 WOLFRAMSCRIPT="$base_path/wolframscript"
                 INSTALL_DIR="$(dirname "$(dirname "$WOLFRAMSCRIPT")")"
-                LANG_ZH "[OK] Found wolframscript: $WOLFRAMSCRIPT" "[OK] Found wolframscript: $WOLFRAMSCRIPT"
+                if statsoft_reveal; then
+                    LANG_ZH "[OK] Found wolframscript: $WOLFRAMSCRIPT" "[OK] Found wolframscript: $WOLFRAMSCRIPT"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
             # Search for MathKernel
@@ -89,6 +97,8 @@ detect_mathematica() {
 
     return 1
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 verify_mathematica() {
     if [[ -n "$WOLFRAMSCRIPT" ]] && "$WOLFRAMSCRIPT" -code "Print[\"WolframScript OK\"]" &>/dev/null; then

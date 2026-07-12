@@ -15,6 +15,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 function Save-StatSoftConfig {
     param(
@@ -96,9 +102,21 @@ if (-not $clembExe) {
     exit 1
 }
 
-Write-Lang "Found: $installPath" "Found: $installPath" -ForegroundColor Green
-Write-Lang "clemb: $clembExe" "clemb: $clembExe"
-Write-Lang "Version: $ver" "Version: $ver"
+if (Test-StatSoftReveal) {
+    Write-Lang "Found: $installPath" "Found: $installPath" -ForegroundColor Green
+} else {
+    Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
+if (Test-StatSoftReveal) {
+    Write-Lang "clemb: $clembExe" "clemb: $clembExe"
+} else {
+    Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
+if (Test-StatSoftReveal) {
+    Write-Lang "Version: $ver" "Version: $ver"
+} else {
+    Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
 
 # Update config
 $config["SPSS Modeler"] = [ordered]@{

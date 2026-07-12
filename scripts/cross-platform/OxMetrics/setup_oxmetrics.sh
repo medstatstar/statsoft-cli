@@ -18,7 +18,11 @@ OX_VERSION="8.0"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== OxMetrics 计量经济学配置 ===" "=== OxMetrics Setup ==="
-LANG_ZH "版本: $OX_VERSION" "Version: $OX_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $OX_VERSION" "Version: $OX_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect OxMetrics installation
 OX_BIN=""
@@ -35,7 +39,11 @@ elif [ -f "/Applications/OxMetrics8/oxmetrics" ]; then
 fi
 
 if [ -n "$OX_BIN" ]; then
-    LANG_ZH "找到 OxMetrics: $OX_BIN" "Found OxMetrics: $OX_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 OxMetrics: $OX_BIN" "Found OxMetrics: $OX_BIN"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 else
     LANG_ZH "未找到 OxMetrics。" "OxMetrics not found."
     LANG_ZH "安装：从 https://www.oxmetrics.net/ 下载" "Install: Download from https://www.oxmetrics.net/"
@@ -55,6 +63,8 @@ config['OxMetrics'] = {
     'platform': 'all',
     'mode': 'simple'
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$OX_VERSION" "$OX_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

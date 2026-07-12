@@ -47,8 +47,16 @@ if [ -f "$CMDSTAN_PATH/VERSION" ]; then
 fi
 
 
-LANG_ZH "CmdStan: $CMDSTAN_PATH" "CmdStan: $CMDSTAN_PATH"
-LANG_ZH "版本: ${VERSION:-unknown}" "Version: ${VERSION:-unknown}"
+if statsoft_reveal; then
+    LANG_ZH "CmdStan: $CMDSTAN_PATH" "CmdStan: $CMDSTAN_PATH"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+if statsoft_reveal; then
+    LANG_ZH "版本: ${VERSION:-unknown}" "Version: ${VERSION:-unknown}"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Config persistence (fail-closed: detection-only by default; persists only on explicit opt-in)
 if command -v python3 &>/dev/null; then
@@ -65,6 +73,8 @@ cfg["CmdStan"] = {
     "version": "${VERSION:-unknown}",
     "mode": "simple"
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

@@ -18,7 +18,11 @@ H2O_VERSION="3.44"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== H2O.ai 机器学习平台配置 ===" "=== H2O.ai Setup ==="
-LANG_ZH "版本: $H2O_VERSION" "Version: $H2O_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $H2O_VERSION" "Version: $H2O_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect H2O installation
 H2O_BIN=""
@@ -62,6 +66,8 @@ config['H2O'] = {
     'platform': 'all',
     'mode': 'simple'
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$H2O_VERSION" "$H2O_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

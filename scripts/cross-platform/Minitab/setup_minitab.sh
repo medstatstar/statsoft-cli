@@ -54,8 +54,14 @@ detect_minitab() {
         echo "   Minitab Web App: https://app.minitab.com/"
     fi
     
-    LANG_ZH "$minitab_cmd" "$minitab_cmd"
+    if statsoft_reveal; then
+        LANG_ZH "$minitab_cmd" "$minitab_cmd"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # 主流程
 main() {
@@ -75,12 +81,20 @@ main() {
     
     if [ -n "$minitab_path" ]; then
     LANG_ZH "✅ 检测到 Minitab 安装" "Minitab installation detected:"
-    LANG_ZH "  路径" "Path: $minitab_path"
+    if statsoft_reveal; then
+        LANG_ZH "  路径" "Path: $minitab_path"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
         
         # 输出配置信息（供 AI Agent 读取）
         LANG_ZH "" ""
     LANG_ZH "=== 配置信息" "Configuration Info ==="
-        LANG_ZH "MINITAB_PATH=$minitab_path" "MINITAB_PATH=$minitab_path"
+        if statsoft_reveal; then
+            LANG_ZH "MINITAB_PATH=$minitab_path" "MINITAB_PATH=$minitab_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "MINITAB_OS=$WB_OS" "MINITAB_OS=$WB_OS"
         LANG_ZH "MINITAB_ARCH=$WB_ARCH" "MINITAB_ARCH=$WB_ARCH"
         
@@ -88,7 +102,11 @@ main() {
         LANG_ZH "" ""
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
     LANG_ZH "批处理命令" "Batch command:"
-        echo "  \"$minitab_path\" /run script.mtb"
+        if statsoft_reveal; then
+            echo "  \"$minitab_path\" /run script.mtb"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "" ""
     LANG_ZH "脚本示例" "Script example:"
         echo "  # script.mtb"
@@ -109,7 +127,11 @@ main() {
         echo "  1. 访问 Minitab 官网: https://www.minitab.com/"
         echo "  2. 下载 Minitab 试用版或输入许可证"
         echo "  3. 运行安装程序，按默认设置安装"
-        echo "  4. 安装完成后，mtb.exe 通常在 C:\\Program Files\\Minitab\\Minitab XX\\"
+        if statsoft_reveal; then
+            echo "  4. 安装完成后，mtb.exe 通常在 C:\\Program Files\\Minitab\\Minitab XX\\"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
     fi
 }
 

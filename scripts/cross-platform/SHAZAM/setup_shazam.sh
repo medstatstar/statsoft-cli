@@ -18,7 +18,11 @@ SHAZAM_VERSION="12.0"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== SHAZAM 计量经济学配置 ===" "=== SHAZAM Setup ==="
-LANG_ZH "版本: $SHAZAM_VERSION" "Version: $SHAZAM_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $SHAZAM_VERSION" "Version: $SHAZAM_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect SHAZAM installation
 SHAZAM_BIN=""
@@ -33,12 +37,20 @@ elif [ -f "/opt/shazam/shazam" ]; then
 fi
 
 if [ -n "$SHAZAM_BIN" ]; then
-    LANG_ZH "找到 SHAZAM: $SHAZAM_BIN" "Found SHAZAM: $SHAZAM_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 SHAZAM: $SHAZAM_BIN" "Found SHAZAM: $SHAZAM_BIN"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
     SHAZAM_VER="unknown"
     if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
         SHAZAM_VER=$($SHAZAM_BIN --version 2>&1 | head -1 || echo "unknown")
     fi
-    LANG_ZH "版本: $SHAZAM_VER" "Version: $SHAZAM_VER"
+    if statsoft_reveal; then
+        LANG_ZH "版本: $SHAZAM_VER" "Version: $SHAZAM_VER"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 else
     LANG_ZH "未找到 SHAZAM。" "SHAZAM not found."
     LANG_ZH "安装：从 https://www.econometrics.com/ 下载" "Install: Download from https://www.econometrics.com/"
@@ -57,6 +69,7 @@ config['SHAZAM'] = {
     'path': sys.argv[3],
     'platform': 'all',
     'mode': 'simple'
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$SHAZAM_VERSION" "$SHAZAM_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.

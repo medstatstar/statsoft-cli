@@ -38,8 +38,16 @@ fi
 
 JAMOVI_DIR="$(dirname "$JAMOVI_BIN")"
 
-LANG_ZH "jamovi: $JAMOVI_BIN" "jamovi: $JAMOVI_BIN"
-LANG_ZH "Dir: $JAMOVI_DIR" "Dir: $JAMOVI_DIR"
+if statsoft_reveal; then
+    LANG_ZH "jamovi: $JAMOVI_BIN" "jamovi: $JAMOVI_BIN"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+if statsoft_reveal; then
+    LANG_ZH "Dir: $JAMOVI_DIR" "Dir: $JAMOVI_DIR"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 if command -v python3 &>/dev/null; then
     _NEW_CFG=$(python3 - <<EOF
@@ -56,6 +64,8 @@ cfg["jamovi"] = {
     "version": "unknown",
     "platform": "all"
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

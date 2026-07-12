@@ -127,11 +127,30 @@ switch ($Command) {
 
     "read-log" {
         $logPath = $Args[0]
-        if (-not (Test-Path $logPath)) {
+        if (-not $logPath) {
+            Write-Error "[CN] 未提供日志路径 / [EN] No log path provided"
+            exit 1
+        }
+        # Authorization gate (same as run/data-info) before any file read.
+        if (-not (Test-UserAuthorizedToRun)) {
+            Write-Error "[CN] 已取消（未确认）/ [EN] Cancelled (not confirmed)"
+            exit 1
+        }
+        # Canonicalize and restrict to the current working directory plus an
+        # approved extension allowlist, so this wrapper cannot be abused as an
+        # arbitrary local file reader (SDI-3).
+        $resolved = Resolve-Path -Path $logPath -ErrorAction SilentlyContinue
+        if (-not $resolved) {
             Write-Error "[CN] 日志文件不存在: $logPath / [EN] Log file not found: $logPath"
             exit 1
         }
-
-        Get-Content $logPath
+        $full = $resolved.Path
+        $allowedDir = (Resolve-Path -Path $PWD).Path
+        if (-not ($full.StartsWith($allowedDir, [System.StringComparison]::OrdinalIgnoreCase) -and
+                  ($full -match '\.(log|txt|csv)$'))) {
+            Write-Error "[CN] 拒绝读取：仅允许读取当前工作目录下的 .log/.txt/.csv 日志文件 / [EN] Refused: only .log/.txt/.csv log files under the current directory may be read"
+            exit 1
+        }
+        Get-Content $full
     }
 }

@@ -503,7 +503,12 @@ if (Want "GenStat") {
 if (Want "CmdStan") {
     $cmdStanDir = if ($env:CMDSTAN) { $env:CMDSTAN } else { $null }
     if (-not $cmdStanDir) {
-        $candidates = @("C:\Users\$env:USERNAME\.cmdstan", "C:\Users\$env:USERNAME\cmdstan", "C:\cmdstan", "C:\Tools\cmdstan")
+        # NOTE: user-home candidates (C:\Users\<user>\.cmdstan) are intentionally
+        # excluded from broad scanning — probing personal profile directories
+        # discloses private dev environments beyond the bounded system-level
+        # inventory scope (SDI-3). Only system-wide locations are probed here;
+        # an explicit $env:CMDSTAN (user-specified) is still honored above.
+        $candidates = @("C:\cmdstan", "C:\Tools\cmdstan")
         foreach ($c in $candidates) { if (Test-Path $c) { $cmdStanDir = $c ; break } }
     }
     if ($cmdStanDir) { Add-RResult "CmdStan" $true $cmdStanDir (Split-Path $cmdStanDir -Leaf) }

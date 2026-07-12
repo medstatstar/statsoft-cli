@@ -77,8 +77,14 @@ detect_matlab() {
         fi
     fi
     
-    LANG_ZH "$matlab_cmd" "$matlab_cmd"
+    if statsoft_reveal; then
+        LANG_ZH "$matlab_cmd" "$matlab_cmd"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # 主流程
 main() {
@@ -86,7 +92,11 @@ main() {
     
     if [ -n "$matlab_path" ]; then
     LANG_ZH "✅ 检测到 Matlab 安装" "Matlab installation detected:"
-    LANG_ZH "  路径" "Path: $matlab_path"
+    if statsoft_reveal; then
+        LANG_ZH "  路径" "Path: $matlab_path"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
         
         # 获取版本信息（只检查路径，不执行二进制 / Check path only, do not execute）
         local version="unknown"
@@ -94,13 +104,25 @@ main() {
             version=$(basename "$(dirname "$(dirname "$matlab_path")")")
             version=${version#R}
         fi
-    LANG_ZH "  版本" "Version: $version"
+    if statsoft_reveal; then
+        LANG_ZH "  版本" "Version: $version"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
         
         # 输出配置信息（供 AI Agent 读取）
         LANG_ZH "" ""
     LANG_ZH "=== 配置信息" "Configuration Info ==="
-        LANG_ZH "MATLAB_PATH=$matlab_path" "MATLAB_PATH=$matlab_path"
-        LANG_ZH "MATLAB_VERSION=$version" "MATLAB_VERSION=$version"
+        if statsoft_reveal; then
+            LANG_ZH "MATLAB_PATH=$matlab_path" "MATLAB_PATH=$matlab_path"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
+        if statsoft_reveal; then
+            LANG_ZH "MATLAB_VERSION=$version" "MATLAB_VERSION=$version"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "MATLAB_OS=$WB_OS" "MATLAB_OS=$WB_OS"
         LANG_ZH "MATLAB_ARCH=$WB_ARCH" "MATLAB_ARCH=$WB_ARCH"
         
@@ -108,7 +130,11 @@ main() {
         LANG_ZH "" ""
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
         LANG_ZH "批处理命令（完全无 GUI）/ Batch command (completely GUI-free):" "批处理命令（完全无 GUI）/ Batch command (completely GUI-free):"
-        echo "  \"$matlab_path\" -batch \"script.m\""
+        if statsoft_reveal; then
+            echo "  \"$matlab_path\" -batch \"script.m\""
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
         LANG_ZH "" ""
     LANG_ZH "脚本示例" "Script example:"
         echo "  % script.m"
@@ -133,21 +159,33 @@ main() {
             echo "  2. 下载 Matlab 安装程序"
             echo "  3. 运行安装程序，登录 MathWorks 账户"
             echo "  4. 选择安装 Statistics and Machine Learning Toolbox"
-            echo "  5. 安装完成后，matlab.exe 通常在 C:\\Program Files\\MATLAB\\RXXXXx\\bin\\"
+            if statsoft_reveal; then
+                echo "  5. 安装完成后，matlab.exe 通常在 C:\\Program Files\\MATLAB\\RXXXXx\\bin\\"
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         elif [ "$WB_OS" = "mac" ]; then
     LANG_ZH "macOS 安装步骤" "macOS installation steps:"
             echo "  1. 访问 Matlab 官网: https://www.mathworks.com/"
             echo "  2. 下载 Matlab 安装程序（.dmg）"
             echo "  3. 运行安装程序，登录 MathWorks 账户"
             echo "  4. 选择安装 Statistics and Machine Learning Toolbox"
-            echo "  5. 安装完成后，matlab 通常在 /Applications/MATLAB_RXXXXx.app/bin/"
+            if statsoft_reveal; then
+                echo "  5. 安装完成后，matlab 通常在 /Applications/MATLAB_RXXXXx.app/bin/"
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         else
     LANG_ZH "Linux 安装步骤" "Linux installation steps:"
             echo "  1. 访问 Matlab 官网: https://www.mathworks.com/"
             echo "  2. 下载 Matlab 安装程序（.sh）"
             echo "  3. 运行安装程序: sudo sh install_matlab.sh"
             echo "  4. 选择安装 Statistics and Machine Learning Toolbox"
-            echo "  5. 安装完成后，matlab 通常在 /usr/local/MATLAB/RXXXXx/bin/"
+            if statsoft_reveal; then
+                echo "  5. 安装完成后，matlab 通常在 /usr/local/MATLAB/RXXXXx/bin/"
+            else
+                echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            fi
         fi
         
         LANG_ZH "" ""

@@ -18,7 +18,11 @@ GENSTAT_VERSION="23.0"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== GenStat 统计软件配置 ===" "=== GenStat Setup ==="
-LANG_ZH "版本: $GENSTAT_VERSION" "Version: $GENSTAT_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $GENSTAT_VERSION" "Version: $GENSTAT_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect GenStat installation
 GENSTAT_BIN=""
@@ -33,7 +37,11 @@ elif [ -f "/opt/genstat/genstat" ]; then
 fi
 
 if [ -n "$GENSTAT_BIN" ]; then
-    LANG_ZH "找到 GenStat: $GENSTAT_BIN" "Found GenStat: $GENSTAT_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 GenStat: $GENSTAT_BIN" "Found GenStat: $GENSTAT_BIN"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 else
     LANG_ZH "未找到 GenStat。" "GenStat not found."
     LANG_ZH "安装：从 https://vsni.co.uk/genstat 下载" "Install: Download from https://vsni.co.uk/genstat"
@@ -53,6 +61,8 @@ config['GenStat'] = {
     'platform': 'all',
     'mode': 'simple'
 }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$GENSTAT_VERSION" "$GENSTAT_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

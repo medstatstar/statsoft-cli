@@ -17,6 +17,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 function Save-StatSoftConfig {
     param(
@@ -71,7 +77,11 @@ foreach ($p in $installPaths) {
 }
 
 if ($ncssExe) {
-    Write-Lang "Found NCSS: $ncssExe" "Found NCSS: $ncssExe" -ForegroundColor Green
+    if (Test-StatSoftReveal) {
+        Write-Lang "Found NCSS: $ncssExe" "Found NCSS: $ncssExe" -ForegroundColor Green
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
   Write-Lang "NCSS not found. Please install from https:" "/www.ncss.com/" -Color Yellow
 }

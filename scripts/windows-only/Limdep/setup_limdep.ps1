@@ -48,6 +48,10 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
+# Disclosure gate (default-deny): reveal install paths/versions only on opt-in.
+$statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
+$statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
+
 
 
 Write-Host "=== LIMDEP Setup ===" -ForegroundColor Cyan
@@ -69,7 +73,11 @@ foreach ($p in $installPaths) {
 }
 
 if ($limdepExe) {
-    Write-Lang "Found LIMDEP: $limdepExe" "Found LIMDEP: $limdepExe" -ForegroundColor Green
+    if ($statsoftReveal) {
+        Write-Lang "Found LIMDEP: $limdepExe" "Found LIMDEP: $limdepExe" -ForegroundColor Green
+    } else {
+        Write-Lang "LIMDEP detected (path hidden; set STATSOFT_REVEAL=1 to reveal)." "LIMDEP detected (path hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
   Write-Lang "LIMDEP not found. Please install from https:" "/limdep.com/" -Color Yellow
 }

@@ -48,6 +48,10 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
+# Disclosure gate (default-deny): reveal install paths/versions only on opt-in.
+$statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
+$statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
+
 
 
 Write-Host "=== OriginLab Origin Setup ===" -ForegroundColor Cyan
@@ -83,7 +87,11 @@ if (-not $originExe) {
 }
 
 if ($originExe) {
-    Write-Lang "Found Origin: $originExe" "Found Origin: $originExe" -ForegroundColor Green
+    if ($statsoftReveal) {
+        Write-Lang "Found Origin: $originExe" "Found Origin: $originExe" -ForegroundColor Green
+    } else {
+        Write-Lang "Origin detected (path hidden; set STATSOFT_REVEAL=1 to reveal)." "Origin detected (path hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
 } else {
   Write-Lang "Origin not found. Please install from https:" "/www.originlab.com/" -Color Yellow
 }

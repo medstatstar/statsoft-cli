@@ -18,7 +18,11 @@ JAGS_VERSION="4.3.0"
 CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 LANG_ZH "=== JAGS 贝叶斯抽样器配置 ===" "=== JAGS Setup ==="
-LANG_ZH "版本: $JAGS_VERSION" "Version: $JAGS_VERSION"
+if statsoft_reveal; then
+    LANG_ZH "版本: $JAGS_VERSION" "Version: $JAGS_VERSION"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
 
 # Detect JAGS installation
 JAGS_BIN=""
@@ -31,12 +35,20 @@ elif [ -f /usr/bin/jags ]; then
 fi
 
 if [ -n "$JAGS_BIN" ]; then
-    LANG_ZH "找到 JAGS: $JAGS_BIN" "Found JAGS: $JAGS_BIN"
+    if statsoft_reveal; then
+        LANG_ZH "找到 JAGS: $JAGS_BIN" "Found JAGS: $JAGS_BIN"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
     JAGS_VER="unknown"
     if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
         JAGS_VER=$($JAGS_BIN --version 2>&1 | head -1 || echo "unknown")
     fi
-    LANG_ZH "版本: $JAGS_VER" "Version: $JAGS_VER"
+    if statsoft_reveal; then
+        LANG_ZH "版本: $JAGS_VER" "Version: $JAGS_VER"
+    else
+        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+    fi
 else
     LANG_ZH "未找到 JAGS。" "JAGS not found."
     LANG_ZH "安装选项:" "Install options:"
@@ -59,6 +71,7 @@ config['JAGS'] = {
     'path': sys.argv[3],
     'platform': 'all',
     'mode': 'simple'
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$JAGS_VERSION" "$JAGS_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.

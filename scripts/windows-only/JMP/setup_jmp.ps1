@@ -17,6 +17,12 @@ function Write-Lang {
     if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
     else { Write-Host $EN -ForegroundColor $Color }
 }
+function Test-StatSoftReveal {
+    return ($env:STATSOFT_REVEAL -eq '1')
+}
+function Test-StatSoftVerify {
+    return ($env:STATSOFT_VERIFY -eq '1')
+}
 
 
 
@@ -42,8 +48,16 @@ foreach ($dir in $commonPaths) {
         $jmpInstalled = $true
         $jmpPath = $exe
         $jmpVersion = $dir -replace ".*JMP\\", ''
-        Write-Lang "[OK] [CN] 检测到 JMP $jmpVersion : $jmpPath" "[OK] [CN] 检测到 JMP $jmpVersion : $jmpPath" -ForegroundColor Green
-        Write-Lang "[OK] [EN] JMP $jmpVersion detected: $jmpPath" "[OK] [EN] JMP $jmpVersion detected: $jmpPath" -ForegroundColor Green
+        if (Test-StatSoftReveal) {
+            Write-Lang "[OK] [CN] 检测到 JMP $jmpVersion : $jmpPath" "[OK] [CN] 检测到 JMP $jmpVersion : $jmpPath" -ForegroundColor Green
+        } else {
+            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+        }
+        if (Test-StatSoftReveal) {
+            Write-Lang "[OK] [EN] JMP $jmpVersion detected: $jmpPath" "[OK] [EN] JMP $jmpVersion detected: $jmpPath" -ForegroundColor Green
+        } else {
+            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+        }
         break
     }
 }
@@ -69,8 +83,16 @@ if (-not $jmpInstalled) {
                         $jmpInstalled = $true
                         $jmpPath = $exe
                         $jmpVersion = $installDir -replace ".*JMP\\", ''
-                        Write-Lang "[OK] [CN] 从注册表找到 JMP : $jmpPath" "[OK] [CN] 从注册表找到 JMP : $jmpPath" -ForegroundColor Green
-                        Write-Lang "[OK] [EN] Found JMP from registry: $jmpPath" "[OK] [EN] Found JMP from registry: $jmpPath" -ForegroundColor Green
+                        if (Test-StatSoftReveal) {
+                            Write-Lang "[OK] [CN] 从注册表找到 JMP : $jmpPath" "[OK] [CN] 从注册表找到 JMP : $jmpPath" -ForegroundColor Green
+                        } else {
+                            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+                        }
+                        if (Test-StatSoftReveal) {
+                            Write-Lang "[OK] [EN] Found JMP from registry: $jmpPath" "[OK] [EN] Found JMP from registry: $jmpPath" -ForegroundColor Green
+                        } else {
+                            Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+                        }
                         break
                     }
                 }
@@ -101,8 +123,16 @@ if (-not $jmpInstalled) {
             $jmpInstalled = $true
             $jmpPath = $exe
             $jmpVersion = $manualPath -replace ".*JMP\\", ''
-            Write-Lang "[OK] [CN] 已确认 JMP 路径: $jmpPath" "[OK] [CN] 已确认 JMP 路径: $jmpPath" -ForegroundColor Green
-            Write-Lang "[OK] [EN] JMP path confirmed: $jmpPath" "[OK] [EN] JMP path confirmed: $jmpPath" -ForegroundColor Green
+            if (Test-StatSoftReveal) {
+                Write-Lang "[OK] [CN] 已确认 JMP 路径: $jmpPath" "[OK] [CN] 已确认 JMP 路径: $jmpPath" -ForegroundColor Green
+            } else {
+                Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+            }
+            if (Test-StatSoftReveal) {
+                Write-Lang "[OK] [EN] JMP path confirmed: $jmpPath" "[OK] [EN] JMP path confirmed: $jmpPath" -ForegroundColor Green
+            } else {
+                Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+            }
         }
     }
 }
@@ -111,8 +141,16 @@ if (-not $jmpInstalled) {
 if ($jmpInstalled) {
     Write-Host "`n[CN] === 配置结果 ===" -ForegroundColor Cyan
     Write-Host "[EN] === Configuration Result ===" -ForegroundColor Cyan
-    Write-Lang "JMP 路径: $jmpPath" "JMP path: $jmpPath" -Color White
-    Write-Lang "版本: $jmpVersion" "Version: $jmpVersion" -Color White
+    if (Test-StatSoftReveal) {
+        Write-Lang "JMP 路径: $jmpPath" "JMP path: $jmpPath" -Color White
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
+    if (Test-StatSoftReveal) {
+        Write-Lang "版本: $jmpVersion" "Version: $jmpVersion" -Color White
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     
     # This setup script is DETECTION-ONLY: it reports the detected path and
     # prints manual configuration guidance. It does NOT modify any persistent
@@ -131,9 +169,17 @@ if ($jmpInstalled) {
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan
     Write-Host "[EN] === Usage Examples ===" -ForegroundColor Cyan
     Write-Lang "运行 JSL 脚本:" "Run JSL script:" -Color White
-    Write-Host "  `"$jmpPath`" script.jsl"
+    if (Test-StatSoftReveal) {
+        Write-Host "  `"$jmpPath`" script.jsl"
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     Write-Lang "" ""
     Write-Lang "静默模式:" "Silent mode:" -Color White
-    Write-Host "  `"$jmpPath`" -jsl script.jsl"
+    if (Test-StatSoftReveal) {
+        Write-Host "  `"$jmpPath`" -jsl script.jsl"
+    } else {
+        Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+    }
     Write-Lang "" ""
 }

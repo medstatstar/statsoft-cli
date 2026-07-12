@@ -46,6 +46,10 @@ function Save-StatSoftConfig {
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 
+# Disclosure gate (default-deny): reveal install paths/versions only on opt-in.
+$statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
+$statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
+
 
 $configPath = Join-Path $PSScriptRoot "..\config.json"
 
@@ -102,8 +106,12 @@ $ver = $null
 $fi = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($mplusExe)
 $ver = $fi.FileVersion
 
-Write-Lang "Mplus: $mplusExe" "Mplus: $mplusExe" -ForegroundColor Green
-Write-Lang "Version: $ver" "Version: $ver"
+if ($statsoftReveal) {
+    Write-Lang "Mplus: $mplusExe" "Mplus: $mplusExe" -ForegroundColor Green
+    Write-Lang "Version: $ver" "Version: $ver"
+} else {
+    Write-Lang "Mplus detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)." "Mplus detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
+}
 
 # Update config
 $config["Mplus"] = [ordered]@{

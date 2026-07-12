@@ -26,7 +26,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        print="false" syntaxErrorHandling="continue"
        syntaxFormat="interactive" unicode="true">
-    <locale charset="UTF-8" country="CN" language="zh"/>
+    <!-- locale 自动探测：中文环境自动注入 country="CN" language="zh"；其他环境省略本元素，由 SPSS 继承系统区域（避免硬编码区域改变解析/编码/可复现性，SQP-3） -->
     <output outputFormat="viewer" outputPath="输出.spv"/>
     <syntax syntaxPath="语法.sps"/>
   </job>

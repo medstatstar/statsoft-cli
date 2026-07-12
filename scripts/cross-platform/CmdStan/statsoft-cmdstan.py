@@ -63,6 +63,20 @@ def user_authorized_to_run():
     return False
 
 
+def _reveal():
+    """Disclosure gate: install paths/versions/config snippets are shown ONLY
+    when STATSOFT_REVEAL=1 is set. Default (unset) returns False so detection
+    emits only a boolean installed/not-installed result (SDI-3)."""
+    return os.environ.get("STATSOFT_REVEAL") == "1"
+
+
+def _verify():
+    """Verification gate: launching a third-party binary purely to obtain a
+    version (e.g. stanc --version) requires STATSOFT_VERIFY=1. Default returns
+    False so no external binary is executed for verification (SDI-3)."""
+    return os.environ.get("STATSOFT_VERIFY") == "1"
+
+
 def find_cmdstan():
     """Locate CmdStan installation."""
     # 1. Try config.json
@@ -88,21 +102,35 @@ def find_cmdstan():
     return None
 
 def cmdstan_info():
-    """Show CmdStan environment info."""
+    """Show CmdStan environment info.
+
+    Disclosure is gated: without STATSOFT_REVEAL=1 the command reports only
+    whether CmdStan is present. Install path, stanc version, and make/local
+    contents are revealed ONLY after explicit opt-in (SDI-3). The stanc
+    --version binary launch is itself gated behind STATSOFT_VERIFY=1.
+    """
     path = find_cmdstan()
-    print("=== CmdStan Environment ===" if path else "CmdStan not found")
-    if path:
-        print(f"  Path: {path}")
-        stanc = os.path.join(path, "bin", "stanc")
-        if os.path.isfile(stanc):
+    if not path:
+        print("CmdStan not found")
+        return
+    if not _reveal():
+        print("CmdStan found (details hidden; set STATSOFT_REVEAL=1 to reveal).")
+        return
+    print("=== CmdStan Environment ===")
+    print(f"  Path: {path}")
+    stanc = os.path.join(path, "bin", "stanc")
+    if os.path.isfile(stanc):
+        if _verify():
             ver = subprocess.run([stanc, "--version"], capture_output=True, text=True)
             print(f"  stanc: {_sanitize(ver.stdout.strip())[:60]}")
-        makefile = os.path.join(path, "make", "local")
-        if os.path.isfile(makefile):
-            with open(makefile) as f:
-                lines = ["  " + l.strip() for l in f.readlines() if l.strip() and not l.startswith("#")]
-                for l in lines[:5]:
-                    print(f"  {l}")
+        else:
+            print("  stanc: (version hidden; set STATSOFT_VERIFY=1 to query)")
+    makefile = os.path.join(path, "make", "local")
+    if os.path.isfile(makefile):
+        with open(makefile) as f:
+            lines = ["  " + l.strip() for l in f.readlines() if l.strip() and not l.startswith("#")]
+            for l in lines[:5]:
+                print(f"  {l}")
 
 def run_model(model_file, data_file, output_dir=None):
     """Build and run a Stan model.
