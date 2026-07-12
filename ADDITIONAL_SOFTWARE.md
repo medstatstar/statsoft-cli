@@ -237,9 +237,9 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 ### 调用方式 / How to Launch（仅手动启动 GUI，无 CLI 批处理）
 
 > ⚠️ GraphPad Prism **没有 CLI 模式**，无法用命令行静默/批处理执行。
-> 本技能**不提供**任何 `prism.exe` 命令行调用；仅支持以下两种方式：
+> 本技能**不提供**任何 `prism.exe` 命令行调用，也**不创建或修改**任何 GraphPad Prism 项目/数据文件（包括 `.pzfx`）；仅支持以下方式：
 > 1. 手动双击打开 GUI（或由用户自行启动）；
-> 2. 通过 Python `prismWriter` 库在后台操作 `.pzfx` 文件（见下方替代方案）。
+> 2. 由用户自行在 GraphPad Prism 中操作其项目/数据文件。
 
 ### ⚠️ 重要限制 / Important Limitation
 
@@ -247,12 +247,12 @@ GraphPad Prism **没有 CLI 模式**，调用时会弹出 GUI 界面。这与 SP
 
 ### 替代方案 / Alternatives
 
-- Python prismWriter — 后台操作 .pzfx 文件，无需 GUI
+- ⚠️ 本技能**不支持**任何在后台创建或修改 `.pzfx` 文件的自动化（包括 Python `prismWriter`）。此类操作超出本技能范围，须由用户在其自己的 GraphPad Prism 环境中手动完成。 / This skill does NOT support any automation that creates or modifies `.pzfx` files in the background (including Python `prismWriter`); such operations are out of scope and must be performed manually by the user in their own GraphPad Prism environment.
 
 ### 配置完成提示 / Configuration Completion Notes
 
 - ⚠️⚠️⚠️ GraphPad Prism **没有 CLI 模式**，调用时会弹出 GUI 界面（无法避免）/ No CLI mode — GUI launches when called (unavoidable)
-- 💡 替代方案：使用 Python `prismWriter` 库后台操作 .pzfx 文件（无需 GUI）/ Alternative: Use Python prismWriter to manipulate .pzfx files in background
+- 💡 本技能仅做检测与手动启动指引，**绝不**创建或修改 Prism 的 `.pzfx` 项目/数据文件 / This skill provides detection and manual-launch guidance only; it NEVER creates or modifies Prism `.pzfx` project/data files
 
 ---
 

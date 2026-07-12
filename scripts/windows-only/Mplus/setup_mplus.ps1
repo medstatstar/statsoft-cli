@@ -42,8 +42,7 @@ function Save-StatSoftConfig {
     }
     $tmp = [System.IO.Path]::GetTempFileName()
     $Config | ConvertTo-Json -Depth 10 | Set-Content -Path $tmp -Encoding UTF8
-    $env:STATSOFT_AUTO_WRITE = "1"
-    & python3 "$gate" "$ConfigPath" "$tmp"
+    & python3 "$gate" "$ConfigPath" "$tmp" "--consent"
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
 }
 

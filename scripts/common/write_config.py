@@ -13,15 +13,25 @@ Contract
   argv[1] : absolute/relative path of the target config.json
   argv[2] : (optional) path to a temp file containing the desired config as JSON
             If argv[2] is omitted, the JSON is read from stdin.
+  --consent : (optional) explicit, caller-supplied opt-in token. Callers pass
+            this flag (instead of mutating the shared STATSOFT_AUTO_WRITE
+            environment variable) to convey that the user already approved
+            persistence for THIS invocation. This keeps authorization scoped to
+            the child process and prevents a setup script from self-granting
+            write permission by polluting the process environment.
 
 Behaviour (fail-closed by default)
 ----------------------------------
   * Detection-only is the DEFAULT. Nothing is written unless an explicit
     opt-in is present.
   * Persist only when ONE of:
+      - --consent flag passed on the command line (explicit caller opt-in)
       - STATSOFT_AUTO_WRITE=1            (non-interactive / agent contexts)
       - STATSOFT_CONFIRM=1 AND the session is interactive (a real TTY) AND the
         user answers 'y' at the prompt
+  * This gate is the ONLY component that writes config.json. Callers MUST NOT
+    set STATSOFT_AUTO_WRITE themselves; they pass --consent instead so the
+    authorization decision is explicit and process-local.
   * When persisting: a timestamped backup (config.json.bak.yyyymmdd_hhmmss)
     is taken first, then the new file is written atomically via os.replace.
   * The caller is NEVER blocked: detection-only exits 0.
@@ -51,13 +61,19 @@ def _read_json(arg_path, from_stdin):
 
 
 def main():
-    if len(sys.argv) < 2:
-        sys.stderr.write("usage: write_config.py <config_path> [<json_file>]\n")
+    # Explicit, caller-supplied consent (scoped to this child process only).
+    # Callers pass --consent instead of mutating the shared STATSOFT_AUTO_WRITE
+    # environment variable, so a setup script cannot self-grant authorization.
+    consent_arg = "--consent" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--consent"]
+
+    if len(args) < 1:
+        sys.stderr.write("usage: write_config.py <config_path> [<json_file>] [--consent]\n")
         return 2
 
-    target_path = sys.argv[1]
-    json_src = _read_json(sys.argv[2] if len(sys.argv) > 2 else None,
-                          from_stdin=(len(sys.argv) < 3))
+    target_path = args[0]
+    json_src = _read_json(args[1] if len(args) > 1 else None,
+                          from_stdin=(len(args) < 2))
 
     if not json_src or not json_src.strip():
         sys.stderr.write("write_config.py: empty config payload; nothing to persist.\n")
@@ -73,7 +89,9 @@ def main():
     confirm_env = os.environ.get("STATSOFT_CONFIRM") == "1"
 
     go = False
-    if auto_write:
+    if consent_arg or auto_write:
+        # Explicit caller-supplied consent (this invocation) OR an externally
+        # set opt-in flag. The caller itself never sets STATSOFT_AUTO_WRITE.
         go = True
     elif confirm_env and sys.stdin.isatty():
         try:

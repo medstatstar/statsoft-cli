@@ -8,7 +8,6 @@
 | 下载与安装软件 / Download & install software | 🔴 高/High | Fetches R installer from CRAN, Anaconda installer from Anaconda repos |
 | 修改 config.json / Modify config.json | 🟡 中/Medium | Writes software paths, backs up existing config |
 | 执行用户脚本 / Execute user-provided scripts | 🔴 高/High | Runs `.sps` content via SPSS Python, creating temporary wrapper scripts |
-| 写入 MEMORY.md / Write to MEMORY.md | 🟡 中/Medium | Stores environment info in agent memory |
 | 网络访问 / Network access | 🟡 中/Medium | Downloads installers from CRAN, Anaconda repositories |
 
 **所需权限 / Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), network access (CRAN/Anaconda repositories).

@@ -1,5 +1,16 @@
 # Changelog / 更新日志
 
+## v2.6.8 (2026-07-12)
+
+ClawHub SkillSpector 审计继续修复（v2.6.7 仍 `suspicious`，25 项发现；其中 v2.6.6 的 16 项已清零，本轮聚焦新增/未覆盖文件：文档声明与实现一致性、GUI-only 文件写入、MEMORY.md 误述、远程执行示例、以及 10 个 setup 脚本的自授权环境变量）。
+
+- **删除自相矛盾的 `environment_variable_modification` 能力声明（TP4/SDI-1/SDI-4，`SKILL.md`）**：manifest `capabilities` 移除该项，消除与"绝不写环境变量"声明及 fail-closed 持久化模型的自相矛盾；description 显式声明 NCSS/NLOGIT/Origin 等软件（消 scope drift），并补充"启动第三方二进制时可设置进程级临时环境变量如 PATH、绝不持久化"的披露。
+- **GraphPad Prism 后台 `.pzfx` 写入推荐移除（SDI-1/SDI-4 HIGH，`ADDITIONAL_SOFTWARE.md`）**：删除 `prismWriter` 后台操作 `.pzfx` 的建议，改为明确声明本技能不创建/修改任何 Prism 项目/数据文件，此类自动化超出范围。
+- **trust-and-safety 删除 MEMORY.md 误述（SDI-1/SDI-4 HIGH，`trust-and-safety.md`）**：移除"写入 MEMORY.md"风险行，与"唯一可持久化文件为 config.json"的强制模型一致。
+- **远程 Modeler Server 执行示例移除（SDI-1，`command-examples.md`）**：删除 `server-run`（hostname/port/凭据）远程执行段，与 `statsoft-modeler` 仅 `-local` 模式一致。
+- **version-specifics NCSS/Origin scope drift 消除（SDI-1，`version-specifics.md` 间接）**：通过 manifest 显式声明 NCSS/Origin 归属已支持软件集解决。
+- **集中式 `--consent` 授权参数（SDI-1/SDI-4，`write_config.py` + 10 个 `setup_*.ps1`）**：新增显式 `--consent` 命令行参数（替代脚本自设 `$env:STATSOFT_AUTO_WRITE="1"` 的混淆代理自授权）；AMOS/Limdep/Mathematica/Microfit/Mplus/NCSS/NLOGIT/Origin/Q_MRKS/SPSS-Modeler 共 10 个脚本改为传 `--consent` 而非污染共享环境变量，授权范围限定于该子进程。
+
 ## v2.6.7 (2026-07-11)
 
 ClawHub SkillSpector 审计继续修复（v2.6.6 仍 `suspicious`，16 项发现；审计聚焦 data-info 授权缺口、参数注入、Prism 文件写入示例、文档持久化一致性、临时/缓存文件与广度枚举）。本轮按 remediation 逐条修复：

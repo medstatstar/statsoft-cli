@@ -213,14 +213,9 @@ statsoft-modeler run-script "C:\path\to\train_model.py"
     -log "train.log" -execute
 ```
 
-### 服务器模式（需 Modeler Server）
+### 远程 Modeler Server 模式（本技能不支持 / Not supported）
 
-> ⚠️ **远程执行与凭据安全 / Remote execution & credentials**: 此命令会连接**远程 Modeler Server** 并以凭据身份执行流。仅在用户**明确确认**且服务器可信时执行；凭据**必须**来自环境变量（如上 `$env:MODELER_USER` / `$env:MODELER_PASS`），**严禁**硬编码到脚本或提示词中。Agent 不得在未获用户明确授权的情况下发起远程执行。
-
-```powershell
-statsoft-modeler server-run "stream.str" -hostname modeler-srv -port 80 `
-    -username $env:MODELER_USER -password $env:MODELER_PASS
-```
+> ⚠️ 本技能**不支持**远程 Modeler Server 执行。`statsoft-modeler` 仅提供 **本地 (`-local`)** 模式，不提供 `server-run` 子命令，也不会发起任何远程连接或处理远程凭据。如需连接远程 Modeler Server，请在用户自己的受控环境中另行操作，且凭据绝对不可硬编码到脚本或提示词中。 / This skill does NOT support remote Modeler Server execution. `statsoft-modeler` provides LOCAL (`-local`) mode only — there is no `server-run` subcommand, and the skill never initiates remote connections or handles remote credentials.
 
 ### Python 脚本示例（在 Modeler 中运行）
 
