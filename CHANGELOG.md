@@ -1,5 +1,16 @@
 # Changelog / 更新日志
 
+## v2.6.15 (2026-07-12)
+
+Bilingual restructure — SKILL.md 全面双语化（英中双语、英语在前）+ 内容精简：
+
+- SKILL.md 从 20.6 KB 缩减到 9.2 KB（内容更紧凑）
+- 正文采用英中双语段落（英→中），标题英中双语
+- 详细内容移到 references（workflow.md、platform-support.md）
+- description 字段改为英中双语
+- Default-Deny Gates 表格改用英中混合四列表格
+- 所有语言自动选择提示统一为 "the user's current input language"
+
 ## v2.6.14 (2026-07-12)
 
 ClawHub SkillSpector v2.6.13→v2.6.14 修复 10 个 HIGH/MED 底层 issue（1 HIGH SDI-3 + 1 HIGH TP4 + 多个 MED）：

@@ -1,12 +1,8 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34+ statistical software packages — R, Stata, SAS, SPSS, Python, Mathematica, Julia, Matlab, JMP (Windows CLI), NCSS, NLOGIT, Origin, Bayesian, ML, and more (full list in ADDITIONAL_SOFTWARE.md): Bilingual (中文/English). SCOPE (all explicitly disclosed, all default-deny gated): (1) HOST-WIDE software inventory — read-only system scanning of the host for installed statistical packages, creating NO persistent state; (2) CLI EXECUTION of third-party statistical binaries in batch/silent mode — runs external processes (stats.com, Rscript, Stata, SAS, JMP JSL, CmdStan, etc.), INCLUDING during setup verification steps; may create TEMPORARY working files that are disclosed and cleaned up; (3) OPTIONAL dependency/package installation & fetching from CRAN/Anaconda, and OPTIONAL software installation flows; (4) configuration PERSISTENCE to config.json (the ONLY persistent file, confined to the skill directory) with timestamped backup, ONLY when explicitly opted in. ACTIVATION-ON-DEMAND only: the skill activates solely on an explicit user request to configure or run a specific named tool, and performs NO action otherwise. All capabilities are gated behind an explicit per-action opt-in (DEFAULT-DENY: STATSOFT_AUTO_WRITE=1 for non-interactive/agent use, or STATSOFT_CONFIRM=1 with a y/N prompt in a real TTY): (1) read-only software detection (system scanning that creates no persistent state); (2) CLI execution of third-party statistical binaries in batch/silent mode — runs external processes and may create TEMPORARY working files (scripts/job/syntax) that are disclosed and cleaned up; (3) configuration persistence to config.json with a timestamped backup, but ONLY when explicitly opted in (detection-only by default — no write otherwise); (4) dependency/package installation & fetching from CRAN/Anaconda; (5) optional software installation. GUI-only packages (AMOS, GraphPad Prism, JASP, jamovi) are limited to detection + manual-launch guidance only — this skill does NOT drive them via CLI/headless automation, does NOT create/modify their project/data files (e.g. Prism .pzfx), and their setup scripts do not persist state by default. JMP provides a Windows CLI (statsoft-jmp) executed only with explicit user-provided JSL scripts behind the same default-deny authorization gate as SPSS/R/Statistica. CONSISTENT PERSISTENCE MODEL: the skill NEVER writes environment variables or opt-in/authorization flags; the ONLY file it may persist is config.json, and ONLY after an explicit per-action opt-in (timestamped backup + rollback by deleting config.json). All setup/detection scripts are detection-only BY DEFAULT and write config.json solely under that same opt-in; network/install actions also occur ONLY after explicit opt-in. When launching third-party binaries the skill may set process-local environment variables (e.g. PATH) scoped to that subprocess only; such changes never persist beyond the subprocess and are never written to the user's shell, profile, or persistent environment. RUN commands that drive SPSS via the Production Facility use a TEMPORARY .spj job file (ephemeral, auto-managed, path disclosed) and produce a .spv analysis output in the USER's working directory on an explicitly authorized run; the `create-spj` helper likewise writes the .spj/.spv into an ephemeral temp directory by default (or into a user-chosen directory only on explicit per-run opt-in, contained within the .sps folder). Neither is a persistent skill file — the ONLY persistent file remains config.json, confined to the skill directory. User-supplied manual installation paths are validated (existence + real-executable checks) before any config persistence. EXPLICIT single-path disclosure: ALL persistent writes go to ONE skill-local config.json (relative to the skill directory, never $HOME or any user-home path). Package inventory scanning (scan_all) and single-target probes are gated — without explicit opt-in they return only a boolean installed result; install paths/versions are revealed only after opt-in. Verification steps that launch third-party binaries (e.g. --version checks) require STATSOFT_VERIFY=1."
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34+ statistical software packages (R, Stata, SAS, SPSS, Python, Mathematica, Julia, JMP, and more). All capabilities are gated behind an explicit per-action opt-in (default-deny): read-only software detection / CLI execution of third-party statistical binaries / optional dependency installation / configuration persistence to config.json (the ONLY persistent file, confined to the skill directory). / 跨平台统计软件 CLI 集成，支持 34+ 款统计软件。所有功能均需显式 opt-in 闸门（默认拒绝）：只读检测 / 第三方二进制 CLI 执行 / 可选依赖安装 / config.json 持久化（唯一持久化文件，限于技能目录）。"
 
 triggers:
-  # Activation requires an EXPLICIT user intent to configure/run a SPECIFIC
-  # named tool. Broad mentions of R/SPSS/SAS/statistics alone do NOT
-  # activate the skill. Every scan, execution, install, and write is
-  # first gated by a confirmation / opt-in step (default-deny).
   - "use statsoft-cli to configure SPSS"
   - "statsoft-cli configure R"
   - "use statsoft-cli to run a JMP JSL script"
@@ -14,152 +10,160 @@ triggers:
   - "statsoft-cli 运行 SPSS 语法"
   - "call statsoft-cli for SAS"
   - "connect statistical software CLI via statsoft-cli"
+
 metadata:
-  {
-    "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
-    "authors": ["medstatstar", "phoe-zip"],
-    "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.14",
-    "license": "MIT",
-    "capabilities": ["shell_execution", "file_read_write", "network_access", "process_execution", "system_scanning"],
-    "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
-    "homepage": "https://github.com/medstatstar/statsoft-cli",
-    "repository": "https://github.com/medstatstar/statsoft-cli"
-  }
----
+  openclaw:
+    emoji: 🛠️
+    icon: assets/icon.svg
+  authors:
+    - medstatstar
+    - phoe-zip
+  contributors:
+    - medstatstar
+    - phoe-zip
+  version: "2.6.15"
+  license: MIT
+  capabilities:
+    - shell_execution
+    - file_read_write
+    - network_access
+    - process_execution
+    - system_scanning
+  tags:
+    - 统计软件
+    - Statistical Software
+    - CLI
+    - R
+    - SPSS
+    - Stata
+    - SAS
+    - Bayesian
+    - Machine Learning
+    - Econometrics
+    - SEM
+    - Data Mining
+  homepage: https://github.com/medstatstar/statsoft-cli
+  repository: https://github.com/medstatstar/statsoft-cli
 
 ---
 
-## 技能目的 / Purpose
+# Purpose / 技能目的
 
-很多统计软件都有 CLI（命令行）执行方式，但并不是每个人都会使用。本技能的目的是将这些统计软件整合到 AI 智能体环境下统一使用，从而方便统计师充分利用这些统计软件的能力。**本技能的核心价值在于盘活历史代码资产，解决 AI 工作流自动化中的可复用性难题**。在长期的项目积累中，团队已经沉淀了大量可复用的分析代码——R 的统计建模脚本、SPSS 的语法文件、SAS 的宏程序、Stata 的 do-file 等。然而，当试图将这些历史资产直接接入 AI 自动化工作流时，就需要分别提供每种统计软件合适的调用接口。本技能正是要解决这个问题——通过 AI 智能体将这些历史代码纳入统一的执行框架，使得这些代码可以作为 AI 工作流中的一个标准节点，被反复调用、组合和编排。
+This skill integrates 34+ statistical software packages into the AI Agent environment, enabling statisticians to fully leverage these tools. **Core value: integrating and leveraging all statistical software resources and historical assets within AI workflows.**
 
-Many statistical software packages have CLI (Command Line Interface) execution modes, but not everyone knows how to use them. This skill integrates these statistical software packages into the AI Agent environment for unified access, enabling statisticians to fully leverage these tools' capabilities. From a deeper perspective, **the core value of this skill is integrating and leveraging all statistical software resources and historical assets within AI workflows**. Over years of project accumulation, teams have gathered a wealth of reusable analysis code—R statistical modeling scripts, SPSS syntax files, SAS macro programs, Stata do-files, and more. However, when attempting to plug these historical assets directly into AI automation workflows, the challenge emerges: each statistical software requires its own appropriate invocation interface. This skill addresses exactly this issue—through the AI Agent, it brings historical code into a unified execution framework, enabling these codes to serve as standard nodes in AI workflows, repeatedly callable, composable, and schedulable.
+本技能将 34+ 款统计软件整合到 AI 智能体环境下统一使用，从而方便统计师充分利用这些统计软件的能力。**核心价值在于盘活历史代码资产，解决 AI 工作流自动化中的可复用性难题。**
 
 ---
 
-## 平台支持 / Platform Support
+# Platform Support / 平台支持
 
-| 类别 / Category | 软件 / Software |
+This skill supports statistical software across Windows, macOS, and Linux. The full platform matrix is in `references/platform-support.md`.
+
+本技能支持 Windows、macOS 和 Linux 上的统计软件。完整平台支持矩阵见 `references/platform-support.md`。
+
+| Category / 类别 | Software / 软件 |
 |-----------------|-----------------|
-| ✅ 全部平台 (Win + Mac + Linux, CLI) | R, Stata, SAS, CmdStan, GenStat, Gretl, H2O.ai, JAGS, Julia, KNIME, Mathematica, Matlab, OpenBUGS, Orange, OxMetrics, PSPP, Rattle, SHAZAM, Stat/Transfer, Tanagra, TSP, Weka |
-| ✅ Win + Mac + 有限 Linux | Mplus |
-| ⚠️ Win + 有限 Mac/Linux | Minitab |
+| ✅ All platforms (Win + Mac + Linux) | R, Stata, SAS, CmdStan, GenStat, Gretl, H2O.ai, JAGS, Julia, KNIME, Mathematica, Matlab, OpenBUGS, Orange, OxMetrics, PSPP, Rattle, SHAZAM, Stat/Transfer, Tanagra, TSP, Weka |
 | 🔴 Windows only | SPSS Statistics, EViews, JMP, LIMDEP, Microfit, NCSS, NLOGIT, Origin, Q (MRKS), SPSS Modeler, Statistica |
-| 🔴 GUI-only（仅检测/启动, 无 CLI 批处理） | AMOS, GraphPad Prism, JASP, jamovi（只能检测与手动启动 GUI，无法批处理自动化） |
+| 🔴 GUI-only (detection + manual-launch only) | AMOS, GraphPad Prism, JASP, jamovi |
 
-*(详细平台支持见 `references/version-specifics.md` / Detailed platform support: `references/version-specifics.md`)*
+GUI-only software is limited to **detection + manual-launch guidance** — this skill never drives them via CLI/headless automation, and never creates or modifies their project/data files (including GraphPad Prism `.pzfx`).
 
----
-
-## 执行工作流 / Execution Workflow
-
-1. **检测平台 / Detect Platform** — `source scripts/cross-platform/_platform-detect.sh`
-2. **扫描前确认 / Pre-scan Confirmation** — 在执行任何扫描操作前，必须向用户做出以下提示并等待用户选择 / Before any scan, MUST prompt the user and wait for their choice：
-   - 提示内容 / Prompt message:
-     - **中文**: "⚠️ 自动扫描系统可能耗时较长（Windows 约 30-60 秒）。扫描为只读操作，不会修改任何文件或配置。如果您已知已安装的统计软件数量有限（≤3），建议直接指定软件及对应安装路径，跳过扫描。您希望如何选择？" 选项：A) 自动扫描 B) 手工指定软件路径
-     - **English**: "⚠️ Auto-scan may take a while (~30s on Windows). Scanning is read-only — no files or configs will be modified. If you have few statistical packages (≤3), you can skip scanning and specify paths directly. Your choice?" Options: A) Auto-scan B) Specify paths manually
-   - 用户选择 A → 继续第 3 步系统扫描 / User selects A → proceed to step 3
-   - 用户选择 B → 询问用户"希望配置哪些软件？各软件的安装路径是什么？"，跳过第 3 步，直接进入第 4 步配置 / User selects B → ask "Which software to configure? What are the installation paths?", skip step 3, go directly to step 4
-3. **系统扫描 / System Scan** — 批量检测系统已安装统计软件 / Batch detect installed statistical software（仅在步骤 2 选择 A 时执行 / Execute only when step 2 = A）：
-   - **Windows**: 调用 `scripts/windows-only/scan/scan_all.ps1`（注册表检测 + 路径扫描 + 命令行查找）
-   - **Mac/Linux**: 调用 `scripts/cross-platform/scan/scan_all.sh`（命令查找 + 路径扫描）
-   - 输出 JSON 格式：`{"R":{"installed":true,"path":"...","version":"..."},...}`
-   - AI 解析输出后，向用户列出可配置的软件清单
-3. **选择配置模式 / Select Config Mode**:
-   - **批量配置 / Batch**: 自动配置所有检测到的软件 / Auto-configure all detected
-   - **指定配置 / Specific**: 用户选择要配置的特定软件 / User selects specific software
-   - **单软件配置 / Single**: 调用单个 `setup_*.ps1` / `setup_*.sh` 脚本 / Call individual setup script
-4. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件 / Route to platform-specific script, auto-hide incompatible software on non-Windows
-5. **保存配置 / Save Config** — 默认仅检测、不写入 `config.json`（fail-closed；仅在显式 opt-in 时才持久化）/ Detection-only by default; no `config.json` write unless explicitly opted in
-   - **默认不写入 / Fail-closed by default** — 默认仅检测、不修改 config.json；仅当 `STATSOFT_AUTO_WRITE=1`（非交互/agent）或 `STATSOFT_CONFIRM=1` 且交互式回答 y（交互）时才持久化。任何未获显式授权的写入都被拒绝（default-deny）。
-   - **备份原配置 / Backup** — 若 `config.json` 已存在，先备份为 `config.json.bak.*`（带时间戳）
-   - **写入确认 / Write Confirmation** — 仅当 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1` 且交互回答 y 时持久化；默认不写入。
-   - **回滚 / Rollback** — 本技能**唯一**会持久化的文件是它自己目录下的 `config.json`（备份于 `config.json.bak.*`）；删除 `config.json` 即可彻底、可审计地回滚。本技能**不写入**任何用户环境变量、opt-in 标志，也**不写入** `~/.workbuddy/MEMORY.md` 或其它技能目录外的位置（缩小影响面 / narrow blast radius, RA2）。
-   - **写入披露 / Write disclosure** — 每次持久化前都会在带内（in-band）明确列出将要写入的文件与内容，而不仅依赖环境变量隐式批准。
-6. **输出完成摘要 / Output Completion Summary** — 按 `references/completion-prompts.md` 模板输出 / Output using `references/completion-prompts.md` template
+GUI 仅限软件仅提供**检测 + 手动启动 GUI 指引**，本技能不通过 CLI/无头方式驱动其批处理，也绝不创建或修改其项目/数据文件（包括 GraphPad Prism `.pzfx`）。
 
 ---
 
-## 脚本路由表 / Script Routing Table
+# Workflow / 工作流
 
-### 核心软件 / Core Software
+This skill follows a 6-step standard workflow. Every step is gated by default-deny. See `references/workflow.md` for full details.
 
-| 软件 / Software | Windows 脚本 | 跨平台脚本 | 验证 / Verify |
-|-----------------|-------------|------------|--------------|
-| SPSS Statistics | `scripts/windows-only/SPSS/setup_spss.ps1` | — | `stats.com -production silent -nologo "exit.spj"` |
-| R | `scripts/windows-only/statsoft-r.ps1` | `scripts/cross-platform/R/setup_r.sh` | `Rscript --version` |
-| Stata | — | `scripts/cross-platform/Stata/setup_stata.sh` | `stata-mp -b do "exit"` |
-| SAS | `scripts/windows-only/statsoft-sas.ps1` | `scripts/cross-platform/SAS/setup_sas.sh` | `sas -version` |
+本技能遵循 6 步标准工作流，每步均有默认拒绝闸门。详见 `references/workflow.md`。
 
-**扩展软件 / Extended Software** (AMOS, CmdStan, EViews, GenStat, GraphPad Prism, Gretl, H2O.ai, JAGS, JASP, JMP, Julia, KNIME, LIMDEP, Matlab, Microfit, Minitab, Mplus, NCSS, NLOGIT, OpenBUGS, Orange, Origin, OxMetrics, PSPP, Q/MRKS, Rattle, SHAZAM, SPSS Modeler, Stat/Transfer, Statistica, Tanagra, TSP, Weka, jamovi, etc.) **见 `ADDITIONAL_SOFTWARE.md` / See `ADDITIONAL_SOFTWARE.md` for details**。
-
----
-
-## 详细配置 / Detailed Configuration
-
-- `ADDITIONAL_SOFTWARE.md` — 扩展软件配置（31 款）/ Extended software configuration (31 packages)
-- `references/command-examples.md` — 所有支持软件的 CLI 命令示例 / CLI command examples for all supported software
-- `references/version-specifics.md` — 版本差异（SPSS 26/30, R 4.5/4.1, Python 3.4/3.13）/ Version differences
-- `references/completion-prompts.md` — 配置完成提示模板 / Configuration completion prompt templates
-- `tests/` — `run_all.py`（自动化测试脚本）, `test-syntax.sps`, `test-job.spj` / automated test scripts
+1. **Detect Platform** — Identify OS and architecture.
+2. **Pre-scan Confirmation** — Prompt user before scanning (auto-scan vs. specify paths).
+3. **System Scan** — Batch detect installed software. Reveals only `installed` boolean by default (path/version require `STATSOFT_REVEAL=1`).
+4. **Detect & Setup** — Route to per-tool setup scripts.
+5. **Save Config** — Detection-only by default. Persist `config.json` only on opt-in.
+6. **Output Summary** — Follow `references/completion-prompts.md`.
 
 ---
 
-## 何时阅读参考文件 / When to Read Reference Files
+# Trust Boundary / 信任边界
 
-- 版本差异问题？ → `references/version-specifics.md` / Version differences? → `references/version-specifics.md`
-- 需要命令示例？ → `references/command-examples.md` / Need command examples? → `references/command-examples.md`
-- 编写完成提示？ → `references/completion-prompts.md` / Writing completion prompts? → `references/completion-prompts.md`
+This skill performs **high-risk operations**: executing third-party statistical binaries, creating temporary scripts/job files, reading and executing user-supplied code, and installing dependencies over the network.
 
----
+本技能执行**高风险操作**：执行第三方统计二进制、创建临时脚本/作业文件、读取并执行用户提供的代码、联网安装依赖。
 
-## 信任边界 / Trust Boundary
+All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, and data files are treated as **untrusted**; they require explicit confirmation plus path/allowlist validation before execution.
 
-When acting on an explicit user request, this skill runs third-party statistical binaries, creates temporary scripts / job files, reads and executes user-supplied syntax / JSL / SPSS / SAS / Stata / R inputs, and may install dependencies over the network. These are **high-risk operations**:
+所有用户提供的脚本、语法文件、JSL、SAS 宏、R/Python 代码和数据文件均视为**不可信**；执行前须显式确认 + 路径/白名单校验。
 
-- **Code Execution / 代码执行** — external processes (stats.com, Rscript, Stata, SAS, JMP JSL, CmdStan `make`/`sample`, …). All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, data files, and downloaded dependencies are treated as **untrusted**; they require explicit confirmation plus path / allowlist validation before execution.
-- **File Creation / 文件创建** — running produces short-lived temporary scripts / job files (e.g. `.spj`/`.sps`, Python/R/JSL wrappers), which are created in a private temp directory and **removed after the run**. Result / log files are written to the user's working directory only when explicitly requested (e.g. an explicit `--log-file`), and any user-supplied log path is constrained to a filename in the current directory (no absolute paths or parent traversal). These are the expected, disclosed artifacts of the requested run.
-- **Package Installation / 包安装** — CRAN / Anaconda installs require explicit confirmation (`STATSOFT_CONFIRM=1` + TTY, or a direct user install command); never silent.
-- **Persistent Writes / 持久化写入 (fail-closed)** — `config.json` writes are **detection-only by default** and are the ONLY persistent state this skill may create; persisted only when `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` + interactive `y`. **The writer (`scripts/common/write_config.py`) enforces a single canonical path** derived from its own location (`<skill-root>/config.json`). Any caller-supplied path that does not resolve to this canonical path is rejected outright — so a wrapper cannot redirect writes to an arbitrary location. The config directory is created only at the moment of actual persistence. **This skill NEVER writes user environment variables.** Agents are never blocked.
+See `references/trust-and-safety.md` for risk levels and pre-flight checks.
 
-GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to detection + manual-launch guidance — never driven via CLI / headless automation, and this skill never creates or modifies their project/data files (including GraphPad Prism `.pzfx`).
-
-### 披露与验证的默认拒绝闸门 / Default-Deny Gates for Disclosure & Verification
-
-This skill has **four independent default-deny gates** (all default to deny; no action happens without explicit opt-in):
-
-1. **`STATSOFT_AUTO_WRITE=1`** opt-in → persist `config.json` (the ONLY persistent file). Detection-only by default.
-2. **`STATSOFT_CONFIRM=1`** opt-in → interactive y/N prompt for persistence (TTY required). Default: skipped.
-3. **`STATSOFT_REVEAL=1`** opt-in → disclose detection-phase details (installation paths, versions, package manifests, OS/architecture). **Default: detection reveals ONLY a boolean `installed` result** — no path, no version, no inventory is printed unless `STATSOFT_REVEAL=1` is set. This gate prevents host fingerprinting and information leakage in agent settings.
-4. **`STATSOFT_VERIFY=1`** opt-in → launch third-party binaries for `--version` / verification queries. **Default: binaries are NEVER executed during detection** — version strings are left as `unknown`.
-
-Files created during a run (scripts / job files like `.spj`, `.sps`, temporary wrappers) are **private and ephemeral** — written to a secure per-run temp directory, disclosed to the user, and removed before the script exits.
+详见 `references/trust-and-safety.md`。
 
 ---
 
-## 触发短语 / Trigger Phrases
+# Default-Deny Gates / 默认拒绝闸门
 
-**中文**: 仅当用户显式要求用 statsoft-cli 配置/运行某款具名软件时激活（例如「用 statsoft-cli 配置 SPSS」「用 statsoft-cli 运行 JMP 脚本」）。仅提及 R / SPSS / 统计软件 本身不会激活本技能。每次扫描/执行/安装/写入前都有确认或 opt-in 闸门（default-deny）。
+This skill has **four independent default-deny gates**. **No action happens without explicit opt-in.**
 
-**English**: Activates only on an explicit user request to configure/run a *specific named* tool via statsoft-cli (e.g. "use statsoft-cli to configure SPSS", "use statsoft-cli to run my SPSS syntax"). Mere mentions of R / SPSS / statistics do NOT activate it. Every scan/execution/install/write is first gated by a confirmation or opt-in step (default-deny).
+本技能有**四个独立默认拒绝闸门**。**无显式 opt-in 不执行任何操作。**
+
+| Gate | Purpose / 用途 | Default / 默认 |
+|------|---------|---------|
+| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` (the ONLY persistent file) / 持久化 `config.json`（唯一持久化文件） | Disabled / 禁用 |
+| `STATSOFT_CONFIRM=1` | Interactive y/N prompt for persistence (TTY required) / 交互式 y/N 确认（需 TTY） | Disabled / 禁用 |
+| `STATSOFT_REVEAL=1` | Disclose detection-phase details (paths, versions, package manifests, OS/architecture) / 披露检测期详情（路径、版本、包清单、OS/架构） | Disabled — detection reveals only boolean `installed` / 禁用 — 默认仅返回布尔 `installed` |
+| `STATSOFT_VERIFY=1` | Launch third-party binaries for `--version` / verification queries / 启动第三方二进制进行版本查询 | Disabled — binaries are NEVER executed during detection / 禁用 — 检测期绝不执行二进制 |
+
+The `STATSOFT_REVEAL` gate prevents host fingerprinting and information leakage in agent settings. The `STATSOFT_VERIFY` gate ensures binaries are never executed for version queries without consent.
+
+`STATSOFT_REVEAL` 闸门防止主机指纹泄露和信息泄漏。`STATSOFT_VERIFY` 闸门确保版本查询不执行第三方二进制。
 
 ---
 
-## 激活边界 / Activation Boundary
+# Single-Path Enforcement / 单一路径强制
 
-- 本技能**仅在用户显式请求**配置或运行某款统计软件时才会被激活；不会主动扫描、修改系统或安装软件。
-- 任何持久化写入（仅 config.json）与软件下载/安装，均须在执行前向用户说明并获得确认。默认**仅检测、不写入**——配置写入为 fail-closed：仅在非交互式下设 `STATSOFT_AUTO_WRITE=1`，或交互式下设 `STATSOFT_CONFIRM=1` 并回答 y 时才会持久化 config.json；严格模式可设 `STATSOFT_CONFIRM=1` 触发交互式 y/N 确认。**本技能绝不写入用户环境变量。**
-- GUI-only 软件（AMOS、GraphPad Prism、JASP、jamovi 等）仅提供**检测 + 手动启动 GUI 指引**，本技能不通过 CLI/无头方式驱动其批处理。
+The centralized writer (`scripts/common/write_config.py`) enforces a single canonical path derived from its own location (`<skill-root>/config.json`). Any caller-supplied path that does not resolve to this canonical path is rejected outright — so a wrapper cannot redirect writes to an arbitrary location.
 
-## 语言 / Language
-
-- 默认使用**用户当前输入的语言**进行回复（中文 ↔ English 自动切换）；除非用户另有要求，不强制使用英语。
+集中写入器（`scripts/common/write_config.py`）强制单一路径校验。传入非规范路径将被拒收，包装器无法将写入重定向到任意位置。
 
 ---
 
-# 🛡️ 信任与安全 / Trust & Safety
+# Trigger Phrases / 触发短语
 
-> 本技能执行**高风险操作**，详见 `references/trust-and-safety.md` / This skill performs **high-risk operations**. See `references/trust-and-safety.md` for details.
+**EN**: Activates only on an explicit user request to configure/run a *specific named* tool via statsoft-cli (e.g. "use statsoft-cli to configure SPSS"). Mere mentions of R / SPSS / statistics do NOT activate it.
 
-**核心权限 / Core Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), network access (CRAN/Anaconda repositories).
+**CN**: 仅当用户显式要求用 statsoft-cli 配置/运行某款具名软件时激活（例如「用 statsoft-cli 配置 SPSS」）。仅提及 R / SPSS / 统计软件本身不会激活。
+
+---
+
+# Language / 语言
+
+This skill responds in the **user's current input language** (中文 or English). It auto-detects and switches accordingly.
+
+本技能默认使用**用户当前输入的语言**进行回复（中文 ↔ English 自动切换）。
+
+---
+
+# Core Permissions / 核心权限
+
+- **Local file read-write** — `config.json`, temporary scripts.
+- **Process execution** — Statistical software binaries.
+- **Network access** — CRAN / Anaconda repositories.
+
+本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、网络访问 (CRAn/Anaconda repositories)。
+
+---
+
+# Reference Files / 参考文件
+
+- `ADDITIONAL_SOFTWARE.md` — Extended software configuration (31 packages) / 扩展软件配置
+- `references/command-examples.md` — CLI command examples for all software / CLI 命令示例
+- `references/version-specifics.md` — Version differences / 版本差异
+- `references/completion-prompts.md` — Completion prompt templates / 完成提示模板
+- `references/trust-and-safety.md` — Risk levels and pre-flight checks / 风险等级与飞行前检查
+- `references/workflow.md` — Detailed execution workflow / 详细执行工作流
+- `references/platform-support.md` — Full platform support matrix / 完整平台支持矩阵
+- `tests/` — Automated test scripts / 自动化测试脚本
