@@ -564,9 +564,11 @@ conda install -c conda-forge orange3
 > ⚠️ **网络与下载提示**：`h2o.init()` / `h2o start` 会在本机启动一个**本地 Web 服务器**（默认端口 54321，可被浏览器访问），首次运行会**联网下载**组件；`pip install h2o` 同样需要联网。**在启动 H2O 服务器前，Agent 必须先向用户说明上述网络行为并获得明确确认，且绝不将该端口暴露到公网。**
 
 ```bash
+# ⚠️ This starts a local H2O server (JVM, binds a port). Requires explicit per-run opt-in.
 # 启动 H2O 服务器（本地 HTTP 服务，默认端口 54321）
 h2o start
 
+# ⚠️ This starts a local H2O server (JVM, binds a port). Requires explicit per-run opt-in.
 # 通过 Python
 python3 -c "import h2o; h2o.init()"
 

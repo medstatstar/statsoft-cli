@@ -10,6 +10,8 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # setup_gretl.sh - Gretl 统计软件环境检测与配置脚本
 # Gretl: 免费跨平台计量经济学软件，纯 CLI 支持
@@ -17,8 +19,8 @@ LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../_platform-detect.sh"
 
-    LANG_ZH "=== Gretl 环境检测" "Gretl Environment Detection ==="
-    LANG_ZH "平台" "Platform: $WB_OS ($WB_ARCH)"
+LANG_ZH "=== Gretl 环境检测" "Gretl Environment Detection ==="
+LANG_ZH "平台" "Platform: $WB_OS ($WB_ARCH)"
 LANG_ZH "" ""
 
 # 检测 Gretl 是否安装
@@ -66,7 +68,6 @@ detect_gretl() {
     else
         echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
     fi
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 
 # 主流程
@@ -85,7 +86,7 @@ main() {
         # It runs ONLY when explicitly opted in (STATSOFT_VERIFY=1); default
         # detection reports the path only and never executes the binary (SDI-4).
         local version="unknown"
-        if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+        if statsoft_verify; then
             version=$($gretl_path --version 2>&1 | head -1)
         fi
     if statsoft_reveal; then

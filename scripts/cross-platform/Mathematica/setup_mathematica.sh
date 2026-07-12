@@ -16,6 +16,9 @@ LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
 set -euo pipefail
 
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
+
 CONFIG_PATH="$(dirname "$0")/../../config.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -97,11 +100,9 @@ detect_mathematica() {
 
     return 1
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 verify_mathematica() {
-    if [[ -n "$WOLFRAMSCRIPT" ]] && "$WOLFRAMSCRIPT" -code "Print[\"WolframScript OK\"]" &>/dev/null; then
+    if statsoft_verify && [[ -n "$WOLFRAMSCRIPT" ]] && "$WOLFRAMSCRIPT" -code "Print[\"WolframScript OK\"]" &>/dev/null; then
         LANG_ZH "[OK] WolframScript verification passed" "[OK] WolframScript verification passed"
         return 0
     fi
@@ -115,7 +116,11 @@ verify_mathematica() {
 
 get_version() {
     if [[ -n "$WOLFRAMSCRIPT" ]]; then
-        "$WOLFRAMSCRIPT" -code "\$VersionNumber" 2>/dev/null | tr -d '\n\r '
+        if statsoft_verify; then
+            "$WOLFRAMSCRIPT" -code "\$VersionNumber" 2>/dev/null | tr -d '\n\r '
+        else
+            echo "unknown (set STATSOFT_VERIFY=1)"
+        fi
     elif [[ -n "$MATHKERNEL" ]]; then
         basename "$INSTALL_DIR"
     else

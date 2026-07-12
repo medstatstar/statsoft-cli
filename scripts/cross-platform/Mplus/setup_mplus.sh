@@ -10,6 +10,8 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # setup_mplus.sh — Detect and configure Mplus (macOS/Linux)
 set -euo pipefail
@@ -63,8 +65,6 @@ cfg["Mplus"] = {
     "version": "unknown",
     "platform": "macos"
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

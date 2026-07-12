@@ -440,8 +440,8 @@ def create_spj(sps_file, output_dir=None):
     闸门保护：默认拒绝写入，仅当 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1
     且交互确认时才写盘。
 
-    默认输出路径为一次性临时目录（ephemeral，路径会被披露），不在用户工作区
-    落盘持久文件，与 manifest「唯一持久文件是 config.json」一致 (SDI-1/SDI-3/TP4)。
+    默认输出路径为系统临时目录（通过 tempfile.mkdtemp 安全创建），不在用户
+    工作区落盘持久文件，与 manifest「唯一持久文件是 config.json」一致 (SDI-1/SDI-3/TP4)。
     若用户显式传入 output_dir，则要求与执行相同的 per-run opt-in 确认，并强制
     containment 在 .sps 所在目录内（禁止 `..` 上跳/绝对路径逃逸），写入前披露
     目标路径，已存在同名文件时需再次确认覆盖。"""
@@ -449,22 +449,19 @@ def create_spj(sps_file, output_dir=None):
     base_name = os.path.splitext(os.path.basename(sps_file))[0]
     # Allowed base directory = the canonical parent of the .sps file.
     allowed_base = os.path.realpath(os.path.dirname(os.path.abspath(sps_file)))
-    # DEFAULT is an EPHEMERAL temp directory (auto-managed, path disclosed below)
-    # so create-spj does NOT leave a durable artifact in the user's working area
-    # by default — this aligns with the manifest's "the only persistent file is
-    # config.json" (SDI-1/SDI-3/TP4). An explicit output_dir (user-controlled) is
-    # still permitted, but only after the per-run opt-in confirm and the
-    # containment check below.
+    # DEFAULT: use a dedicated private temp dir created with mkdtemp (0700-ish),
+    # disclosed via _opt_in_confirm below. This guarantees no durable artifact
+    # is left in the user's working area unless they explicitly supply output_dir.
+    cleanup_temp = False
     if output_dir is None:
-        output_dir = os.path.join(tempfile.gettempdir(), "statsoft_spj_output")
+        output_dir = tempfile.mkdtemp(prefix="statsoft_spj_")
+        cleanup_temp = True
     output_dir_abs = os.path.realpath(os.path.abspath(output_dir))
 
-    # Containment check applies only to an explicit (user-controlled) output_dir:
-    # it must stay within the .sps directory (no escape). The temp default is
-    # exempt because it intentionally lives outside the project tree and is
-    # cleaned by the OS.
-    temp_root = os.path.realpath(tempfile.gettempdir())
-    if output_dir_abs != temp_root:
+    # Containment check applies only to an explicit (user-controlled) output_dir.
+    # The mkdtemp default is exempt because it intentionally lives outside the
+    # project tree and is OS-managed.
+    if cleanup_temp is False:
         try:
             common = os.path.commonpath([allowed_base, output_dir_abs])
         except ValueError:
@@ -484,6 +481,8 @@ def create_spj(sps_file, output_dir=None):
             "⚠️ 即将写入作业文件 .spj: " + spj_file + " ，是否继续？",
             "⚠️ About to WRITE job file .spj: " + spj_file + " . Continue?"):
         _log("已取消 .spj 写入（未确认）", "Cancelled .spj write (not confirmed).")
+        if cleanup_temp:
+            shutil.rmtree(output_dir_abs, ignore_errors=True)
         return None
 
     # If a file already exists at the target, require an extra overwrite confirm.
@@ -492,6 +491,8 @@ def create_spj(sps_file, output_dir=None):
                 "⚠️ 目标 .spj 已存在，是否覆盖: " + spj_file + " ？",
                 "⚠️ Target .spj already exists. Overwrite " + spj_file + " ?"):
             _log("已取消 .spj 覆盖（未确认）", "Cancelled .spj overwrite (not confirmed).")
+            if cleanup_temp:
+                shutil.rmtree(output_dir_abs, ignore_errors=True)
             return None
 
     # Locale: auto-detected (never hard-coded) per SQP-3. For a zh host we emit
@@ -518,10 +519,15 @@ def create_spj(sps_file, output_dir=None):
 </job>
 '''.format(locale=locale_elem, spv=spv_file, sps=sps_abs)
 
-    with open(spj_file, "w", encoding="utf-8") as f:
-        f.write(xml)
-    print("已创建 .spj 文件: " + spj_file)
-    return spj_file
+    try:
+        with open(spj_file, "w", encoding="utf-8") as f:
+            f.write(xml)
+        print("已创建 .spj 文件: " + spj_file)
+        return spj_file
+    finally:
+        # Always clean up the temp dir we created so no durable artifact remains.
+        if cleanup_temp:
+            shutil.rmtree(output_dir_abs, ignore_errors=True)
 
 
 # ============================================================

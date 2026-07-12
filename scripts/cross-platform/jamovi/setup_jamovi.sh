@@ -10,6 +10,8 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # setup_jamovi.sh — Detect and configure jamovi (cross-platform)
 # ⚠️ SETUP tool: detects software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner. GUI-only software: detection/launch only, no CLI batch.
@@ -64,8 +66,6 @@ cfg["jamovi"] = {
     "version": "unknown",
     "platform": "all"
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

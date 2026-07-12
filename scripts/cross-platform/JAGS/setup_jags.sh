@@ -71,7 +71,6 @@ config['JAGS'] = {
     'path': sys.argv[3],
     'platform': 'all',
     'mode': 'simple'
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$JAGS_VERSION" "$JAGS_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.

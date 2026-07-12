@@ -93,13 +93,25 @@ if (Test-Path $configPath) {
         # Derive the version from the install path; never hardcode it.
         $detectedVersion = "unknown"
         if ($ncssExe -match "NCSS[ _]?(\d{4})") { $detectedVersion = $matches[1] }
-        $config | Add-Member -NotePropertyName "NCSS" -NotePropertyValue @{
-            installed = $true
-            version = $detectedVersion
-            path = $ncssExe
-            platform = "windows"
-            mode = "simple"
-        } -Force
+        # SDI-3: Only persist path+version when STATSOFT_REVEAL=1; otherwise just installed=true.
+        if (Test-StatSoftReveal) {
+            $ncssEntry = @{
+                installed = $true
+                version = $detectedVersion
+                path = $ncssExe
+                platform = "windows"
+                mode = "simple"
+            }
+        } else {
+            $ncssEntry = @{
+                installed = $true
+                version = $null
+                path = $null
+                platform = "windows"
+                mode = "simple"
+            }
+        }
+        $config | Add-Member -NotePropertyName "NCSS" -NotePropertyValue $ncssEntry -Force
         Save-StatSoftConfig -ConfigPath $configPath -Config $config
     }
 } else {

@@ -14,15 +14,12 @@ LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 # Setup script for SHAZAM Econometrics Software
 # Comprehensive econometrics, statistics and analytics
 
-SHAZAM_VERSION="12.0"
-CONFIG_FILE="$(dirname "$0")/../../config.json"
+set -euo pipefail
 
-LANG_ZH "=== SHAZAM 计量经济学配置 ===" "=== SHAZAM Setup ==="
-if statsoft_reveal; then
-    LANG_ZH "版本: $SHAZAM_VERSION" "Version: $SHAZAM_VERSION"
-else
-    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
-fi
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
+
+CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 # Detect SHAZAM installation
 SHAZAM_BIN=""
@@ -36,25 +33,26 @@ elif [ -f "/opt/shazam/shazam" ]; then
     SHAZAM_BIN="/opt/shazam/shazam"
 fi
 
-if [ -n "$SHAZAM_BIN" ]; then
-    if statsoft_reveal; then
-        LANG_ZH "找到 SHAZAM: $SHAZAM_BIN" "Found SHAZAM: $SHAZAM_BIN"
-    else
-        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
-    fi
-    SHAZAM_VER="unknown"
-    if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
-        SHAZAM_VER=$($SHAZAM_BIN --version 2>&1 | head -1 || echo "unknown")
-    fi
-    if statsoft_reveal; then
-        LANG_ZH "版本: $SHAZAM_VER" "Version: $SHAZAM_VER"
-    else
-        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
-    fi
-else
+LANG_ZH "=== SHAZAM 计量经济学配置 ===" "=== SHAZAM Setup ==="
+if statsoft_reveal && [ -n "$SHAZAM_BIN" ]; then
+    LANG_ZH "找到 SHAZAM: $SHAZAM_BIN" "Found SHAZAM: $SHAZAM_BIN"
+elif [ -z "$SHAZAM_BIN" ]; then
     LANG_ZH "未找到 SHAZAM。" "SHAZAM not found."
     LANG_ZH "安装：从 https://www.econometrics.com/ 下载" "Install: Download from https://www.econometrics.com/"
     SHAZAM_BIN="NOT_INSTALLED"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+fi
+
+# Derive version dynamically; requires opt-in query (no hardcoded version)
+SHAZAM_VER="unknown (set STATSOFT_VERIFY=1)"
+if statsoft_verify && [ -n "$SHAZAM_BIN" ] && [ "$SHAZAM_BIN" != "NOT_INSTALLED" ]; then
+    SHAZAM_VER=$("$SHAZAM_BIN" --version 2>&1 | head -1 || echo "unknown")
+fi
+if statsoft_reveal; then
+    LANG_ZH "版本: $SHAZAM_VER" "Version: $SHAZAM_VER"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
 fi
 
 # Config persistence (fail-closed: detection-only by default; persists only on explicit opt-in)
@@ -69,9 +67,8 @@ config['SHAZAM'] = {
     'path': sys.argv[3],
     'platform': 'all',
     'mode': 'simple'
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
-print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$SHAZAM_VERSION" "$SHAZAM_BIN")
+print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$SHAZAM_VER" "$SHAZAM_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then
         STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_FILE" <<< "$_NEW_CFG"

@@ -10,6 +10,8 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # setup_pspp.sh — Detect and configure PSPP (cross-platform, SPSS alternative)
 set -euo pipefail
@@ -63,8 +65,6 @@ cfg["PSPP"] = {
     "version": "unknown",
     "platform": "all"
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(cfg, ensure_ascii=False))
 EOF
 )

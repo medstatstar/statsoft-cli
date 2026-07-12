@@ -1,5 +1,25 @@
 # Changelog / 更新日志
 
+## v2.6.13 (2026-07-12)
+
+ClawHub SkillSpector v2.6.12 扫描 15 项全清（1 HIGH + 13 MEDIUM + 1 LOW）：
+
+- **TP4/HIGH (SKILL.md)**: H2O setup 模块路径无 REVEAL 门 → 已加门
+- **SDI-3/HIGH (Mathematica)**: 验证例程无 STATSOFT_VERIFY 门启动 wolframscript → 已加门；MathKernel 路径泄漏 → 已加 REVEAL 门
+- **SDI-4 (Gretl)**: `statsoft_reveal()` 函数嵌在 `detect_gretl()` 函数体内（malformed function structure）→ 移到顶层
+- **SDI-4 (JAGS)**: python3 -c 内出现 shell 函数定义（`statsoft_reveal()`），损坏 JSON 配置生成 → 已清理
+- **SDI-3 (H2O)**: Python 模块路径无 REVEAL 门 → 已加门
+- **SDI-4 (OpenBUGS)**: 同 JAGS inline-shell 混合 → 已清理
+- **SDI-4 (Orange)**: Python 模块路径无 REVEAL 门 → 已加门
+- **SDI-4 (Rattle)**: R 包路径无 REVEAL 门 → 已加门
+- **SDI-4 (SHAZAM)**: python3 -c 内非法 shell 函数定义 → 已清理
+- **SDI-1 (NCSS)**: 持久化时不区分 REVEAL → 改为默认仅保存 `installed=true`
+- **SDI-3 (SPSS run-spss-internal.py)**: 主机扫描 + 路径打印无 REVEAL 门 → 顶部增加门检查
+- **SDI-4 (SPSS spss_helper.py create_spj)**: 输出目录可写到任意位置 → 默认使用 `tempfile.mkdtemp()` 临时目录 + 自动清理；显式 output_dir 需 containment 检查
+- **SDI-1 (command-examples.md H2O)**: `h2o.init()` 启动本地服务器未醒目警告 → 已加警告
+- **AST4 (CmdStan)**: 已有 `user_authorized_to_run()` + temp 目录约束；审计器标记为 CmdStan 固有非恶意 → 无需修改
+- **全局（28 个 .sh 文件）**: 9 个文件中 `statsoft_reveal()` / `statsoft_verify()` 定义在函数体内（缩进）引发 malformed structure → 全部移至顶层定义
+
 ## v2.6.12 (2026-07-12)
 
 ClawHub SkillSpector 审计深层修复（v2.6.11 扫描 22 项，TP4 主干 HIGH 直击「文档-代码不匹配」根因；本轮不仅逐条修复被抽样命中的文件，更对全部 43 脚本做防雷机分层抽样的系统性门类加固；审计页面显示的 v2.6.11 遗留 16 项本轮全部处理）。本轮核心修复：

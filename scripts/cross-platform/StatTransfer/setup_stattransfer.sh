@@ -10,6 +10,7 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 
 # StatTransfer 检测与配置脚本
 # 支持平台: Windows, macOS, Linux
@@ -28,7 +29,6 @@ NC='\033[0m' # No Color
 # 日志函数
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 
 log_warn() {

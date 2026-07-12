@@ -14,15 +14,12 @@ LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 # Setup script for OpenBUGS
 # Bayesian statistical modeling using MCMC
 
-OPENBUGS_VERSION="3.2.3"
-CONFIG_FILE="$(dirname "$0")/../../config.json"
+set -euo pipefail
 
-LANG_ZH "=== OpenBUGS 贝叶斯分析配置 ===" "=== OpenBUGS Setup ==="
-if statsoft_reveal; then
-    LANG_ZH "版本: $OPENBUGS_VERSION" "Version: $OPENBUGS_VERSION"
-else
-    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
-fi
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
+
+CONFIG_FILE="$(dirname "$0")/../../config.json"
 
 # Detect OpenBUGS installation
 OPENBUGS_BIN=""
@@ -36,19 +33,26 @@ elif [ -f "/opt/openbugs/openbugs" ]; then
     OPENBUGS_BIN="/opt/openbugs/openbugs"
 fi
 
-if [ -n "$OPENBUGS_BIN" ]; then
-    if statsoft_reveal; then
-        LANG_ZH "找到 OpenBUGS: $OPENBUGS_BIN" "Found OpenBUGS: $OPENBUGS_BIN"
-    else
-        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
-    fi
+# Derive version dynamically; requires opt-in query (no hardcoded version)
+if statsoft_verify && [ -n "$OPENBUGS_BIN" ] && [ "$OPENBUGS_BIN" != "NOT_INSTALLED" ]; then
+    OPENBUGS_VERSION=$("$OPENBUGS_BIN" --version 2>&1 | head -1 || echo "unknown")
 else
+    OPENBUGS_VERSION="unknown (set STATSOFT_VERIFY=1)"
+fi
+
+LANG_ZH "=== OpenBUGS 贝叶斯分析配置 ===" "=== OpenBUGS Setup ==="
+if statsoft_reveal && [ -n "$OPENBUGS_BIN" ]; then
+    LANG_ZH "找到 OpenBUGS: $OPENBUGS_BIN" "Found OpenBUGS: $OPENBUGS_BIN"
+    LANG_ZH "版本: $OPENBUGS_VERSION" "Version: $OPENBUGS_VERSION"
+elif [ -z "$OPENBUGS_BIN" ]; then
     LANG_ZH "未找到 OpenBUGS。" "OpenBUGS not found."
     LANG_ZH "安装选项:" "Install options:"
     echo "  Ubuntu:  apt-get install openbugs"
     echo "  macOS:   brew install openbugs"
     echo "  Windows: Download from https://openbugs.net/"
     OPENBUGS_BIN="NOT_INSTALLED"
+else
+    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
 fi
 
 # Config persistence (fail-closed: detection-only by default; persists only on explicit opt-in)
@@ -64,8 +68,6 @@ config['OpenBUGS'] = {
     'platform': 'all',
     'mode': 'simple'
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$OPENBUGS_VERSION" "$OPENBUGS_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

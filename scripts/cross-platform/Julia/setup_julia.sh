@@ -10,6 +10,7 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 
 # setup_julia.sh - Julia 统计计算环境检测与配置脚本
 # Julia: 高性能统计计算语言，跨平台，纯 CLI，适合贝叶斯统计和机器学习
@@ -49,7 +50,6 @@ detect_julia() {
     else
         echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
     fi
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 }
 
 # 主流程

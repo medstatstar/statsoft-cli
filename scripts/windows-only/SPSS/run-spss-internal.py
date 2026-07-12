@@ -15,6 +15,12 @@ import sys
 import os
 import re
 
+# SDI-3: Host scan (drive enumeration) and install-dir disclosure require STATSOFT_REVEAL=1
+if os.environ.get("STATSOFT_REVEAL") != "1":
+    print("[CN] 检测未启用：扫描 SPSS 安装目录和打印路径需要 STATSOFT_REVEAL=1")
+    print("[EN] Detection disabled; set STATSOFT_REVEAL=1 to scan SPSS installations and print install path.")
+    sys.exit(1)
+
 # Output bilingual helper
 def log(msg_cn, msg_en=None):
     if msg_en is None:
