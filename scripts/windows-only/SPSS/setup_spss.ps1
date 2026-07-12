@@ -164,22 +164,29 @@ if ($spssInstalled) {
             $pythonPath = $pyPath
             Write-Lang "检测到 SPSS 内置 Python: $pythonPath" "SPSS embedded Python detected: $pythonPath" -Color Green
 
-            try {
-                $versionOutput = & $pyPath --version 2>&1
-                $pythonVersion = $versionOutput.ToString().Trim()
+            # Version verification launches the detected third-party binary.
+            # It runs ONLY when explicitly opted in (STATSOFT_VERIFY=1); default
+            # detection reports the path only and never executes the binary (SDI-4).
+            if ($env:STATSOFT_VERIFY -eq '1') {
+                try {
+                    $versionOutput = & $pyPath --version 2>&1
+                    $pythonVersion = $versionOutput.ToString().Trim()
 
-                if ($pythonVersion -match "3\.(\d+)") {
-                    $minorVersion = [int]$matches[1]
-                    if ($minorVersion -ge 8) {
-                        $useFString = $true
+                    if ($pythonVersion -match "3\.(\d+)") {
+                        $minorVersion = [int]$matches[1]
+                        if ($minorVersion -ge 8) {
+                            $useFString = $true
+                        }
                     }
-                }
 
-                Write-Lang "  Python 版本: $pythonVersion" "  Python version: $pythonVersion" -Color Cyan
-                $fstringLabel = if ($useFString) { "✅ 支持 / supported" } else { "❌ 不支持 / not supported (use %s or .format())" }
-                Write-Lang "  f-string 支持: $fstringLabel" "  f-string support: $fstringLabel" -Color Cyan
-            } catch {
-                Write-Lang "  无法获取 Python version" "  Unable to get Python version" -Color Yellow
+                    Write-Lang "  Python 版本: $pythonVersion" "  Python version: $pythonVersion" -Color Cyan
+                    $fstringLabel = if ($useFString) { "✅ 支持 / supported" } else { "❌ 不支持 / not supported (use %s or .format())" }
+                    Write-Lang "  f-string 支持: $fstringLabel" "  f-string support: $fstringLabel" -Color Cyan
+                } catch {
+                    Write-Lang "  无法获取 Python version" "  Unable to get Python version" -Color Yellow
+                }
+            } else {
+                Write-Lang "  （默认仅检测路径；设置 STATSOFT_VERIFY=1 可查询版本/f-string 支持）" "  (Detection-only by default; set STATSOFT_VERIFY=1 to query version/f-string support)" -Color Gray
             }
             break
         }
@@ -236,11 +243,13 @@ if ($spssInstalled) {
     # and prints manual configuration guidance. It does NOT modify any
     # persistent state (no env-var writes, no config.json writes).
     Write-Lang "" ""
-    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置。如需持久化，请手动设置以下环境变量：" "`n[EN] Detection-only: no configuration is written. To persist, set the env vars manually:" -Color Yellow
-    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_PATH = '$spssHome'" -ForegroundColor Gray
-    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_COM = '$statsComPath'" -ForegroundColor Gray
-    Write-Host "  [PowerShell]  `$env:STATSOFT_SPSS_PYTHON = '$pythonPath'" -ForegroundColor Gray
-    Write-Host "  [cmd]         set STATSOFT_SPSS_PATH=$spssHome" -ForegroundColor Gray
+    # This script is DETECTION-ONLY: it does NOT write env vars or config.json.
+    # Persistence is confined to config.json and requires explicit opt-in:
+    # re-run with STATSOFT_AUTO_WRITE=1 (non-interactive) or STATSOFT_CONFIRM=1
+    # (interactive y/N). The runner auto-detects the paths above by default.
+    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置（环境变量或 config.json）。" "`n[EN] Detection-only: no configuration is written (neither env vars nor config.json)." -Color Yellow
+    Write-Lang "如需持久化，请以 opt-in 方式写入 config.json：STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1" "To persist, write config.json with explicit opt-in: STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1" -Color Gray
+    Write-Lang "（运行器默认按上述路径自动检测，无需手动设置环境变量）" "  (The runner auto-detects these paths by default — no manual env var needed)" -Color Gray
 
     # ============================================================
     # 9. Show usage examples

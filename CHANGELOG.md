@@ -1,5 +1,18 @@
 # Changelog / 更新日志
 
+## v2.6.10 (2026-07-12)
+
+ClawHub SkillSpector 审计继续修复（v2.6.9 仍 `suspicious`，12 项发现；本轮对审计器"分层抽样"暴露的整类根因做一次性系统性修复，而非逐个打地鼠）。本轮逐条 + 整类修复：
+
+- **TP4/HIGH `SKILL.md` 描述再对齐**：显式披露 RUN 命令经 SPSS Production Facility 写入临时 `.spj` 作业文件（运行后自动删除）与 `.spv` 分析输出（保留）至**用户工作目录**（非技能目录、仅显式授权运行才写）；并声明用户提供的手动安装路径会先做存在性 + 真实可执行文件校验再持久化。
+- **SDI-4 验证阶段第三方二进制执行（整类）**：新增 `STATSOFT_VERIFY=1` 显式 opt-in 闸门——检测默认仅报告路径、不执行任何第三方二进制；仅当用户设置 `STATSOFT_VERIFY=1` 时才查询版本（Gretl/JAGS/SHAZAM/Julia/R/StatTransfer/SPSS-setup 共 7 处，含此前未扫描到的平行实例）。
+- **SDI-4 持久化环境变量指引移除（整类）**：SPSS/GraphPad/JMP 的 setup 脚本不再打印 `set STATSOFT_*` / `$env:STATSOFT_*` 持久化环境变量指引，改为统一指向 config.json opt-in 模型。
+- **版本硬编码 → 安装路径推导（整类）**：Origin（`2025`）、NCSS（`2024`）不再硬编码版本字符串，改为从安装路径正则提取 4 位年份、失败回退 `unknown`。
+- **SDI-3 `setup_microfit.ps1` 配置读取前置修复**：config.json 的读取/修改/保存严格限定在显式 opt-in 之后（autoWrite 或 confirm+tty），杜绝未授权前的配置读取。
+- **SDI-1 `data-info` 行为对齐（SAS + SPSS）**：SAS `data-info` 不再硬编码 `proc contents data=sashelp.class` 忽略输入，改为检查用户提供的文件；SPSS `data-info` 移除回退到宿主 `python.exe` 的逻辑，强制要求 SPSS 内置解释器（fail-closed）。
+- **SDI-1 `statsoft-cmdstan.py` 构建产物披露与收敛**：运行时输出收敛到受限临时目录、显式告知用户、并提供清理；消除编译产物/输出散落技能目录外的问题。
+- **`statsoft-spss.ps1` RUN 命令内联披露**：`run`/`run-batch` 在执行前带内明确告知将写入临时 `.spj` 与 `.spv` 至用户工作目录（TP4 要求的"显式披露"）。
+
 ## v2.6.9 (2026-07-12)
 
 ClawHub SkillSpector 审计继续修复（v2.6.8 仍 `suspicious`，13 项发现；v2.6.7 的 25 项已清零，本轮聚焦声明-实现一致性与剩余执行/写入闸门缺口）。本轮逐条修复：

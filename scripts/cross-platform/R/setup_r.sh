@@ -32,7 +32,11 @@ R_VERSION=""
 detect_r() {
     if command -v Rscript &>/dev/null; then
         R_CMD="$(command -v Rscript)"
-        R_VERSION="$("$R_CMD" --version 2>&1 | head -1)"
+        if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+            R_VERSION="$("$R_CMD" --version 2>&1 | head -1)"
+        else
+            R_VERSION="unknown (set STATSOFT_VERIFY=1 to query)"
+        fi
         log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
         return 0
     fi
@@ -64,7 +68,11 @@ detect_r() {
         for dir in $pattern; do
             if [[ -x "$dir/Rscript" ]]; then
                 R_CMD="$dir/Rscript"
-                R_VERSION="$("$R_CMD" --version 2>&1 | head -1)"
+                if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+                    R_VERSION="$("$R_CMD" --version 2>&1 | head -1)"
+                else
+                    R_VERSION="unknown (set STATSOFT_VERIFY=1 to query)"
+                fi
                 log_success "$(LANG_ZH "检测到 R: $R_CMD ($R_VERSION)" "Detected R: $R_CMD ($R_VERSION)")"
                 return 0
             fi

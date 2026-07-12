@@ -6,9 +6,9 @@
 #   run <sas_file> [-LogFile <name>]  EXECUTES SAS on the given program; writes a
 #                                     .log/.lst in the current directory.
 #                                     Requires explicit authorization (default-deny).
-#   data-info <sas_file>              EXECUTES SAS (proc contents) via a temporary
-#                                     .sas file (auto-deleted). Requires the same
-#                                     authorization gate as `run`.
+#   data-info <sas_file>              EXECUTES SAS (proc contents) on the USER-SUPPLIED
+#                                     file via a temporary .sas file (auto-deleted).
+#                                     Requires the same authorization gate as `run`.
 #   read-log <log_path>              Read-only: prints an existing SAS log. No execution.
 #
 # Authorization (for `run` and `data-info`): FAIL-CLOSED. Proceeds ONLY when
@@ -151,8 +151,10 @@ switch ($Command) {
         $tempSas = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.sas'
         Write-Lang "执行 SAS（proc contents），将创建临时文件并在结束后删除" "Executing SAS (proc contents); a temporary file is created and deleted afterward." -Color Cyan
         try {
-            @"
-proc contents data=sashelp.class;
+            # Inspect the USER-SUPPLIED SAS file (not a hardcoded dataset like sashelp.class).
+        $safeFile = $sasFile.Replace('\', '/')
+        @"
+proc contents data="$safeFile" details;
 run;
 "@ | Set-Content $tempSas -Encoding UTF8
 

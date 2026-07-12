@@ -72,8 +72,13 @@ main() {
     LANG_ZH "✅ 检测到 Gretl 安装:" "Gretl installation detected:"
     LANG_ZH "  路径: $gretl_path" "Path: $gretl_path"
         
-        # 获取版本信息
-        local version=$($gretl_path --version 2>&1 | head -1)
+        # Version verification launches the detected third-party binary.
+        # It runs ONLY when explicitly opted in (STATSOFT_VERIFY=1); default
+        # detection reports the path only and never executes the binary (SDI-4).
+        local version="unknown"
+        if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+            version=$($gretl_path --version 2>&1 | head -1)
+        fi
     LANG_ZH "  版本: $version" "Version: $version"
         
         # 输出配置信息（供 AI Agent 读取）

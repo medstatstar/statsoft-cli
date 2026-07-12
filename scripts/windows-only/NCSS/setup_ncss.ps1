@@ -80,9 +80,12 @@ $configPath = Join-Path $PSScriptRoot "..\config.json"
 if (Test-Path $configPath) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
     if ($ncssExe) {
+        # Derive the version from the install path; never hardcode it.
+        $detectedVersion = "unknown"
+        if ($ncssExe -match "NCSS[ _]?(\d{4})") { $detectedVersion = $matches[1] }
         $config | Add-Member -NotePropertyName "NCSS" -NotePropertyValue @{
             installed = $true
-            version = "2024"
+            version = $detectedVersion
             path = $ncssExe
             platform = "windows"
             mode = "simple"

@@ -74,9 +74,14 @@ if ($microfitExe) {
   Write-Lang "Microfit not found. Please install from https:" "/www.econometrics.com/" -Color Yellow
 }
 
+# Persist ONLY when explicitly opted in. Do NOT read or modify config.json
+# during default (detection-only) runs (SDI-3).
 $configPath = Join-Path $PSScriptRoot "..\config.json"
-$config = Get-Content $configPath -Raw | ConvertFrom-Json
-if ($microfitExe) {
+$autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+$confirm = $env:STATSOFT_CONFIRM -eq '1'
+$persist = $autoWrite -or ($confirm -and -not [Console]::IsInputRedirected)
+if ($microfitExe -and $persist -and (Test-Path $configPath)) {
+    $config = Get-Content $configPath -Raw | ConvertFrom-Json
     $config | Add-Member -NotePropertyName "Microfit" -NotePropertyValue @{
         installed = $true
         version = "5.0"

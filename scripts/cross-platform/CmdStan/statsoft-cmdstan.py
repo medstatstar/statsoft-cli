@@ -7,7 +7,7 @@ Usage:
     statsoft-cmdstan install [-v <version>]
     statsoft-cmdstan info
 """
-import argparse, json, os, re, shlex, subprocess, sys
+import argparse, json, os, re, shlex, shutil, subprocess, sys, tempfile
 
 _ANSI_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]|\x1b\][^\x07]*\x07|[\x00-\x08\x0b\x0c\x0e-\x1f]')
 
@@ -105,7 +105,15 @@ def cmdstan_info():
                     print(f"  {l}")
 
 def run_model(model_file, data_file, output_dir=None):
-    """Build and run a Stan model."""
+    """Build and run a Stan model.
+
+    SECURITY/DISCLOSURE: running a Stan model invokes `make` and the compiled
+    model binary (third-party code execution, gated by user_authorized_to_run).
+    The build writes compiled artifacts (e.g. <model>.exe/.o and make/local)
+    into the CmdStan tree NEXT TO THE MODEL SOURCE — this is inherent to CmdStan
+    and occurs OUTSIDE the skill directory. Runtime sampling output is written
+    to `output_dir` (default: a temporary directory that is cleaned up).
+    """
     path = find_cmdstan()
     if path is None:
         print("ERROR: CmdStan not found. Run setup_cmdstan.sh first.")
@@ -121,6 +129,17 @@ def run_model(model_file, data_file, output_dir=None):
         print("Cancelled: model run not authorized (set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 in a TTY).")
         sys.exit(1)
 
+    # Runtime outputs are confined to output_dir (temp by default, cleaned up).
+    cleanup_output = False
+    if not output_dir:
+        output_dir = tempfile.mkdtemp(prefix="cmdstan_out_")
+        cleanup_output = True
+    os.makedirs(output_dir, exist_ok=True)
+    print("[disclosure] CmdStan build writes compiled artifacts into the CmdStan "
+          "tree next to the model (outside the skill dir, inherent to Stan).")
+    print(f"[disclosure] Runtime sampling output -> {output_dir} "
+          f"(cleaned up after run: {cleanup_output}).")
+
     # Build model
     print(f"Building model: {_safe_arg(model_file)}")
     build = subprocess.run([
@@ -128,6 +147,8 @@ def run_model(model_file, data_file, output_dir=None):
     ], capture_output=True, text=True)
     if build.returncode != 0:
         print("Build failed:\n" + _sanitize(build.stderr))
+        if cleanup_output:
+            shutil.rmtree(output_dir, ignore_errors=True)
         sys.exit(1)
 
     # Run
@@ -136,11 +157,17 @@ def run_model(model_file, data_file, output_dir=None):
     args += ["sample", f"num_samples=2000", f"num_warmup=1000"]
     if data_file:
         args.append(f"data file={data_file}")
+    # Confine runtime sampling output to the (temp/confined) output directory.
+    args.append(f"output file={os.path.join(output_dir, 'output.csv')}")
     # Encode every argument safely before echoing the reconstructed command line,
     # so a crafted model_file/data_file cannot inject terminal/log content (OH1).
     print("Command: " + " ".join(_safe_arg(a) for a in args))
 
-    proc = subprocess.run(args, capture_output=True, text=True)
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True)
+    finally:
+        if cleanup_output:
+            shutil.rmtree(output_dir, ignore_errors=True)
     print(_sanitize(proc.stdout))
     if proc.returncode != 0:
         print(_sanitize(proc.stderr), file=sys.stderr)

@@ -92,9 +92,12 @@ $configPath = Join-Path $PSScriptRoot "..\config.json"
 if (Test-Path $configPath) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
     if ($originExe) {
+        # Derive the version from the install path; never hardcode it.
+        $detectedVersion = "unknown"
+        if ($originExe -match "Origin(\d{4})") { $detectedVersion = $matches[1] }
         $config | Add-Member -NotePropertyName "Origin" -NotePropertyValue @{
             installed = $true
-            version = "2025"
+            version = $detectedVersion
             path = $originExe
             platform = "windows"
             mode = "simple"

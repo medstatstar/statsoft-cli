@@ -34,7 +34,10 @@ fi
 
 if [ -n "$SHAZAM_BIN" ]; then
     LANG_ZH "找到 SHAZAM: $SHAZAM_BIN" "Found SHAZAM: $SHAZAM_BIN"
-    SHAZAM_VER=$($SHAZAM_BIN --version 2>&1 | head -1 || echo "unknown")
+    SHAZAM_VER="unknown"
+    if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+        SHAZAM_VER=$($SHAZAM_BIN --version 2>&1 | head -1 || echo "unknown")
+    fi
     LANG_ZH "版本: $SHAZAM_VER" "Version: $SHAZAM_VER"
 else
     LANG_ZH "未找到 SHAZAM。" "SHAZAM not found."

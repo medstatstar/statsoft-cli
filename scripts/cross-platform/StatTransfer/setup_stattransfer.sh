@@ -130,12 +130,16 @@ verify_stattransfer() {
         return 1
     fi
     
-    # 运行版本命令
-    local version_output
-    if [[ "$st_path" == *.exe ]]; then
-        version_output=$("$st_path" --version 2>&1 || true)
-    else
-        version_output=$("$st_path" --version 2>&1 || true)
+    # Version verification launches the detected third-party binary.
+    # It runs ONLY when explicitly opted in (STATSOFT_VERIFY=1); default
+    # verification reports the path only and never executes the binary (SDI-4).
+    local version_output=""
+    if [[ "${STATSOFT_VERIFY:-0}" = "1" ]]; then
+        if [[ "$st_path" == *.exe ]]; then
+            version_output=$("$st_path" --version 2>&1 || true)
+        else
+            version_output=$("$st_path" --version 2>&1 || true)
+        fi
     fi
     
     if [[ -n "$version_output" ]]; then

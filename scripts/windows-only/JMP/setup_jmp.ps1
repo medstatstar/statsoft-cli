@@ -118,9 +118,14 @@ if ($jmpInstalled) {
     # prints manual configuration guidance. It does NOT modify any persistent
     # state (no env-var writes, no config.json writes) — the runner
     # statsoft-jmp.ps1 auto-detects JMP from the common paths above.
-    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置。如需持久化，请手动设置环境变量:" "`n[CN] Detection-only: no configuration is written. To persist, set the env var manually:" -ForegroundColor Yellow
-    Write-Host "  [PowerShell]  `$env:STATSOFT_JMP_PATH = '$jmpPath'" -ForegroundColor Gray
-    Write-Host "  [cmd]        set STATSOFT_JMP_PATH=$jmpPath" -ForegroundColor Gray
+    # This setup script is DETECTION-ONLY: it does NOT write env vars or
+    # config.json. The runner statsoft-jmp.ps1 auto-detects JMP from the common
+    # paths above by default; if a custom path must be pinned, persist it to
+    # config.json with explicit opt-in (STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1)
+    # — NOT a shell environment variable.
+    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置（环境变量或 config.json）。" "`n[EN] Detection-only: no configuration is written (neither env vars nor config.json)." -ForegroundColor Yellow
+    Write-Lang "运行器默认按上述路径自动检测，无需手动设置环境变量。" "  The runner auto-detects these paths by default — no manual env var needed." -Color Gray
+    Write-Lang "如需固定自定义路径，请以 opt-in 写入 config.json（STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1）。" "  To pin a custom path, persist it to config.json with opt-in (STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1)." -Color Gray
     
     # 显示调用示例
     Write-Host "`n[CN] === 调用示例 ===" -ForegroundColor Cyan

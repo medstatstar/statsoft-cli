@@ -258,6 +258,12 @@ function Test-UserAuthorizedToRun {
 switch ($Command) {
     "run" {
         if (-not (Test-UserAuthorizedToRun)) { Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow; exit 1 }
+        # ⚠️ Disclosure (TP4): this explicit run writes a TEMPORARY job file
+        # <basename>.spj into the current working directory (auto-deleted after
+        # the run) and a .spv analysis OUTPUT into the same directory (kept, as
+        # it is the user's result). Both live in the USER's working directory,
+        # never in the skill directory, and only on this authorized run.
+        Write-Lang "⚠️ 将在当前工作目录写入临时作业文件 <basename>.spj（运行后自动删除）与分析输出 <basename>.spv（保留，位于用户工作目录而非技能目录）" "⚠️ Will write a temporary job file <basename>.spj (auto-deleted after run) and a .spv analysis output into the current working directory (user's dir, not the skill dir)." -Color Yellow
         $spsFile = $Args[0]
         if (-not $spsFile -or -not (Test-Path $spsFile)) {
             Write-Error "[CN] 语法文件不存在: $spsFile / [EN] Syntax file not found"; exit 1
@@ -290,6 +296,10 @@ switch ($Command) {
 
     "run-batch" {
         if (-not (Test-UserAuthorizedToRun)) { Write-Lang "已取消执行（未确认）" "Execution cancelled (not confirmed)." -Color Yellow; exit 1 }
+        # ⚠️ Disclosure (TP4): writes a TEMPORARY batch-master.sps + <basename>.spj
+        # into the current working directory (both auto-deleted) and a .spv output
+        # (kept) into the user's working directory — only on this authorized run.
+        Write-Lang "⚠️ 批量运行将在当前工作目录写入临时文件（batch-master.sps、<basename>.spj，运行后自动删除）与 .spv 分析输出（保留，位于用户工作目录而非技能目录）" "⚠️ Batch run writes temporary files (batch-master.sps, <basename>.spj, auto-deleted) and a .spv output (kept) into the current working directory (user's dir, not the skill dir)." -Color Yellow
         if ($Args.Count -eq 0) { Write-Error "需提供语法文件路径 / Please provide syntax file path"; exit 1 }
         $workDir   = $PWD
         $masterSps = Join-Path $workDir "batch-master.sps"
@@ -329,17 +339,16 @@ switch ($Command) {
         # within the declared SPSS trust boundary; fall back to a resolved
         # absolute host python.exe only if the bundled one is unavailable.
         # The path is passed to the helper as a safe argv argument (no interpolation).
+        # data-info MUST use the SPSS-bundled interpreter to stay within the
+        # declared SPSS trust boundary; the host-python fallback is removed (SDI-1).
         $pyExe = $null
         if ($statsPython -and (Test-Path $statsPython)) {
             $pyExe = $statsPython
-        } else {
-            $cmd = Get-Command python.exe -ErrorAction SilentlyContinue
-            if ($cmd) {
-                $pyExe = $cmd.Source
-                Write-Warning "使用宿主 Python（非 SPSS 内置）/ Using host Python (not SPSS-bundled): $pyExe"
-            }
         }
-        if (-not $pyExe) { Write-Error "未找到 Python / Python not found"; exit 1 }
+        if (-not $pyExe) {
+            Write-Error "未找到 SPSS 内置 Python（data-info 仅使用 SPSS 内置解释器，不允许回退到宿主 Python）/ SPSS-bundled Python not found (data-info requires the SPSS-bundled interpreter; host Python fallback is disabled)"
+            exit 1
+        }
         & $pyExe $helperPy $savFile
     }
 

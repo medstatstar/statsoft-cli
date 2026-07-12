@@ -32,7 +32,10 @@ fi
 
 if [ -n "$JAGS_BIN" ]; then
     LANG_ZH "找到 JAGS: $JAGS_BIN" "Found JAGS: $JAGS_BIN"
-    JAGS_VER=$($JAGS_BIN --version 2>&1 | head -1 || echo "unknown")
+    JAGS_VER="unknown"
+    if [ "${STATSOFT_VERIFY:-0}" = "1" ]; then
+        JAGS_VER=$($JAGS_BIN --version 2>&1 | head -1 || echo "unknown")
+    fi
     LANG_ZH "版本: $JAGS_VER" "Version: $JAGS_VER"
 else
     LANG_ZH "未找到 JAGS。" "JAGS not found."
