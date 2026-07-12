@@ -108,11 +108,14 @@ def run_model(model_file, data_file, output_dir=None):
     """Build and run a Stan model.
 
     SECURITY/DISCLOSURE: running a Stan model invokes `make` and the compiled
-    model binary (third-party code execution, gated by user_authorized_to_run).
-    The build writes compiled artifacts (e.g. <model>.exe/.o and make/local)
-    into the CmdStan tree NEXT TO THE MODEL SOURCE — this is inherent to CmdStan
-    and occurs OUTSIDE the skill directory. Runtime sampling output is written
-    to `output_dir` (default: a temporary directory that is cleaned up).
+    model binary (THIRD-PARTY / UNTRUSTED native code execution; gated by
+    user_authorized_to_run). The build runs `make -C <cmdstan_path> <model_target>`
+    where model_target is the model file path WITHOUT its .stan suffix; CmdStan
+    writes compiled artifacts (e.g. <model>/.exe/.o) NEXT TO THE MODEL SOURCE and
+    updates make/local — this is inherent to CmdStan and occurs OUTSIDE the skill
+    directory. Runtime sampling output is written to `output_dir` (default: a
+    temporary directory that is cleaned up). Treat model execution as running
+    UNTRUSTED native code supplied by the user.
     """
     path = find_cmdstan()
     if path is None:
@@ -140,10 +143,17 @@ def run_model(model_file, data_file, output_dir=None):
     print(f"[disclosure] Runtime sampling output -> {output_dir} "
           f"(cleaned up after run: {cleanup_output}).")
 
-    # Build model
+    # Build model — resolve to a real existing file and derive the make target
+    # from its FULL path (not a basename joined to cwd), so a crafted/relative
+    # model path cannot redirect the build elsewhere (AST4).
+    model_file = os.path.abspath(model_file)
+    if not os.path.isfile(model_file):
+        print(f"ERROR: Model file {model_file} not found.")
+        sys.exit(1)
+    model_target = os.path.splitext(model_file)[0]
     print(f"Building model: {_safe_arg(model_file)}")
     build = subprocess.run([
-        "make", "-C", path, os.path.join(os.getcwd(), os.path.basename(model_file)).replace(".stan", "")
+        "make", "-C", path, model_target
     ], capture_output=True, text=True)
     if build.returncode != 0:
         print("Build failed:\n" + _sanitize(build.stderr))
@@ -151,13 +161,18 @@ def run_model(model_file, data_file, output_dir=None):
             shutil.rmtree(output_dir, ignore_errors=True)
         sys.exit(1)
 
-    # Run
-    print(f"Running model with data: {_safe_arg(data_file)}")
-    args = [os.path.join(path, "bin", os.path.basename(model_file).replace(".stan", ""))]
-    args += ["sample", f"num_samples=2000", f"num_warmup=1000"]
+    # Run — execute the compiled binary (UNTRUSTED native code) next to the
+    # model source, matching the build target (CmdStan behavior). Confine
+    # runtime sampling output to the (temp/confined) output directory.
+    run_bin = model_target + (".exe" if os.name == "nt" else "")
+    if not os.path.isfile(run_bin):
+        run_bin = model_target
+    if not os.path.isfile(run_bin):
+        print(f"ERROR: compiled model not found at {run_bin}")
+        sys.exit(1)
+    args = [run_bin, "sample", "num_samples=2000", "num_warmup=1000"]
     if data_file:
         args.append(f"data file={data_file}")
-    # Confine runtime sampling output to the (temp/confined) output directory.
     args.append(f"output file={os.path.join(output_dir, 'output.csv')}")
     # Encode every argument safely before echoing the reconstructed command line,
     # so a crafted model_file/data_file cannot inject terminal/log content (OH1).
@@ -168,9 +183,12 @@ def run_model(model_file, data_file, output_dir=None):
     finally:
         if cleanup_output:
             shutil.rmtree(output_dir, ignore_errors=True)
-    print(_sanitize(proc.stdout))
+    # Bound + sanitize subprocess output before relaying (OH1): truncate size
+    # and keep trusted status messages separate from untrusted stdout/stderr.
+    MAX_OUT = 8000
+    print(_sanitize(proc.stdout)[:MAX_OUT])
     if proc.returncode != 0:
-        print(_sanitize(proc.stderr), file=sys.stderr)
+        print(_sanitize(proc.stderr)[:MAX_OUT], file=sys.stderr)
     sys.exit(proc.returncode)
 
 def main():

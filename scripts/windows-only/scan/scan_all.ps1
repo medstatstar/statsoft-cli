@@ -4,15 +4,15 @@
 # paths + command resolution.
 #
 # SCOPE / PRIVACY (SDI-1/SDI-4):
-#   * Preferred usage is NARROW: pass  -Target <name>  to probe exactly ONE named
-#     product (activation-on-demand). A single-target probe returns only that
-#     product and does NOT require the host-wide consent gate.
-#   * Passing NO -Target performs a BROAD, host-wide inventory of many products
-#     (collecting install paths + versions). Because that exposes local tooling
-#     inventory, it is gated behind an explicit opt-in:
+#   * This script detects installed statistical software and reports install
+#     paths + versions (privacy-sensitive local inventory).
+#   * REVEALING paths/versions requires EXPLICIT opt-in for ANY detection —
+#     broad host-wide OR a narrow single -Target probe:
 #       STATSOFT_AUTO_WRITE=1 (non-interactive) or STATSOFT_CONFIRM=1 + a TTY y/N.
-#   NOTE: this script inventories MULTIPLE products when run in broad mode — it
-#   does not limit itself to a single tool unless -Target is supplied.
+#   * WITHOUT opt-in the script still runs but emits ONLY a boolean
+#     installed/not-installed result (paths and versions are hidden).
+#   * Detection resolves locations from registry / well-known paths / command
+#     lookup and does NOT execute third-party binaries to obtain versions.
 
 param(
     [string]$Target = ""
@@ -28,27 +28,21 @@ function Want([string]$name) {
     return ($doAll -or ($Target -ieq $name))
 }
 
-# ─────────── CONSENT GATE for BROAD scans only (SQP-2/SDI-1) ───────────
-# A narrow  -Target  probe is on-demand and skips this gate. A broad host-wide
-# inventory requires explicit opt-in because it discloses local tooling.
-if ($doAll) {
-    $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
-    $confirm = $env:STATSOFT_CONFIRM -eq '1'
-    if (-not $autoWrite) {
-        if ($confirm -and -not [Console]::IsInputRedirected) {
-            Write-Host "This will inventory installed statistical software (paths + versions) across this host."
-            $ans = Read-Host "Proceed with host-wide detection? (y/N)"
-            if (-not ($ans -match '^[yY]')) {
-                Write-Host "Aborted: host-wide detection requires explicit consent."
-                exit 0
-            }
-        } else {
-            Write-Host "Host-wide detection skipped: requires explicit consent."
-            Write-Host "Tip: pass  -Target <name>  to probe a single product without host-wide consent,"
-            Write-Host "or set STATSOFT_AUTO_WRITE=1 (non-interactive) / STATSOFT_CONFIRM=1 (TTY) for a broad scan."
-            exit 0
-        }
-    }
+# ─────────── CONSENT GATE (reveal install paths/versions) ───────────
+# ANY detection (broad host-wide OR narrow -Target) may reveal install paths +
+# versions, which is privacy-sensitive inventory. Revealing that detail requires
+# explicit opt-in; without it we still run but emit only a boolean result (SDI-1).
+$reveal = $false
+$autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
+$confirm = $env:STATSOFT_CONFIRM -eq '1'
+if ($autoWrite) {
+    $reveal = $true
+} elseif ($confirm -and -not [Console]::IsInputRedirected) {
+    Write-Host "This will detect installed statistical software (paths + versions) on this host."
+    $ans = Read-Host "Proceed and reveal install paths/versions? (y/N)"
+    if ($ans -match '^[yY]') { $reveal = $true }
+} else {
+    Write-Host "Detection runs, but install paths/versions are hidden (set STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1 to reveal)."
 }
 
 $results = @{}
@@ -59,11 +53,21 @@ function Write-JsonOutput($obj) {
 
 function Add-RResult($name, $installed, $path, $version) {
     if ($installed -or $null -eq $installed) {
-        $results[$name] = @{
-            installed = $true
-            path = $path
-            version = $version
-            platform = "windows"
+        if ($reveal) {
+            $results[$name] = @{
+                installed = $true
+                path = $path
+                version = $version
+                platform = "windows"
+            }
+        } else {
+            # Without opt-in, reveal nothing sensitive — boolean only (SDI-1).
+            $results[$name] = @{
+                installed = $true
+                path = $null
+                version = $null
+                platform = "windows"
+            }
         }
     } else {
         if (-not $results.ContainsKey($name)) {
@@ -175,9 +179,8 @@ if (Want "R") {
 if (Want "Python") {
     $cmdPy = Detect-ByCommand "python"
     $cmdPy2 = Detect-ByCommand "python3"
-    if ($cmdPy) { Add-RResult "Python" $true $cmdPy.Path (& python --version 2>&1) } else {
-        if ($cmdPy2) { Add-RResult "Python" $cmdPy2 }
-    }
+    if ($cmdPy) { Add-RResult "Python" $true $cmdPy.Path "unknown" }
+    elseif ($cmdPy2) { Add-RResult "Python" $true $cmdPy2.Path "unknown" }
 }
 
 # SPSS Statistics — probe registry, then a few fixed system drives (C:/D:) only.

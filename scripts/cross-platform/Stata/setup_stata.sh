@@ -174,8 +174,18 @@ main() {
             STATA_CMD="${STATA_CMD/SE/$STATA_EDITION}"
             STATA_CMD="${STATA_CMD/BE/$STATA_EDITION}"
         fi
-        save_config
-        return 0
+        # 统一验证：auto / 手动 / edition-rewrite 都需真实可执行 (SDI-1)
+        if [[ ! ( -x "$STATA_CMD" || -x "$STATA_CMD.exe" ) ]]; then
+            log_error "$(LANG_ZH "解析后 Stata 二进制不可执行，放弃保存" "Stata binary not executable after resolution; not saving")"
+            return 1
+        fi
+        if verify_stata; then
+            save_config
+            return 0
+        else
+            log_error "$(LANG_ZH "Stata 验证失败，未持久化配置" "Stata verification failed; config not persisted")"
+            return 1
+        fi
     fi
 
     log_error "$(LANG_ZH "未检测到 Stata" "Stata not detected")."
@@ -231,9 +241,14 @@ main() {
             *SE*|*se*) STATA_EDITION="SE" ;;
             *)         STATA_EDITION="BE" ;;
         esac
-        save_config
-        verify_stata
-        return $?
+        # 统一验证管道：verify 在 save 之前 (SDI-1/SDI-4)
+        if verify_stata; then
+            save_config
+            return 0
+        else
+            log_error "$(LANG_ZH "Stata 验证失败，未持久化配置" "Stata verification failed; config not persisted")"
+            return 1
+        fi
     fi
 
     return 1

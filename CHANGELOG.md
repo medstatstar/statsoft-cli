@@ -1,5 +1,16 @@
 # Changelog / 更新日志
 
+## v2.6.11 (2026-07-12)
+
+ClawHub SkillSpector 审计继续修复（v2.6.10 仍 `suspicious`，11 项发现，新增 AST4 类型；本轮对扫描器"分层抽样"暴露的整类根因做一次性系统性修复）。逐条 + 整类修复：
+
+- **TP4/HIGH `SKILL.md` 描述再对齐（之二）**：显式声明"所有持久化写入仅落在单一技能目录 `config.json`（绝不在 `$HOME` 等用户主目录）"；声明包清单扫描（`scan_all`）与单目标探测均受显式授权门槛约束、未授权仅返回布尔 `installed`；声明验证步骤启动第三方二进制（如 `--version`）需 `STATSOFT_VERIFY=1`。（直接回应审计器点名的"硬编码 `$HOME` 路径冲突"与"清单扫描未门槛化"。）
+- **SDI-1/HIGH `setup_stattransfer.sh` 配置路径非技能目录写入**：原脚本将 `config.json` 硬编码写入 `$HOME/.workbuddy/skills/statsoft-cli/config.json`，与"技能目录 config.json"声明直接冲突；改为脚本相对路径 `ROOT_DIR/../config.json`，与全技能其他 setup 脚本一致。
+- **SDI-4 `setup_stattransfer.sh` 手动路径授权 + 可执行校验**：手动录入安装路径前加 `STATSOFT_VERIFY=1`/`STATSOFT_CONFIRM=1` 显式授权门槛，并验证为真实可执行文件（而非仅存在），杜绝把受攻击者影响的路径持久化。
+- **SDI-1/SDI-4 `setup_stata.sh` 保存前 verify + 统一验证管道**：自动检测分支在 `save_config` 前调用 `verify_stata` 并重检可执行性；手动分支调整为 `verify` 在 `save` 之前，auto/手动/edition-rewrite 三源走同一验证管道。
+- **SDI-1 `scan_all.ps1` 单目标探测授权 + 去二进制执行**：任何检测（broad 或 narrow `-Target`）reveal 安装路径/版本都需显式 opt-in，未授权仅输出布尔 `installed`；移除 Python 检测中的 `& python --version` 二进制执行，版本置 `unknown`；顶部注释同步更新。
+- **AST4/SDI-4/OH1 `statsoft-cmdstan.py` 模型路径解析与输出收敛**：`make` 目标改用模型文件完整路径去 `.stan` 后缀（不再用 `basename`+`cwd` 混淆，防构建重定向）；运行二进制路径与 `make` 目标一致（CmdStan 行为）；docstring 准确描述 `make -C` 产物位置；subprocess 输出截断（≤8000 字符）并按可信状态/不可信输出分离（保留 `user_authorized_to_run` 默认拒绝闸门）。
+
 ## v2.6.10 (2026-07-12)
 
 ClawHub SkillSpector 审计继续修复（v2.6.9 仍 `suspicious`，12 项发现；本轮对审计器"分层抽样"暴露的整类根因做一次性系统性修复，而非逐个打地鼠）。本轮逐条 + 整类修复：

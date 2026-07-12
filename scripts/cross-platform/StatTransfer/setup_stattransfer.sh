@@ -16,6 +16,9 @@ LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -156,7 +159,7 @@ verify_stattransfer() {
 configure_stattransfer() {
     local st_path=$1
     local platform=$2
-    local config_file="$HOME/.workbuddy/skills/statsoft-cli/config.json"
+    local config_file="$ROOT_DIR/../config.json"
 
     log_info "配置 StatTransfer..."
 
@@ -218,12 +221,23 @@ main() {
     if [[ -z "$st_path" ]]; then
         log_warn "未找到 StatTransfer，请手动指定路径"
         
-        # 提示用户输入路径
+        # 手动路径录入需与验证/配置流程一致的显式授权门槛 (SDI-4)
+        if [[ "${STATSOFT_VERIFY:-0}" != "1" ]] && [[ "${STATSOFT_CONFIRM:-0}" != "1" ]]; then
+            log_warn "手动指定路径需显式授权：设置 STATSOFT_VERIFY=1 或 STATSOFT_CONFIRM=1"
+            log_error "未配置 StatTransfer"
+            exit 1
+        fi
         LANG_ZH "请输入 StatTransfer 安装路径（按 Enter 跳过）: " "请输入 StatTransfer 安装路径（按 Enter 跳过）: "
         read -r user_path
-        
+
         if [[ -n "$user_path" ]]; then
-            st_path="$user_path"
+            # 验证为真实可执行文件，而非仅存在 (SDI-4)
+            if [[ -x "$user_path" ]] || [[ -f "$user_path.exe" && -x "$user_path.exe" ]]; then
+                st_path="$user_path"
+            else
+                log_error "路径未指向可执行文件，放弃保存"
+                exit 1
+            fi
         else
             log_error "未配置 StatTransfer"
             exit 1
