@@ -525,9 +525,11 @@ def create_spj(sps_file, output_dir=None):
         print("已创建 .spj 文件: " + spj_file)
         return spj_file
     finally:
-        # Always clean up the temp dir we created so no durable artifact remains.
-        if cleanup_temp:
-            shutil.rmtree(output_dir_abs, ignore_errors=True)
+        # Note: cleanup of the default temp dir is deferred to the caller.
+        # The caller receives the path to the created .spj file and is
+        # responsible for removing it (and the containing temp dir) when done.
+        # This avoids returning a path that no longer exists (Issue 12 fix).
+        pass
 
 
 # ============================================================

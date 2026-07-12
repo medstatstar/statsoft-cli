@@ -10,6 +10,8 @@ else
 fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
+statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
+statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
 # Setup script for GenStat
 # Statistical analysis, data mining, and experimental design
@@ -61,8 +63,6 @@ config['GenStat'] = {
     'platform': 'all',
     'mode': 'simple'
 }
-statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
-statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$GENSTAT_VERSION" "$GENSTAT_BIN")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then

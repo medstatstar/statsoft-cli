@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.13",
+    "version": "2.6.14",
     "license": "MIT",
     "capabilities": ["shell_execution", "file_read_write", "network_access", "process_execution", "system_scanning"],
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],

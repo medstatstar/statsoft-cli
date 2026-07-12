@@ -82,19 +82,25 @@ if ($limdepExe) {
   Write-Lang "LIMDEP not found. Please install from https:" "/limdep.com/" -Color Yellow
 }
 
+# Issue 9 fix: read config.json + build config object ONLY after opt-in is confirmed.
+# Gate (default-deny): persist only when STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1.
+$canPersist = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
 $configPath = Join-Path $PSScriptRoot "..\config.json"
-$config = Get-Content $configPath -Raw | ConvertFrom-Json
-if ($limdepExe) {
-    $config | Add-Member -NotePropertyName "LIMDEP" -NotePropertyValue @{
-        installed = $true
-        version = "11.0"
-        path = $limdepExe
-        platform = "windows"
-        mode = "simple"
-    } -Force
+
+if ($limdepExe -and $canPersist) {
+    $config = Get-Content $configPath -Raw | ConvertFrom-Json
+    if ($limdepExe) {
+        $config | Add-Member -NotePropertyName "LIMDEP" -NotePropertyValue @{
+            installed = $true
+            version = "11.0"
+            path = $limdepExe
+            platform = "windows"
+            mode = "simple"
+        } -Force
+    }
     Save-StatSoftConfig -ConfigPath $configPath -Config $config
-} else {
-    Write-Lang "Skipped config.json update." "Skipped config.json update." -ForegroundColor Gray
+} elseif ($limdepExe) {
+    Write-Lang "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
 }
 
 Write-Lang "" ""

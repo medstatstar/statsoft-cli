@@ -52,14 +52,35 @@ else
     echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
 fi
 
-# Check R Rattle package — path only disclosed when REVEAL=1
+# Check R Rattle package — Rscript 调用受 VERIFY 门约束（SDI-1）。
+# 仅当 VERIFY=1 时才执行 R 解释器；否则采用被动路径检测。
+# 路径仅在 REVEAL=1 时披露（Issue 7）。
 RATTLE_R=""
-if Rscript -e "library(rattle)" 2>/dev/null; then
-    RATTLE_R=$(Rscript -e "cat(system.file(package='rattle'))")
-    if statsoft_reveal; then
-        LANG_ZH "Rattle R 包: $RATTLE_R" "Rattle R package: $RATTLE_R"
-    else
-        echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+if statsoft_verify; then
+    if Rscript -e "library(rattle)" 2>/dev/null; then
+        RATTLE_R=$(Rscript -e "cat(system.file(package='rattle'))")
+        if statsoft_reveal; then
+            LANG_ZH "Rattle R 包: $RATTLE_R" "Rattle R package: $RATTLE_R"
+        else
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+        fi
+    fi
+else
+    # Passive detection: check known R package install locations without executing R.
+    for rpath in \
+        /usr/local/lib/R/site-library/rattle \
+        /usr/lib/R/site-library/rattle \
+        /usr/share/R/library/rattle \
+        "$HOME/R/x86_64-pc-linux-gnu-library/rattle" \
+        "$HOME/R/i386-pc-linux-gnu-library/rattle"; do
+        if [ -d "$rpath" ]; then
+            RATTLE_R="$rpath"
+            echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+            break
+        fi
+    done
+    if [ -z "$RATTLE_R" ] && command -v Rscript &>/dev/null; then
+        echo "$(LANG_ZH "Rscript 可用，设置 STATSOFT_VERIFY=1 查询 R 包元数据" "Rscript available; set STATSOFT_VERIFY=1 to query R package metadata.")"
     fi
 fi
 
@@ -70,6 +91,7 @@ fi
 # Config persistence (fail-closed: detection-only by default; persists only on explicit opt-in)
 if [ -f "$CONFIG_FILE" ] && [ "$RATTLE_BIN" != "NOT_INSTALLED" ]; then
     LANG_ZH "默认仅检测；写入需 opt-in（STATSOFT_AUTO_WRITE=1）" "Detection-only by default; write requires opt-in (STATSOFT_AUTO_WRITE=1)"
+    _RATTLE_PATH_REVEALED=$(statsoft_reveal && echo "$RATTLE_BIN" || echo "REDACTED")
     _NEW_CFG=$(python3 -c "
 import json, sys
 with open(sys.argv[1], 'r') as f:
@@ -80,7 +102,7 @@ config['Rattle'] = {
     'platform': 'all',
     'mode': 'simple'
 }
-print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$RATTLE_VERSION" "$RATTLE_BIN")
+print(json.dumps(config, ensure_ascii=False))" "$CONFIG_FILE" "$RATTLE_VERSION" "$_RATTLE_PATH_REVEALED")
     # Fail-closed by default — persist ONLY when explicitly opted in.
     if [ "${STATSOFT_AUTO_WRITE:-0}" = "1" ]; then
         STATSOFT_AUTO_WRITE=1 python3 "$(dirname "$0")/../../common/write_config.py" "$CONFIG_FILE" <<< "$_NEW_CFG"

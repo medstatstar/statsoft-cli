@@ -95,7 +95,7 @@ if (-not $qExe) {
     exit 1
 }
 
-# Get version
+# Get version (only inside gate below)
 $ver = $null
 $fi = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($qExe)
 $ver = $fi.FileVersion
@@ -107,13 +107,21 @@ if ($statsoftReveal) {
     Write-Lang "Q (MRKS) detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)." "Q (MRKS) detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
 }
 
-# Update config
-$config["Q_MRKS"] = [ordered]@{
-    "installed" = $true
-    "path"      = (Split-Path $qExe -Parent)
-    "exe"       = $qExe
-    "version"   = $ver
-    "platform"  = "win"
-}
+# Issue 10 fix: Gate all path/version writes inside Save-StatSoftConfig call chain.
+# Build/update config object only when persist is authorized (opt-in confirmed).
+$canPersist = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
 
-Save-StatSoftConfig -ConfigPath $configPath -Config $config
+if (-not $canPersist) {
+    Write-Lang "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
+} else {
+    # Update config inside gate — path/version never persisted without opt-in.
+    $config["Q_MRKS"] = [ordered]@{
+        "installed" = $true
+        "path"      = (Split-Path $qExe -Parent)
+        "exe"       = $qExe
+        "version"   = $ver
+        "platform"  = "win"
+    }
+
+    Save-StatSoftConfig -ConfigPath $configPath -Config $config
+}

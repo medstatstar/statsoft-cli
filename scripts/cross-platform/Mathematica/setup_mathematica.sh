@@ -88,11 +88,15 @@ detect_mathematica() {
                 fi
                 return 0
             fi
-            # Search for MathKernel
+            # Search for MathKernel — path only disclosed when REVEAL=1 (Issue 8 fix)
             if [[ -x "$base_path/MathKernel" ]]; then
                 MATHKERNEL="$base_path/MathKernel"
                 INSTALL_DIR="$(dirname "$MATHKERNEL")"
-                LANG_ZH "[OK] Found MathKernel: $MATHKERNEL" "[OK] Found MathKernel: $MATHKERNEL"
+                if statsoft_reveal; then
+                    LANG_ZH "[OK] Found MathKernel: $MATHKERNEL" "[OK] Found MathKernel: $MATHKERNEL"
+                else
+                    echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
+                fi
                 return 0
             fi
         fi

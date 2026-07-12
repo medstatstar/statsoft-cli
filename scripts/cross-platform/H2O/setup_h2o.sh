@@ -59,9 +59,14 @@ if [ -n "$H2O_BIN" ] || [ -n "$H2O_PY" ]; then
     LANG_ZH "找到 H2O.ai。" "Found H2O.ai."
 else
     LANG_ZH "未找到 H2O。" "H2O not found."
-    LANG_ZH "安装选项:" "Install options:"
-    echo "  pip install h2o"
-    echo "  Download jar from https://h2o.ai/download/"
+    # Issue 3 fix: installation guidance only printed on opt-in.
+    if [ "${STATSOFT_INSTALL_OPT_IN:-0}" = "1" ]; then
+        LANG_ZH "安装选项:" "Install options:"
+        echo "  pip install h2o"
+        echo "  Download jar from https://h2o.ai/download/"
+    else
+        LANG_ZH "设置 STATSOFT_INSTALL_OPT_IN=1 获取安装指引。" "Set STATSOFT_INSTALL_OPT_IN=1 for install guidance."
+    fi
     H2O_BIN="NOT_INSTALLED"
 fi
 

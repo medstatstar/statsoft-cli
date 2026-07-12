@@ -81,20 +81,23 @@ if ($shazamExe) {
   Write-Lang "SHAZAM not found. Please install from https:" "/www.econometrics.com/" -Color Yellow
 }
 
-$configDir = Split-Path (Split-Path (Split-Path $MyInvocation.MyCommand.Path -Parent) -Parent) -Parent
-$configPath = Join-Path $PSScriptRoot "..\config.json"
-$config = Get-Content $configPath -Raw | ConvertFrom-Json
-if ($shazamExe) {
+# Issue 11 fix: read config.json + build config object ONLY after opt-in confirmed (fail-closed).
+# Never access persistent state (config.json) before gate check passes.
+$canPersist = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
+
+if ($shazamExe -and $canPersist) {
+    $configPath = Join-Path $PSScriptRoot "..\config.json"
+    $config = Get-Content $configPath -Raw | ConvertFrom-Json
     $config | Add-Member -NotePropertyName "SHAZAM" -NotePropertyValue @{
         installed = $true
         version = "12.0"
         path = $shazamExe
         platform = "windows"
         mode = "simple"
-       } -Force
+    } -Force
     Save-StatSoftConfig -ConfigPath $configPath -Config $config
-} else {
-    Write-Lang "Skipped config.json update." "Skipped config.json update." -ForegroundColor Gray
+} elseif ($shazamExe) {
+    Write-Lang "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." "Detection-only: config.json NOT modified. Set STATSOFT_AUTO_WRITE=1 to persist, or STATSOFT_CONFIRM=1 for an interactive prompt." -Color Yellow
 }
 
 Write-Lang "" ""

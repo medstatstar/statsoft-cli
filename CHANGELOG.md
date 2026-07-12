@@ -1,5 +1,17 @@
 # Changelog / 更新日志
 
+## v2.6.14 (2026-07-12)
+
+ClawHub SkillSpector v2.6.13→v2.6.14 修复 10 个 HIGH/MED 底层 issue（1 HIGH SDI-3 + 1 HIGH TP4 + 多个 MED）：
+
+- **SDI-3 HIGH 致命修复**：移出 `fix_statsoft_functions.py`（代码维护工具误入生产运行时包，被审计器判定为违反"config.json 唯一持久化"模型）
+- **TP4 HIGH 继续收紧**：H2O 安装引导加门、Mathematica MathKernel 路径已对齐 REVEAL 门
+- **Python-shell 混合修复**：GenStat / OxMetrics 的 `python3 -c` 内不再包含 shell 函数定义，JSON 配置生成恢复正确
+- **Rattle OPT-IN 对齐**：`Rscript` 调用全部移到 `STATSOFT_VERIFY=1` 门后，默认仅被动检测
+- **Windows ps1 未授权读 config 修复**：Limdep / Q_MRKS / SHAZAM 的 config.json 读取 + config 配置构建移到 opt-in gate 之后，真正 fail-closed
+- **SPSS spss_helper.py create_spj 修复移除回归**：删除在 finally 块中清理 temp_dir 的代码，spj 文件的路径在调用者使用期间保持有效
+- **SKILL.md v2.6.14 更新**
+
 ## v2.6.13 (2026-07-12)
 
 ClawHub SkillSpector v2.6.12 扫描 15 项全清（1 HIGH + 13 MEDIUM + 1 LOW）：
