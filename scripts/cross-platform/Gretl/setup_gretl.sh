@@ -87,7 +87,7 @@ main() {
         # detection reports the path only and never executes the binary (SDI-4).
         local version="unknown"
         if statsoft_verify; then
-            version=$($gretl_path --version 2>&1 | head -1)
+            version=$("$gretl_path" --version 2>&1 | head -1)
         fi
     if statsoft_reveal; then
         LANG_ZH "  版本: $version" "Version: $version"

@@ -1,5 +1,14 @@
 # Changelog / 更新日志
 
+## v2.6.16 (2026-07-13)
+
+TP4 root fix — description-behavior alignment:
+
+- Description now explicitly discloses ALL file operations (persistent .json + .bak backups, ephemeral temp dirs, user-directed .spj/.spv, CmdStan build artifacts)
+- Trust Boundary section rewritten with full file operation matrix
+- Gretl: `"$gretl_path"` quoted (prevents word splitting)
+- SPSS: `"$pyPath"` quoted (same fix)
+
 ## v2.6.15 (2026-07-12)
 
 Bilingual restructure — SKILL.md 全面双语化（英中双语、英语在前）+ 内容精简：

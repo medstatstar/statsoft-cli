@@ -1,6 +1,6 @@
 ---
 name: statsoft-cli
-description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34+ statistical software packages (R, Stata, SAS, SPSS, Python, Mathematica, Julia, JMP, and more). All capabilities are gated behind an explicit per-action opt-in (default-deny): read-only software detection / CLI execution of third-party statistical binaries / optional dependency installation / configuration persistence to config.json (the ONLY persistent file, confined to the skill directory). / 跨平台统计软件 CLI 集成，支持 34+ 款统计软件。所有功能均需显式 opt-in 闸门（默认拒绝）：只读检测 / 第三方二进制 CLI 执行 / 可选依赖安装 / config.json 持久化（唯一持久化文件，限于技能目录）。"
+description: "Cross-platform statistical software CLI integration for AI Agent. Supports 34+ statistical software packages. This skill performs high-risk operations: software detection, executing third-party statistical binaries, running user-supplied code (Stan/SPSS/SAS/R/Python), and installing dependencies over the network. File operations: (1) persistent config.json with timestamped backups, confined to the skill directory; (2) ephemeral temporary directories (mkdtemp, auto-cleaned); (3) user-directed SPSS job (.spj) and output (.spv) files when explicit output_dir supplied; (4) CmdStan build artifacts written into CmdStan tree during model execution. All operations are gated behind default-deny opt-in. / 跨平台统计软件 CLI 集成，支持 34+ 款统计软件。本技能执行高风险操作：只读检测、执行第三方统计二进制、运行用户提供的代码（Stan/SPSS/SAS/R/Python）、联网安装依赖。文件操作：(1) 持久化 config.json（含时间戳备份），限于技能目录；(2) 临时目录（mkdtemp，自动清理）；(3) 用户指定的 SPSS 作业文件 (.spj) 和输出 (.spv)——仅在显式指定 output_dir 时生成；(4) CmdStan 编译产物在模型执行期间写入 CmdStan 目录。所有操作均需显式 opt-in（默认拒绝）。"
 
 triggers:
   - "use statsoft-cli to configure SPSS"
@@ -21,7 +21,7 @@ metadata:
   contributors:
     - medstatstar
     - phoe-zip
-  version: "2.6.15"
+  version: "2.6.16"
   license: MIT
   capabilities:
     - shell_execution
@@ -92,7 +92,19 @@ This skill follows a 6-step standard workflow. Every step is gated by default-de
 
 This skill performs **high-risk operations**: executing third-party statistical binaries, creating temporary scripts/job files, reading and executing user-supplied code, and installing dependencies over the network.
 
+**File operations (all disclosed, all gated):**
+- **Persistent**: `config.json` (with timestamped `.bak` backups) — confined to the skill directory.
+- **Ephemeral temp dirs**: `mkdtemp` directories for SPSS runners/CmdStan output — auto-cleaned after use.
+- **User-directed output**: SPSS job (`.spj`) and output (`.spv`) files — created ONLY when the user explicitly supplies `output_dir`.
+- **Build artifacts**: CmdStan compilation writes `.o`/`.exe` into the CmdStan tree — inherent to Stan, occurs outside the skill directory.
+
 本技能执行**高风险操作**：执行第三方统计二进制、创建临时脚本/作业文件、读取并执行用户提供的代码、联网安装依赖。
+
+**文件操作（均已披露、均有闸门）：**
+- **持久化**：`config.json`（含时间戳 `.bak` 备份）— 限于技能目录。
+- **临时目录**：SPSS 运行器/CmdStan 输出使用 `mkdtemp` — 用后自动清理。
+- **用户指定输出**：SPSS 作业 (`.spj`) 和输出 (`.spv`) 文件 — 仅在用户显式指定 `output_dir` 时生成。
+- **编译产物**：CmdStan 编译将 `.o`/`.exe` 写入 CmdStan 目录 — Stan 固有行为，发生在技能目录外。
 
 All user-provided scripts, syntax files, JSL, SAS macros, R/Python code, and data files are treated as **untrusted**; they require explicit confirmation plus path/allowlist validation before execution.
 
@@ -112,7 +124,7 @@ This skill has **four independent default-deny gates**. **No action happens with
 
 | Gate | Purpose / 用途 | Default / 默认 |
 |------|---------|---------|
-| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` (the ONLY persistent file) / 持久化 `config.json`（唯一持久化文件） | Disabled / 禁用 |
+| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` (the only file that persists in the skill directory) / 持久化 `config.json`（技能目录下唯一持久化文件） | Disabled / 禁用 |
 | `STATSOFT_CONFIRM=1` | Interactive y/N prompt for persistence (TTY required) / 交互式 y/N 确认（需 TTY） | Disabled / 禁用 |
 | `STATSOFT_REVEAL=1` | Disclose detection-phase details (paths, versions, package manifests, OS/architecture) / 披露检测期详情（路径、版本、包清单、OS/架构） | Disabled — detection reveals only boolean `installed` / 禁用 — 默认仅返回布尔 `installed` |
 | `STATSOFT_VERIFY=1` | Launch third-party binaries for `--version` / verification queries / 启动第三方二进制进行版本查询 | Disabled — binaries are NEVER executed during detection / 禁用 — 检测期绝不执行二进制 |

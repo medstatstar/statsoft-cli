@@ -192,7 +192,7 @@ if ($spssInstalled) {
             # detection reports the path only and never executes the binary (SDI-4).
             if ($env:STATSOFT_VERIFY -eq '1') {
                 try {
-                    $versionOutput = & $pyPath --version 2>&1
+                    $versionOutput = & "$pyPath" --version 2>&1
                     $pythonVersion = $versionOutput.ToString().Trim()
 
                     if ($pythonVersion -match "3\.(\d+)") {
