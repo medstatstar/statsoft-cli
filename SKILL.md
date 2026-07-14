@@ -21,7 +21,7 @@ metadata:
   contributors:
     - medstatstar
     - phoe-zip
-  version: "2.6.16"
+  version: "2.6.17"
   license: MIT
   capabilities:
     - shell_execution
@@ -124,7 +124,7 @@ This skill has **four independent default-deny gates**. **No action happens with
 
 | Gate | Purpose / 用途 | Default / 默认 |
 |------|---------|---------|
-| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` (the only file that persists in the skill directory) / 持久化 `config.json`（技能目录下唯一持久化文件） | Disabled / 禁用 |
+| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` — the only file this gate writes inside the skill directory (user-directed `.spj`/`.spv` and CmdStan build artifacts are separate, created only under their own explicit conditions) / 持久化 `config.json`—此闸门在技能目录内唯一写入的文件（用户指定的 `.spj`/`.spv` 与 CmdStan 编译产物为独立文件，仅在各自显式条件下生成） | Disabled / 禁用 |
 | `STATSOFT_CONFIRM=1` | Interactive y/N prompt for persistence (TTY required) / 交互式 y/N 确认（需 TTY） | Disabled / 禁用 |
 | `STATSOFT_REVEAL=1` | Disclose detection-phase details (paths, versions, package manifests, OS/architecture) / 披露检测期详情（路径、版本、包清单、OS/架构） | Disabled — detection reveals only boolean `installed` / 禁用 — 默认仅返回布尔 `installed` |
 | `STATSOFT_VERIFY=1` | Launch third-party binaries for `--version` / verification queries / 启动第三方二进制进行版本查询 | Disabled — binaries are NEVER executed during detection / 禁用 — 检测期绝不执行二进制 |

@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v2.6.17 (2026-07-14)
+
+ClawHub SkillSpector v2.6.16 残留 3 issue 清零（TP4 HIGH + 2xSDI-4 MEDIUM）：
+
+- **TP4 HIGH (SKILL.md)**: 修正 Default-Deny Gates 表中"config.json 是技能目录下唯一持久化文件"的失真表述，与 Workflow/Trust-Boundary 已披露的 `.spj`/`.spv` 与 CmdStan 编译产物事实对齐
+- **SDI-4 MEDIUM (Mathematica)**: REVEAL 门原本只控 console 输出、不控写入 config 的内容；现 REVEAL 关闭时 config 仅记录 `installed=true`，完整路径/版本不再落盘
+- **SDI-4 MEDIUM (SPSS Modeler)**: 同上，REVEAL 关闭时 config 不再写入 `path`/`version`
+
 ## v2.6.16 (2026-07-13)
 
 TP4 root fix — description-behavior alignment:

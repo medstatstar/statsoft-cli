@@ -119,11 +119,20 @@ if (Test-StatSoftReveal) {
 }
 
 # Update config
-$config["SPSS Modeler"] = [ordered]@{
-    "installed" = $true
-    "version"   = "$ver"
-    "path"      = $clembExe
-    "mode"      = "simple"
+if (Test-StatSoftReveal) {
+    $modelerCfg = [ordered]@{
+        "installed" = $true
+        "version"   = "$ver"
+        "path"      = $clembExe
+        "mode"      = "simple"
+    }
+} else {
+    $modelerCfg = [ordered]@{
+        "installed" = $true
+        "mode"      = "simple"
+        "note"      = "paths/versions hidden unless STATSOFT_REVEAL=1"
+    }
 }
+$config["SPSS Modeler"] = $modelerCfg
 
 Save-StatSoftConfig -ConfigPath $configPath -Config $config

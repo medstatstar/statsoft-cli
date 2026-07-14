@@ -138,13 +138,23 @@ if (Test-Path $configPath) {
     $config = @{}
 }
 
-$config | Add-Member -NotePropertyName "Mathematica" -NotePropertyValue @{
-    installed = $true
-    kernel_path = $mathKernel
-    wolframscript_path = $wolframScript
-    version = $version
-    platform = "windows"
-    mode = "simple"
-} -Force
+if ($statsoftReveal) {
+    $mathCfg = @{
+        installed = $true
+        kernel_path = $mathKernel
+        wolframscript_path = $wolframScript
+        version = $version
+        platform = "windows"
+        mode = "simple"
+    }
+} else {
+    $mathCfg = @{
+        installed = $true
+        platform = "windows"
+        mode = "simple"
+        note = "paths/versions hidden unless STATSOFT_REVEAL=1"
+    }
+}
+$config | Add-Member -NotePropertyName "Mathematica" -NotePropertyValue $mathCfg -Force
 
 Save-StatSoftConfig -ConfigPath $configPath -Config $config
