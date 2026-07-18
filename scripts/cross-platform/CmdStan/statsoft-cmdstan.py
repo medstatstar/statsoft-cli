@@ -41,21 +41,27 @@ def get_config():
     return {}
 
 def user_authorized_to_run():
-    """Explicit opt-in before building/running an external Stan model.
+    """EXPLICIT, NAMED opt-in before building/running an external Stan model.
 
-    FAIL-CLOSED: returns False by default. Proceed ONLY when an explicit
-    opt-in is present, mirroring the skill-wide gate used for config writes:
-      * STATSOFT_AUTO_WRITE=1            -> proceed (agent/CI non-interactive run).
+    FAIL-CLOSED: returns False by default. Building/running a Stan model
+    COMPILES and EXECUTES user-supplied, untrusted native code. Proceed ONLY
+    when an explicit opt-in is present:
+      * STATSOFT_CMDSTAN_RUN=1           -> dedicated, named opt-in for model runs.
+      * STATSOFT_AUTO_WRITE=1            -> master override (agent/CI non-interactive).
       * STATSOFT_CONFIRM=1 AND a real TTY -> prompt y/N; only 'y' proceeds.
       * otherwise                        -> deny. An agent or upstream tool cannot
                                            trigger a build/run unexpectedly.
     Returns True only if the external build/run is explicitly authorized.
     """
+    if os.environ.get("STATSOFT_CMDSTAN_RUN") == "1":
+        return True
     if os.environ.get("STATSOFT_AUTO_WRITE") == "1":
         return True
     if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
         try:
-            sys.stdout.write("About to build & run a Stan model via external processes (make + compiled binary). Continue? (y/N) ")
+            sys.stdout.write(
+                "WARNING: this will COMPILE and RUN user-supplied Stan code as native "
+                "binaries (untrusted native-code execution). Continue? (y/N) ")
             sys.stdout.flush()
             return sys.stdin.readline().strip().lower() in ("y", "yes")
         except Exception:
@@ -157,7 +163,8 @@ def run_model(model_file, data_file, output_dir=None):
 
     # Explicit opt-in before executing external build/run processes
     if not user_authorized_to_run():
-        print("Cancelled: model run not authorized (set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 in a TTY).")
+        print("Cancelled: model run not authorized. Set STATSOFT_CMDSTAN_RUN=1 "
+              "(or STATSOFT_AUTO_WRITE=1), or run with STATSOFT_CONFIRM=1 in a TTY.")
         sys.exit(1)
 
     # Runtime outputs are confined to output_dir (temp by default, cleaned up).
@@ -179,6 +186,9 @@ def run_model(model_file, data_file, output_dir=None):
         print(f"ERROR: Model file {model_file} not found.")
         sys.exit(1)
     model_target = os.path.splitext(model_file)[0]
+    print("WARNING: building & running a Stan model executes UNTRUSTED native code "
+          "compiled from the user-supplied .stan file (artifacts land outside the "
+          "skill directory, inherent to CmdStan).")
     print(f"Building model: {_safe_arg(model_file)}")
     build = subprocess.run([
         "make", "-C", path, model_target

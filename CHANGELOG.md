@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v2.6.18 (2026-07-18)
+
+ClawHub SkillSpector v2.6.17 残留 3 issue 修复（TP4 HIGH + 2xAST4 MEDIUM）：
+
+- **TP4 HIGH (SKILL.md)**: 重写 description，显式枚举 4 类行为（主机清单扫描 / 第三方二进制验证运行 / 多类文件创建 / CmdStan 不可信原生代码执行），去掉"有限披露"弱化措辞，与实现像素级对齐
+- **AST4 MEDIUM (CmdStan)**: 新增专用显式开关 `STATSOFT_CMDSTAN_RUN=1`（独立于通用 AUTO_WRITE/CONFIRM），构建/运行前打印醒目 UNTRUSTED NATIVE CODE 警告；失败-关闭
+- 版本号 bump 至 2.6.18
+
 ## v2.6.17 (2026-07-14)
 
 ClawHub SkillSpector v2.6.16 残留 3 issue 清零（TP4 HIGH + 2xSDI-4 MEDIUM）：
