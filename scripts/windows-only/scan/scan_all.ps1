@@ -20,6 +20,12 @@ param(
 
 $ErrorActionPreference = "SilentlyContinue"
 
+$script:isZH = [System.Globalization.CultureInfo]::CurrentUICulture.Name.StartsWith("zh")
+function Write-Lang {
+    param([string]$CN, [string]$EN)
+    if ($script:isZH) { Write-Host $CN } else { Write-Host $EN }
+}
+
 # When no target is given we run the broad, host-wide inventory.
 $doAll = [string]::IsNullOrWhiteSpace($Target)
 
@@ -38,11 +44,12 @@ $confirm = $env:STATSOFT_CONFIRM -eq '1'
 if ($autoWrite) {
     $reveal = $true
 } elseif ($confirm -and -not [Console]::IsInputRedirected) {
-    Write-Host "This will detect installed statistical software (paths + versions) on this host."
-    $ans = Read-Host "Proceed and reveal install paths/versions? (y/N)"
+    Write-Lang "本操作将检测本机上已安装的统计软件（包含安装路径与版本）。" "This will detect installed statistical software (paths + versions) on this host."
+    $prompt = if ($script:isZH) { "是否继续并揭示安装路径/版本？(y/N)" } else { "Proceed and reveal install paths/versions? (y/N)" }
+    $ans = Read-Host $prompt
     if ($ans -match '^[yY]') { $reveal = $true }
 } else {
-    Write-Host "Detection runs, but install paths/versions are hidden (set STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1 to reveal)."
+    Write-Lang "检测仍会执行，但安装路径/版本将被隐藏（设置 STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1 可揭示）。" "Detection runs, but install paths/versions are hidden (set STATSOFT_AUTO_WRITE=1 / STATSOFT_CONFIRM=1 to reveal)."
 }
 
 $results = @{}
@@ -97,7 +104,7 @@ function Get-RegistryValue($path, $name) {
 }
 
 function Get-NsisSoftware($pattern) {
-    # 搜索 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+    # Search HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
     $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
 
     $keys = Get-ChildItem $regPath -ErrorAction SilentlyContinue
@@ -114,7 +121,7 @@ function Get-NsisSoftware($pattern) {
 }
 
 function Get-NsisSoftwareWow64($pattern) {
-    # 搜索 32-bit 注册表 (WoW6432Node)
+    # Search the 32-bit registry (WoW6432Node)
     $regPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
     $keys = Get-ChildItem $regPath -ErrorAction SilentlyContinue
     foreach ($key in $keys) {
@@ -133,7 +140,7 @@ function Detect-ByPaths($pattern, $paths) {
     foreach ($basePath in $paths) {
         if (Test-Path $basePath) {
             $parent = Split-Path (Split-Path $basePath -Parent) -Parent
-            # 尝试提取版本号
+            # Try to extract the version number
             $leaf = Split-Path $basePath -Leaf
             if ($leaf -match '(\d+\.?\d*)') {
                 return @{ Path = $parent; Version = $matches[1]; DisplayName = "$pattern ($leaf)" }

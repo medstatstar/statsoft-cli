@@ -99,7 +99,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "Orange CLI 用法:" "Orange CLI Usage:"
-echo "  orange-canvas --help       # 显示 CLI 选项"
-echo "  python3 -m Orange ...      # 直接使用 Orange Python 模块"
+echo "$(LANG_ZH "  orange-canvas --help       # 显示 CLI 选项" "  orange-canvas --help       # show CLI options")"
+echo "$(LANG_ZH "  python3 -m Orange ...      # 直接使用 Orange Python 模块" "  python3 -m Orange ...      # use the Orange Python module directly")"
 LANG_ZH "" ""
 LANG_ZH "支持：数据挖掘、可视化、机器学习、文本挖掘" "Supported: Data Mining, Visualization, Machine Learning, Text Mining"

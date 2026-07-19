@@ -1,5 +1,5 @@
-# setup_eviews.ps1 - EViews 统计软件环境检测与配置脚本
-# EViews: 计量经济学软件，Windows-only，有批处理模式
+# setup_eviews.ps1 - EViews statistical software environment detection and configuration script
+# EViews: econometrics software, Windows-only, with a batch mode
 
 # ============================================================
 # Language Detection
@@ -29,11 +29,11 @@ function Test-StatSoftVerify {
   Write-Lang "平台" "Platform: Windows" -Color White
 Write-Lang "" ""
 
-# 检测 EViews 是否安装
+# Detect whether EViews is installed
 function Detect-EViews {
     $eviews_path = ""
     
-    # 检查常见安装路径
+    # Check common installation paths
     $paths = @(
         "C:\Program Files\EViews\EViews 13\EViews64.exe",
         "C:\Program Files\EViews\EViews 12\EViews64.exe",
@@ -48,7 +48,7 @@ function Detect-EViews {
         }
     }
     
-    # 检查 PATH
+    # Check PATH
     if (-not $eviews_path) {
         $eviews_path = (Get-Command EViews64 -ErrorAction SilentlyContinue).Source
         if (-not $eviews_path) {
@@ -59,7 +59,7 @@ function Detect-EViews {
     return $eviews_path
 }
 
-# 主流程
+# Main flow
 $eviews_path = Detect-EViews
 
 if ($eviews_path) {
@@ -70,7 +70,7 @@ if ($eviews_path) {
       Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
   }
     
-    # 输出配置信息（供 AI Agent 读取）
+    # Output configuration info (for the AI Agent to read)
     Write-Lang "" ""
   Write-Lang "=== 配置信息" "Configuration Info ===" -Color White
     if (Test-StatSoftReveal) {
@@ -80,7 +80,7 @@ if ($eviews_path) {
     }
     Write-Lang "EVIEWS_OS=windows" "EVIEWS_OS=windows"
     
-    # 输出使用说明
+    # Output usage instructions
     Write-Lang "" ""
   Write-Lang "=== 使用说明" "Usage Instructions ===" -Color White
   Write-Lang "批处理命令" "Batch command:" -Color White

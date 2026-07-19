@@ -83,7 +83,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "OpenBUGS CLI 用法:" "OpenBUGS CLI Usage:"
-echo "  openbugs --help            # 显示 CLI 选项"
-echo "  openbugs -b script.txt    # 通过脚本批执行"
+echo "$(LANG_ZH "  openbugs --help            # 显示 CLI 选项" "  openbugs --help            # show CLI options")"
+echo "$(LANG_ZH "  openbugs -b script.txt    # 通过脚本批执行" "  openbugs -b script.txt    # batch execution via script")"
 LANG_ZH "" ""
 LANG_ZH "支持：贝叶斯分析、MCMC、层次模型" "Supported: Bayesian Analysis, MCMC, Hierarchical Models"

@@ -173,10 +173,10 @@ if (-not $amosExe) {
         }
     }
 
-    Write-Lang "[!] [CN] 未检测到 AMOS 安装" "[EN] AMOS installation not detected." -Color Yellow
+    Write-Lang "[!] 未检测到 AMOS 安装" "[!] AMOS installation not detected." -Color Yellow
     Write-Lang "请使用 -AmosPath 参数指定 AMOS 安装路径" "Please use -AmosPath to specify the AMOS installation path" -Color White
     if (Test-StatSoftReveal) {
-        Write-Host '示例 / Example: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"'
+        Write-Lang '示例: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"' 'Example: .\setup_amos.ps1 -AmosPath "C:\Program Files\IBM\SPSS\Amos\26"'
     } else {
         Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
     }

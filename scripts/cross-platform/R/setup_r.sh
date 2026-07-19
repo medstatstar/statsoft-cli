@@ -111,7 +111,7 @@ install_r() {
             LANG_ZH "" ""
             echo "============================================"
             if [[ "$SCRIPT_LANG" == "zh" ]]; then
-                echo "  警告: 将从 CRAN 下载 R 安装包"
+                echo "$(LANG_ZH "  警告: 将从 CRAN 下载 R 安装包" "  Warning: the R package will be downloaded from CRAN")"
                 echo "  URL: $r_url"
             else
                 echo "  WARNING: Will download R installer from CRAN"
@@ -177,8 +177,8 @@ install_r() {
             LANG_ZH "" ""
             echo "============================================"
             if [[ "$SCRIPT_LANG" == "zh" ]]; then
-                echo "  警告: 将使用 sudo 安装 R"
-                echo "  需要管理员权限"
+                echo "$(LANG_ZH "  警告: 将使用 sudo 安装 R" "  Warning: sudo will be used to install R")"
+                echo "$(LANG_ZH "  需要管理员权限" "  Administrator privileges required")"
             else
                 echo "  WARNING: Will use sudo to install R"
                 echo "  Admin privileges required"
@@ -260,8 +260,8 @@ scan_packages() {
     LANG_ZH "" ""
     echo "============================================"
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "  R 统计分析包汇总"
-        echo "  总计: ${total_count} 个包"
+        echo "$(LANG_ZH "  R 统计分析包汇总" "  R statistical analysis packages summary")"
+        echo "$(LANG_ZH "  总计: ${total_count} 个包" "  Total: ${total_count} packages")"
     else
         echo "  R Statistical Package Summary"
         echo "  Total: ${total_count} packages"
@@ -270,22 +270,39 @@ scan_packages() {
     LANG_ZH "" ""
 
     declare -A stat_categories
-    stat_categories["描述统计 / Descriptive Statistics"]="psych pastecs DescTools summarizeR"
-    stat_categories["假设检验 / Hypothesis Testing"]="stats car lmtest nortest"
-    stat_categories["回归分析 / Regression"]="stats car MASS lme4 nlme survival rms"
-    stat_categories["多变量分析 / Multivariate Analysis"]="stats MASS psych FactoMineR factoextra"
-    stat_categories["贝叶斯统计 / Bayesian"]="rjags coda bayesrunjags"
-    stat_categories["Meta 分析 / Meta Analysis"]="metafor meta"
-    stat_categories["问卷与心理测量 / Psychometrics"]="psych lavaan semPlot mirt"
-    stat_categories["数据操作 / Data Manipulation"]="dplyr tidyr data.table reshape2"
-    stat_categories["数据可视化 / Data Visualization"]="ggplot2 plotly shiny lattice"
-    stat_categories["机器学习 / Machine Learning"]="caret randomForest xgboost mlr3"
-    stat_categories["时间序列 / Time Series"]="forecast tseries zoo xts"
-    stat_categories["空间统计 / Spatial Statistics"]="spdep raster sf"
-    stat_categories["生存分析 / Survival Analysis"]="survival cmprsk survminer"
-    stat_categories["流行病学 / Epidemiology"]="Epi epitools"
-    stat_categories["样本量计算 / Sample Size"]="pwr samplesize"
-    stat_categories["结构方程 / SEM"]="lavaan semPlot OpenMx"
+    declare -A stat_categories_zh
+    stat_categories["Descriptive Statistics"]="psych pastecs DescTools summarizeR"
+    stat_categories_zh["Descriptive Statistics"]="描述统计"
+    stat_categories["Hypothesis Testing"]="stats car lmtest nortest"
+    stat_categories_zh["Hypothesis Testing"]="假设检验"
+    stat_categories["Regression"]="stats car MASS lme4 nlme survival rms"
+    stat_categories_zh["Regression"]="回归分析"
+    stat_categories["Multivariate Analysis"]="stats MASS psych FactoMineR factoextra"
+    stat_categories_zh["Multivariate Analysis"]="多变量分析"
+    stat_categories["Bayesian"]="rjags coda bayesrunjags"
+    stat_categories_zh["Bayesian"]="贝叶斯统计"
+    stat_categories["Meta Analysis"]="metafor meta"
+    stat_categories_zh["Meta Analysis"]="Meta 分析"
+    stat_categories["Psychometrics"]="psych lavaan semPlot mirt"
+    stat_categories_zh["Psychometrics"]="问卷与心理测量"
+    stat_categories["Data Manipulation"]="dplyr tidyr data.table reshape2"
+    stat_categories_zh["Data Manipulation"]="数据操作"
+    stat_categories["Data Visualization"]="ggplot2 plotly shiny lattice"
+    stat_categories_zh["Data Visualization"]="数据可视化"
+    stat_categories["Machine Learning"]="caret randomForest xgboost mlr3"
+    stat_categories_zh["Machine Learning"]="机器学习"
+    stat_categories["Time Series"]="forecast tseries zoo xts"
+    stat_categories_zh["Time Series"]="时间序列"
+    stat_categories["Spatial Statistics"]="spdep raster sf"
+    stat_categories_zh["Spatial Statistics"]="空间统计"
+    stat_categories["Survival Analysis"]="survival cmprsk survminer"
+    stat_categories_zh["Survival Analysis"]="生存分析"
+    stat_categories["Epidemiology"]="Epi epitools"
+    stat_categories_zh["Epidemiology"]="流行病学"
+    stat_categories["Sample Size"]="pwr samplesize"
+    stat_categories_zh["Sample Size"]="样本量计算"
+    stat_categories["SEM"]="lavaan semPlot OpenMx"
+    stat_categories_zh["SEM"]="结构方程"
 
     for cat in "${!stat_categories[@]}"; do
         local found_pkgs=()
@@ -295,13 +312,7 @@ scan_packages() {
             fi
         done
         if [[ ${#found_pkgs[@]} -gt 0 ]]; then
-            if [[ "$SCRIPT_LANG" == "zh" ]]; then
-                LANG_ZH "✅ ${cat}: ${found_pkgs[*]}" "✅ ${cat}: ${found_pkgs[*]}"
-            else
-                # For English, only show the English part before /
-                local en_cat="${cat%% /*}"
-                LANG_ZH "✅ ${en_cat}: ${found_pkgs[*]}" "✅ ${en_cat}: ${found_pkgs[*]}"
-            fi
+            LANG_ZH "✅ ${stat_categories_zh[$cat]}: ${found_pkgs[*]}" "✅ ${cat}: ${found_pkgs[*]}"
         fi
     done
 
@@ -364,7 +375,7 @@ PYEOF
 
 main() {
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "=== R 语言环境配置 (跨平台) ==="
+        echo "$(LANG_ZH "=== R 语言环境配置 (跨平台) ===" "=== R language environment configuration (cross-platform) ===")"
     else
         echo "=== R Setup (Cross-Platform) ==="
     fi

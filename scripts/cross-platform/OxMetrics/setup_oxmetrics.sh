@@ -80,7 +80,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "OxMetrics CLI 用法:" "OxMetrics CLI Usage:"
-echo "  oxmetrics --help          # 显示 CLI 选项"
-echo "  oxmetrics -b commands.txt # 执行批命令"
+echo "$(LANG_ZH "  oxmetrics --help          # 显示 CLI 选项" "  oxmetrics --help          # show CLI options")"
+echo "$(LANG_ZH "  oxmetrics -b commands.txt # 执行批命令" "  oxmetrics -b commands.txt # execute batch command")"
 LANG_ZH "" ""
 LANG_ZH "支持：计量经济学、时间序列、预测、面板数据" "Supported: Econometrics, Time Series, Forecasting, Panel Data"

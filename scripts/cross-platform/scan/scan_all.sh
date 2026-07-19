@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# scan_all.sh — 跨平台批量检测已安装统计软件
-# 输出 JSON 格式：{"R":{"installed":true,"path":"...","version":"..."},...}
-# 支持 Linux / macOS / Windows (Git Bash / WSL)
+# scan_all.sh — Cross-platform batch detection of installed statistical software
+# Output JSON: {"R":{"installed":true,"path":"...","version":"..."},...}
+# Supports Linux / macOS / Windows (Git Bash / WSL)
 
 set -euo pipefail
 
@@ -9,6 +9,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -f "$SCRIPT_DIR/../_platform-detect.sh" ]]; then
     source "$SCRIPT_DIR/../_platform-detect.sh"
 fi
+
+# Language detection (auto-switch: zh locale -> Chinese, otherwise English)
+if [[ "${LANG:-}" == zh_* ]] || [[ "${LC_ALL:-}" == zh_* ]] || [[ "${LANGUAGE:-}" == zh_* ]]; then
+    SCRIPT_LANG="zh"
+else
+    SCRIPT_LANG="en"
+fi
+LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
 json_output() {
     local -n arr=$1
@@ -62,12 +70,12 @@ check_path_exists() {
 if [[ "${STATSOFT_AUTO_WRITE:-}" == "1" ]]; then
     : # auto-proceed
 elif [[ "${STATSOFT_CONFIRM:-}" == "1" && -t 0 ]]; then
-    echo "This will inventory installed statistical software (paths + versions) on this host."
-    read -p "Proceed with host-wide detection? (y/N) " _ans
-    case "$_ans" in y|Y|yes) : ;; *) echo "Aborted: host-wide detection requires explicit consent."; exit 0 ;; esac
+    LANG_ZH "本操作将盘点本机上已安装的统计软件（包含安装路径与版本）。" "This will inventory installed statistical software (paths + versions) on this host."
+    read -p "$(LANG_ZH "是否继续进行全面检测？(y/N) " "Proceed with host-wide detection? (y/N) ")" _ans
+    case "$_ans" in y|Y|yes) : ;; *) LANG_ZH "已中止：全面检测需要明确同意。" "Aborted: host-wide detection requires explicit consent."; exit 0 ;; esac
 else
-    echo "Host-wide detection skipped: requires explicit consent."
-    echo "Set STATSOFT_AUTO_WRITE=1 to run non-interactively, or STATSOFT_CONFIRM=1 for an interactive prompt."
+    LANG_ZH "已跳过全面检测：需要明确同意。" "Host-wide detection skipped: requires explicit consent."
+    LANG_ZH "设置 STATSOFT_AUTO_WRITE=1 以非交互方式运行，或设置 STATSOFT_CONFIRM=1 以进入交互式提示。" "Set STATSOFT_AUTO_WRITE=1 to run non-interactively, or STATSOFT_CONFIRM=1 for an interactive prompt."
     exit 0
 fi
 

@@ -1,8 +1,8 @@
-# statsoft-spss.ps1 — SPSS CLI 包装器
-# 调用优先级：
-#   1) stats.com 控制台版 → -production silent -nologo（首选，无闪屏）
-#   2) SPSS 内置 Python → StartSPSS() + Submit() + StopSPSS（备用，无闪屏）
-#   3) stats.exe → -production silent -nologo（最后备选，可能有闪屏）
+# statsoft-spss.ps1 — SPSS CLI wrapper
+# Invocation priority:
+#   1) stats.com console build -> -production silent -nologo (preferred, no splash)
+#   2) SPSS bundled Python -> StartSPSS() + Submit() + StopSPSS (fallback, no splash)
+#   3) stats.exe -> -production silent -nologo (last resort, may show splash)
 
 param(
     [Parameter(Position=0)]
@@ -13,15 +13,23 @@ param(
     [string[]]$Args
 )
 
+# Language detection: Chinese on zh-* UI culture, English otherwise.
+$script:isZH = [System.Globalization.CultureInfo]::CurrentUICulture.Name.StartsWith("zh")
+function Write-Lang {
+    param([string]$CN, [string]$EN, [System.ConsoleColor]$Color = "White")
+    if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
+    else { Write-Host $EN -ForegroundColor $Color }
+}
+
 $ErrorActionPreference = "Stop"
 
 # ============================================================
-# 初始化
+# Initialization
 # ============================================================
 $scriptDir  = Split-Path $MyInvocation.MyCommand.Path -Parent
 $helperPy   = Join-Path $scriptDir "spss_helper.py"
 
-# 读取配置
+        # Read config
 $configPath = Join-Path $scriptDir "..\..\config.json"
 $statsPython = $null
 $statsExe = $null
@@ -33,10 +41,10 @@ if (Test-Path $configPath) {
         if ($config."SPSS Statistics" -and $config."SPSS Statistics".Path) {
             $p = $config."SPSS Statistics".Path  # 指向 stats.exe
             $baseDir = Split-Path $p -Parent
-            # Python（与 stats.exe 同目录）
+            # Python (same dir as stats.exe)
             $pythonCand = Join-Path $baseDir "Python3\python.exe"
             if (Test-Path $pythonCand) { $statsPython = $pythonCand }
-            # stats.com（与 stats.exe 同目录）
+            # stats.com (same dir as stats.exe)
             $comCand = Join-Path $baseDir "stats.com"
             if (Test-Path $comCand) { $statsCom = $comCand }
             $statsExe = $p
@@ -44,7 +52,7 @@ if (Test-Path $configPath) {
     } catch { }
 }
 
-# 动态扫描
+# Dynamic scan
 if (-not $statsPython -or -not $statsCom) {
     # Fixed system drives only (C:, D:) — no full host inventory of mounted volumes
     $drives = @("C", "D")
@@ -73,36 +81,35 @@ if (-not $statsPython -or -not $statsCom) {
 }
 
 if (-not $statsPython -and -not $statsCom) {
-    Write-Warning "[CN] 未检测到 SPSS / [EN] SPSS not found"; exit 1
+    Write-Warning (if ($script:isZH){"未检测到 SPSS"}else{"SPSS not found"}); exit 1
 }
 
 # Detection-phase disclosure gate (SDI-3 / SDI-4): binaries paths are detailed
 # inventory data — revealed only when STATSOFT_REVEAL=1. Default detection
 # reports only the boolean installed result (no path, no version detail).
 if ($env:STATSOFT_REVEAL -eq '1') {
-    if ($statsCom)   { Write-Host "[CN] stats.com: $statsCom" -ForegroundColor Cyan }
-    if ($statsPython) { Write-Host "[CN] Python: $statsPython" -ForegroundColor Cyan }
-    if ($statsExe)    { Write-Host "[CN] stats.exe: $statsExe" -ForegroundColor Cyan }
+    if ($statsCom)   { Write-Host "stats.com: $statsCom" -ForegroundColor Cyan }
+    if ($statsPython) { Write-Host "Python: $statsPython" -ForegroundColor Cyan }
+    if ($statsExe)    { Write-Host "stats.exe: $statsExe" -ForegroundColor Cyan }
 } else {
     $found = @()
     if ($statsCom)   { $found += "stats.com" }
     if ($statsPython) { $found += "bundled-python" }
     if ($statsExe)    { $found += "stats.exe" }
     if ($found.Count -gt 0) {
-        Write-Host "[CN] 检测到 SPSS / [EN] SPSS detected: $($found -join ', ') (set STATSOFT_REVEAL=1 to reveal paths)" -ForegroundColor Cyan
+        Write-Lang "检测到 SPSS: $($found -join ', ') (set STATSOFT_REVEAL=1 to reveal paths)" "SPSS detected: $($found -join ', ') (set STATSOFT_REVEAL=1 to reveal paths)" -Color Cyan
     }
 }
 
 # ============================================================
-# 首选：stats.com 控制台版（无闪屏）
+# Preferred: stats.com console build (no splash)
 # ============================================================
 function Invoke-SPSSConsole {
     param( [string]$SpjFile )
-    Write-Host "`n[CN] 调用 SPSS (首选: stats.com, 无闪屏)..." -ForegroundColor Yellow
-    Write-Host "[EN] Calling SPSS (preferred: stats.com, no splash)..." -ForegroundColor Yellow
+    Write-Lang "`n调用 SPSS (首选: stats.com, 无闪屏)..." "Calling SPSS (preferred: stats.com, no splash)..." -Color Yellow
 
     if (-not $statsCom -or -not (Test-Path $statsCom)) {
-        Write-Warning "[CN] 未找到 stats.com / [EN] stats.com not found"; return $false
+        Write-Warning (if ($script:isZH){"未找到 stats.com"}else{"stats.com not found"}); return $false
     }
 
     try {
@@ -123,24 +130,23 @@ function Invoke-SPSSConsole {
         if ($stderr) { Write-Warning $stderr }
 
         $exitCode = $p.ExitCode
-        Write-Host "[CN] 退出码: $exitCode" -ForegroundColor $(if ($exitCode -eq 0) {"Green"} else {"Red"})
+        Write-Lang "退出码: $exitCode" "Exit code: $exitCode" -Color $(if ($exitCode -eq 0) {"Green"} else {"Red"})
         return ($exitCode -eq 0)
     } catch {
-        Write-Error "[CN] 执行出错 / [EN] Execution error: $($_.Exception.Message)"
+        Write-Error (if ($script:isZH){"执行出错: $($_.Exception.Message)"}else{"Execution error: $($_.Exception.Message)"})
         return $false
     }
 }
 
 # ============================================================
-# 备用：内置 Python（无闪屏）
+# Fallback: bundled Python (no splash)
 # ============================================================
 function Invoke-SPSSBuiltinPython {
     param( [string]$SpsFile )
-    Write-Host "`n[CN] 调用 SPSS (备用: 内置 Python, 无闪屏)..." -ForegroundColor Yellow
-    Write-Host "[EN] Calling SPSS (backup: bundled Python, no splash)..." -ForegroundColor Yellow
+    Write-Lang "`n调用 SPSS (备用: 内置 Python, 无闪屏)..." "Calling SPSS (backup: bundled Python, no splash)..." -Color Yellow
 
     if (-not $statsPython -or -not (Test-Path $statsPython)) {
-        Write-Warning "[CN] 未找到内置 Python / [EN] bundled Python not found"; return $false
+        Write-Warning (if ($script:isZH){"未找到内置 Python"}else{"bundled Python not found"}); return $false
     }
 
     try {
@@ -162,32 +168,31 @@ function Invoke-SPSSBuiltinPython {
         if ($stderr) { Write-Warning $stderr }
 
         $exitCode = $p.ExitCode
-        Write-Host "[CN] 退出码: $exitCode" -ForegroundColor $(if ($exitCode -eq 0) {"Green"} else {"Red"})
+        Write-Lang "退出码: $exitCode" "Exit code: $exitCode" -Color $(if ($exitCode -eq 0) {"Green"} else {"Red"})
         return ($exitCode -eq 0)
     } catch {
-        Write-Error "[CN] 执行出错 / [EN] Execution error: $($_.Exception.Message)"
+        Write-Error (if ($script:isZH){"执行出错: $($_.Exception.Message)"}else{"Execution error: $($_.Exception.Message)"})
         return $false
     }
 }
 
 # ============================================================
-# 最后备选：stats.exe（可能有闪屏）
+# Last resort: stats.exe (may show splash)
 # ============================================================
 function Invoke-SPSSExecutable {
     param( [string]$SpjFile )
-    Write-Host "`n[CN] 调用 SPSS 最后备选: stats.exe (可能有闪屏)..." -ForegroundColor Yellow
-    Write-Host "[EN] Calling SPSS (last resort: stats.exe, may show splash)..." -ForegroundColor Yellow
+    Write-Lang "`n调用 SPSS 最后备选: stats.exe (可能有闪屏)..." "Calling SPSS (last resort: stats.exe, may show splash)..." -Color Yellow
 
     if (-not $statsExe -or -not (Test-Path $statsExe)) {
-        Write-Error "[CN] 未找到 stats.exe / [EN] stats.exe not found"
+        Write-Error (if ($script:isZH){"未找到 stats.exe"}else{"stats.exe not found"})
         return $false
     }
 
     $confirm = "N"
     try {
-        $confirm = Read-Host "[CN] 此方式可能出现闪屏。是否继续? (y/N) / [EN] May show splash. Continue? (y/N)"
+        $confirm = Read-Host (if ($script:isZH){"此方式可能出现闪屏。是否继续? (y/N)"}else{"May show splash. Continue? (y/N)"})
     } catch {
-        Write-Host "[CN] 非交互模式，默认跳过 / [EN] Non-interactive mode, defaulting to skip" -ForegroundColor Yellow
+        Write-Lang "非交互模式，默认跳过" "Non-interactive mode, defaulting to skip" -Color Yellow
     }
     if ($confirm -ne 'y' -and $confirm -ne 'Y') { exit 1 }
 
@@ -209,16 +214,16 @@ function Invoke-SPSSExecutable {
         if ($stderr) { Write-Warning $stderr }
 
         $exitCode = $p.ExitCode
-        Write-Host "[CN] 退出码: $exitCode" -ForegroundColor $(if ($exitCode -eq 0) {"Green"} else {"Red"})
+        Write-Lang "退出码: $exitCode" "Exit code: $exitCode" -Color $(if ($exitCode -eq 0) {"Green"} else {"Red"})
         return ($exitCode -eq 0)
     } catch {
-        Write-Error "[CN] 执行出错 / [EN] Execution error: $($_.Exception.Message)"
+        Write-Error (if ($script:isZH){"执行出错: $($_.Exception.Message)"}else{"Execution error: $($_.Exception.Message)"})
         return $false
     }
 }
 
 # ============================================================
-# 生成 .spj 文件（SPSS 26+ 新格式）
+# Generate .spj file (SPSS 26+ new format)
 # ============================================================
 function New-SpssSpj {
     param( [string]$SpsFile, [string]$WorkDir )
@@ -226,7 +231,7 @@ function New-SpssSpj {
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($SpsFile)
     $spjFile  = Join-Path $WorkDir "$baseName.spj"
     $spvFile  = Join-Path $WorkDir "$baseName.spv"
-    # ⚠️ 关键：必须使用正斜杠（SPSS Production Facility 要求）
+    # WARNING: must use forward slashes (required by SPSS Production Facility)
     $spsUrl   = ([System.IO.Path]::GetFullPath($SpsFile)) -replace '\\', '/'
     $spvUrl   = $spvFile -replace '\\', '/'
 
@@ -279,28 +284,26 @@ switch ($Command) {
         Write-Lang "⚠️ 将在当前工作目录写入临时作业文件 <basename>.spj（运行后自动删除）与分析输出 <basename>.spv（保留，位于用户工作目录而非技能目录）" "⚠️ Will write a temporary job file <basename>.spj (auto-deleted after run) and a .spv analysis output into the current working directory (user's dir, not the skill dir)." -Color Yellow
         $spsFile = $Args[0]
         if (-not $spsFile -or -not (Test-Path $spsFile)) {
-            Write-Error "[CN] 语法文件不存在: $spsFile / [EN] Syntax file not found"; exit 1
+            Write-Error (if ($script:isZH){"语法文件不存在: $spsFile"}else{"Syntax file not found"}); exit 1
         }
 
         $workDir = $PWD
         $spjFile = New-SpssSpj -SpsFile $spsFile -WorkDir $workDir
 
-        # 首选：stats.com
+        # Preferred: stats.com
         $success = Invoke-SPSSConsole -SpjFile $spjFile
         if ($success) { Remove-Item $spjFile -ErrorAction SilentlyContinue; exit 0 }
 
-        # 备用：内置 Python
+        # Fallback: bundled Python
         Write-Host "" -ForegroundColor Yellow
-        Write-Warning "[CN] stats.com 失败，尝试内置 Python..."
-        Write-Warning "[EN] stats.com failed. Trying Python fallback..."
+        Write-Warning (if ($script:isZH){"stats.com 失败，尝试内置 Python..."}else{"stats.com failed. Trying Python fallback..."})
         $success = Invoke-SPSSBuiltinPython $spsFile
 
         if ($success) { Remove-Item $spjFile -ErrorAction SilentlyContinue; exit 0 }
 
-        # 最后备选：stats.exe
+        # Last resort: stats.exe
         Write-Host "" -ForegroundColor Yellow
-        Write-Warning "[CN] Python 也失败，尝试 stats.exe..."
-        Write-Warning "[EN] Python also failed. Trying stats.exe..."
+        Write-Warning (if ($script:isZH){"Python 也失败，尝试 stats.exe..."}else{"Python also failed. Trying stats.exe..."})
         $success = Invoke-SPSSExecutable -SpjFile $spjFile
 
         Remove-Item $spjFile -ErrorAction SilentlyContinue
@@ -313,19 +316,19 @@ switch ($Command) {
         # into the current working directory (both auto-deleted) and a .spv output
         # (kept) into the user's working directory — only on this authorized run.
         Write-Lang "⚠️ 批量运行将在当前工作目录写入临时文件（batch-master.sps、<basename>.spj，运行后自动删除）与 .spv 分析输出（保留，位于用户工作目录而非技能目录）" "⚠️ Batch run writes temporary files (batch-master.sps, <basename>.spj, auto-deleted) and a .spv output (kept) into the current working directory (user's dir, not the skill dir)." -Color Yellow
-        if ($Args.Count -eq 0) { Write-Error "需提供语法文件路径 / Please provide syntax file path"; exit 1 }
+        if ($Args.Count -eq 0) { Write-Error (if ($script:isZH){"需提供语法文件路径"}else{"Please provide syntax file path"}); exit 1 }
         $workDir   = $PWD
         $masterSps = Join-Path $workDir "batch-master.sps"
         $lines     = @("* SPSS Batch Run", "SET PRINTBACK=ON.", "")
         foreach ($f in $Args) {
-            if (-not (Test-Path $f)) { Write-Warning "跳过 / Skip: $f"; continue }
+            if (-not (Test-Path $f)) { Write-Warning (if ($script:isZH){"跳过: $f"}else{"Skip: $f"}); continue }
             $lines += @("* File: $f", "INSERT FILE=`"$f`"", "")
         }
         [System.IO.File]::WriteAllText($masterSps, ($lines -join "`r`n"), [System.Text.Encoding]::UTF8)
 
         $spjFile = New-SpssSpj -SpsFile $masterSps -WorkDir $workDir
 
-        # 优先级链：stats.com → Python → stats.exe
+        # Priority chain: stats.com -> Python -> stats.exe
         $success = Invoke-SPSSConsole -SpjFile $spjFile
         if (-not $success) { $success = Invoke-SPSSBuiltinPython $masterSps }
         if (-not $success) { $success = Invoke-SPSSExecutable -SpjFile $spjFile }
@@ -337,17 +340,17 @@ switch ($Command) {
 
     "data-info" {
         $savFile = $Args[0]
-        if (-not $savFile -or -not (Test-Path $savFile)) { Write-Error "数据文件不存在 / Data file not found"; exit 1 }
+        if (-not $savFile -or -not (Test-Path $savFile)) { Write-Error (if ($script:isZH){"数据文件不存在"}else{"Data file not found"}); exit 1 }
         # data-info AND version both launch an external Python interpreter (the
         # SPSS engine), so they pass the SAME default-deny execution gate as
         # run/run-batch (SDI-1/SDI-4). Every command that starts a third-party
         # binary is gated here.
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            Write-Error (if ($script:isZH){"未授权执行"}else{"Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."})
             exit 1
         }
         $helperPy = Join-Path $scriptDir "_data_info.py"
-        if (-not (Test-Path $helperPy)) { Write-Error "缺少辅助脚本 _data_info.py / Missing helper _data_info.py"; exit 1 }
+        if (-not (Test-Path $helperPy)) { Write-Error (if ($script:isZH){"缺少辅助脚本 _data_info.py"}else{"Missing helper _data_info.py"}); exit 1 }
         # Prefer the SPSS-bundled interpreter ($statsPython) to keep execution
         # within the declared SPSS trust boundary; fall back to a resolved
         # absolute host python.exe only if the bundled one is unavailable.
@@ -359,7 +362,7 @@ switch ($Command) {
             $pyExe = $statsPython
         }
         if (-not $pyExe) {
-            Write-Error "未找到 SPSS 内置 Python（data-info 仅使用 SPSS 内置解释器，不允许回退到宿主 Python）/ SPSS-bundled Python not found (data-info requires the SPSS-bundled interpreter; host Python fallback is disabled)"
+            Write-Error (if ($script:isZH){"未找到 SPSS 内置 Python（data-info 仅使用 SPSS 内置解释器，不允许回退到宿主 Python）"}else{"SPSS-bundled Python not found (data-info requires the SPSS-bundled interpreter; host Python fallback is disabled)"})
             exit 1
         }
         & $pyExe $helperPy $savFile
@@ -372,20 +375,20 @@ switch ($Command) {
         # requires the verification opt-in STATSOFT_VERIFY=1 because it
         # executes the external SPSS engine for a --version query.
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "未授权执行 / Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            Write-Error (if ($script:isZH){"未授权执行"}else{"Execution not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."})
             exit 1
         }
         if ($env:STATSOFT_VERIFY -ne '1') {
-            Write-Error "version 需要 STATSOFT_VERIFY=1 以启动第三方 SPSS 引擎进行版本查询 / version requires STATSOFT_VERIFY=1 to launch the third-party SPSS engine for a version query (default-deny)."
+            Write-Error (if ($script:isZH){"version 需要 STATSOFT_VERIFY=1 以启动第三方 SPSS 引擎进行版本查询"}else{"version requires STATSOFT_VERIFY=1 to launch the third-party SPSS engine for a version query (default-deny)."})
             exit 1
         }
-        if (-not $statsPython) { Write-Error "未找到内置 Python / bundled Python not found"; exit 1 }
+        if (-not $statsPython) { Write-Error (if ($script:isZH){"未找到内置 Python"}else{"bundled Python not found"}); exit 1 }
         & $statsPython -c "import spss; spss.StartSPSS(); print(getattr(spss,'__version__','unknown')); spss.StopSPSS()"
     }
 
     "check-syntax" {
         $spsFile = $Args[0]
-        if (-not $spsFile -or -not (Test-Path $spsFile)) { Write-Error "语法文件不存在 / Syntax file not found"; exit 1 }
+        if (-not $spsFile -or -not (Test-Path $spsFile)) { Write-Error (if ($script:isZH){"语法文件不存在"}else{"Syntax file not found"}); exit 1 }
         Get-Content $spsFile -Head 10
     }
 }

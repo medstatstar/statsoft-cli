@@ -207,7 +207,11 @@ if ($spssInstalled) {
                     } else {
                         Write-Lang "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
                     }
-                    $fstringLabel = if ($useFString) { "✅ 支持 / supported" } else { "❌ 不支持 / not supported (use %s or .format())" }
+                    $fstringLabel = if ($script:isZH) {
+                        if ($useFString) { "✅ 支持" } else { "❌ 不支持（请用 %s 或 .format()）" }
+                    } else {
+                        if ($useFString) { "✅ supported" } else { "❌ not supported (use %s or .format())" }
+                    }
                     Write-Lang "  f-string 支持: $fstringLabel" "  f-string support: $fstringLabel" -Color Cyan
                 } catch {
                     if (Test-StatSoftReveal) {
@@ -217,7 +221,7 @@ if ($spssInstalled) {
                     }
                 }
             } else {
-                Write-Lang "  （默认仅检测路径；设置 STATSOFT_VERIFY=1 可查询版本/f-string 支持）" "  (Detection-only by default; set STATSOFT_VERIFY=1 to query version/f-string support)" -Color Gray
+                Write-Lang "  （默认仅检测路径；设置 STATSOFT_VERIFY=1 可查询版本与 f-string 支持）" "  (Detection-only by default; set STATSOFT_VERIFY=1 to query version/f-string support)" -Color Gray
             }
             break
         }
@@ -259,7 +263,7 @@ if ($spssInstalled) {
     $statsComExists = Test-Path $statsComPath
 
     Write-Lang "" ""
-    Write-Lang "=== 配置结果 / Configuration Result ===" "=== Configuration Result ===" -Color Cyan
+    Write-Lang "=== 配置结果 ===" "=== Configuration Result ===" -Color Cyan
     if (Test-StatSoftReveal) {
         Write-Lang "SPSS 安装目录: $spssHome" "SPSS installation directory: $spssHome"
     } else {
@@ -302,7 +306,7 @@ if ($spssInstalled) {
     # Persistence is confined to config.json and requires explicit opt-in:
     # re-run with STATSOFT_AUTO_WRITE=1 (non-interactive) or STATSOFT_CONFIRM=1
     # (interactive y/N). The runner auto-detects the paths above by default.
-    Write-Lang "`n[CN] 本脚本仅做检测，不写入任何配置（环境变量或 config.json）。" "`n[EN] Detection-only: no configuration is written (neither env vars nor config.json)." -Color Yellow
+    Write-Lang "`n本脚本仅做检测，不写入任何配置（环境变量或 config.json）。" "`nDetection-only: no configuration is written (neither env vars nor config.json)." -Color Yellow
     Write-Lang "如需持久化，请以 opt-in 方式写入 config.json：STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1" "To persist, write config.json with explicit opt-in: STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1" -Color Gray
     Write-Lang "（运行器默认按上述路径自动检测，无需手动设置环境变量）" "  (The runner auto-detects these paths by default — no manual env var needed)" -Color Gray
 
@@ -310,7 +314,7 @@ if ($spssInstalled) {
     # 9. Show usage examples
     # ============================================================
     Write-Lang "" ""
-    Write-Lang "=== 调用示例 / Usage Examples ===" "=== Usage Examples ===" -Color Cyan
+    Write-Lang "=== 调用示例 ===" "=== Usage Examples ===" -Color Cyan
 
     Write-Lang "1. 方案1 (首选, 万无一失):" "1. Method 1 (preferred, foolproof):"
     if ($statsComExists) {

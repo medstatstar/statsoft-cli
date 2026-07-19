@@ -12,21 +12,21 @@ fi
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 
-# StatTransfer 检测与配置脚本
-# 支持平台: Windows, macOS, Linux
+# StatTransfer detection and configuration script
+# Supported platforms: Windows, macOS, Linux
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
-# 颜色定义
+# Color definitions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# 日志函数
+# Logging functions
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
 }
@@ -39,7 +39,7 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检测平台
+# Detect platform
 detect_platform() {
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         LANG_ZH "linux" "linux"
@@ -52,14 +52,14 @@ detect_platform() {
     fi
 }
 
-# 检测 StatTransfer
+# Detect StatTransfer
 detect_stattransfer() {
     local platform=$1
     local st_path=""
     
     log_info "检测 StatTransfer..."
     
-    # 首先检查 PATH
+    # First check PATH
     if command -v st &> /dev/null; then
         st_path=$(command -v st)
         if statsoft_reveal; then
@@ -75,7 +75,7 @@ detect_stattransfer() {
         return 0
     fi
     
-    # 平台特定路径
+    # Platform-specific paths
     if [[ "$platform" == "windows" ]]; then
         local win_paths=(
             "C:/Program Files/StatTransfer/st.exe"
@@ -149,7 +149,7 @@ detect_stattransfer() {
     return 1
 }
 
-# 验证 StatTransfer
+# Verify StatTransfer
 verify_stattransfer() {
     local st_path=$1
     
@@ -160,7 +160,7 @@ verify_stattransfer() {
         return 1
     fi
     
-    # 检查可执行文件
+    # Check the executable file
     if [[ ! -f "$st_path" ]] && [[ ! -f "$st_path.exe" ]]; then
         if statsoft_reveal; then
             log_error "StatTransfer 可执行文件不存在: $st_path"
@@ -196,7 +196,7 @@ verify_stattransfer() {
     return 0
 }
 
-# 配置 StatTransfer
+# Configure StatTransfer
 configure_stattransfer() {
     local st_path=$1
     local platform=$2
@@ -243,11 +243,11 @@ PYEOF
     return 0
 }
 
-# 主函数
+# Main function
 main() {
     log_info "开始 StatTransfer 检测与配置..."
     
-    # 检测平台
+    # Detect platform
     local platform=$(detect_platform)
     log_info "检测到平台: $platform"
     
@@ -256,13 +256,13 @@ main() {
         exit 1
     fi
     
-    # 检测 StatTransfer
+    # Detect StatTransfer
     local st_path=$(detect_stattransfer "$platform")
     
     if [[ -z "$st_path" ]]; then
         log_warn "未找到 StatTransfer，请手动指定路径"
         
-        # 手动路径录入需与验证/配置流程一致的显式授权门槛 (SDI-4)
+        # Manual path entry requires the same explicit-authorization gate as the verify/configure flow (SDI-4)
         if [[ "${STATSOFT_VERIFY:-0}" != "1" ]] && [[ "${STATSOFT_CONFIRM:-0}" != "1" ]]; then
             log_warn "手动指定路径需显式授权：设置 STATSOFT_VERIFY=1 或 STATSOFT_CONFIRM=1"
             log_error "未配置 StatTransfer"
@@ -272,7 +272,7 @@ main() {
         read -r user_path
 
         if [[ -n "$user_path" ]]; then
-            # 验证为真实可执行文件，而非仅存在 (SDI-4)
+            # Verify it is a real executable, not merely present (SDI-4)
             if [[ -x "$user_path" ]] || [[ -f "$user_path.exe" && -x "$user_path.exe" ]]; then
                 st_path="$user_path"
             else
@@ -285,13 +285,13 @@ main() {
         fi
     fi
     
-    # 验证 StatTransfer
+    # Verify StatTransfer
     if ! verify_stattransfer "$st_path"; then
         log_error "StatTransfer 验证失败"
         exit 1
     fi
     
-    # 配置 StatTransfer
+    # Configure StatTransfer
     if ! configure_stattransfer "$st_path" "$platform"; then
         log_error "StatTransfer 配置失败"
         exit 1
@@ -322,5 +322,5 @@ main() {
     return 0
 }
 
-# 运行主函数
+# Run the main function
 main "$@"

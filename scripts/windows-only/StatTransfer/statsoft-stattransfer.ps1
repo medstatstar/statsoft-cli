@@ -1,17 +1,17 @@
-# statsoft-stattransfer.ps1 — StatTransfer CLI 包装器
+# statsoft-stattransfer.ps1 — StatTransfer CLI wrapper
 #
-# 用法:
-#   statsoft-stattransfer version                              # 显示版本
-#   statsoft-stattransfer formats                              # 列出支持格式
-#   statsoft-stattransfer run <input> <output> [options]        # 单文件转换
-#   statsoft-stattransfer batch <input_pattern> <output_dir>    # 批量转换
+# Usage:
+#   statsoft-stattransfer version                              # show version
+#   statsoft-stattransfer formats                              # list supported formats
+#   statsoft-stattransfer run <input> <output> [options]        # single-file conversion
+#   statsoft-stattransfer batch <input_pattern> <output_dir>    # batch conversion
 #
-# 示例:
+# Examples:
 #   statsoft-stattransfer run data.sav data.csv
 #   statsoft-stattransfer run data.spss data.dta
 #   statsoft-stattransfer batch "C:\data\*.sav" "C:\output\"
 #
-# 支持格式: SAS, SPSS, Stata, R, S-Plus, SigmaPlot, Excel, CSV, ASCII, ODBC, MATLAB, etc.
+# Supported formats: SAS, SPSS, Stata, R, S-Plus, SigmaPlot, Excel, CSV, ASCII, ODBC, MATLAB, etc.
 
 param(
     [Parameter(Position=0)]
@@ -24,11 +24,18 @@ param(
     [string]$LogFile
 )
 
-# 读取配置
+# Language detection: Chinese on zh-* UI culture, English otherwise.
+$script:isZH = [System.Globalization.CultureInfo]::CurrentUICulture.Name.StartsWith("zh")
+function Write-Lang {
+    param([string]$CN, [string]$EN, [System.ConsoleColor]$Color = "White")
+    if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
+    else { Write-Host $EN -ForegroundColor $Color }
+}
+
+# Read config
 $configPath = "$PSScriptRoot\..\config.json"
 if (-not (Test-Path $configPath)) {
-    Write-Error "[CN] 配置文件不存在: $configPath。请先配置 StatTransfer"
-    Write-Error "[EN] Config file not found: $configPath. Please configure StatTransfer first"
+    Write-Error (if ($script:isZH){"配置文件不存在: $configPath。请先配置 StatTransfer"}else{"Config file not found: $configPath. Please configure StatTransfer first"})
     exit 1
 }
 
@@ -36,12 +43,11 @@ $config = Get-Content $configPath | ConvertFrom-Json
 $stExePath = $config.StatTransfer.Path
 
 if (-not (Test-Path $stExePath)) {
-    Write-Error "[CN] StatTransfer 可执行文件不存在: $stExePath"
-    Write-Error "[EN] StatTransfer executable not found: $stExePath"
+    Write-Error (if ($script:isZH){"StatTransfer 可执行文件不存在: $stExePath"}else{"StatTransfer executable not found: $stExePath"})
     exit 1
 }
 
-# 安全路径验证 - 已知合法父目录白名单
+# Secure path validation - known-good parent directory allowlist
 $validParents = @(
     "C:\Tools\StatTransfer*",
     "C:\Program Files\StatTransfer*",
@@ -55,8 +61,7 @@ foreach ($parent in $validParents) {
     }
 }
 if (-not $isPathValid) {
-    Write-Error "[CN] 路径安全验证失败: $stExePath 不在允许的安装目录列表中"
-    Write-Error "[EN] Path security validation failed: $stExePath is not in allowed installation directories"
+    Write-Error (if ($script:isZH){"路径安全验证失败: $stExePath 不在允许的安装目录列表中"}else{"Path security validation failed: $stExePath is not in allowed installation directories"})
     exit 1
 }
 
@@ -68,7 +73,7 @@ if (-not $isPathValid) {
 function Test-StatTransferAuthorized {
     if ($env:STATSOFT_AUTO_WRITE -eq '1') { return $true }
     if ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host "[CN] 确认执行转换并写入输出文件? (y/N) [EN] Confirm conversion and file write? (y/N)"
+        $ans = Read-Host (if ($script:isZH){"确认执行转换并写入输出文件? (y/N)"}else{"Confirm conversion and file write? (y/N)"})
         return ($ans -match '^[yY]')
     }
     return $false
@@ -76,53 +81,44 @@ function Test-StatTransferAuthorized {
 
 switch ($Command) {
     "version" {
-        Write-Host "[CN] === StatTransfer 版本信息 ===" -ForegroundColor Cyan
-        Write-Host "[EN] === StatTransfer Version Info ===" -ForegroundColor Cyan
+        Write-Lang "=== StatTransfer 版本信息 ===" "=== StatTransfer Version Info ===" -Color Cyan
         & $stExePath --version 2>&1
         Write-Host ""
-        Write-Host "[CN] 配置路径: $($config.StatTransfer.Path)" -ForegroundColor Gray
-        Write-Host "[EN] Config path: $($config.StatTransfer.Path)" -ForegroundColor Gray
-        Write-Host "[CN] 配置版本: $($config.StatTransfer.Version)" -ForegroundColor Gray
-        Write-Host "[EN] Config version: $($config.StatTransfer.Version)" -ForegroundColor Gray
+        Write-Lang "配置路径: $($config.StatTransfer.Path)" "Config path: $($config.StatTransfer.Path)" -Color Gray
+        Write-Lang "配置版本: $($config.StatTransfer.Version)" "Config version: $($config.StatTransfer.Version)" -Color Gray
     }
 
     "formats" {
-        Write-Host "[CN] === StatTransfer 支持的数据格式 ===" -ForegroundColor Cyan
-        Write-Host "[EN] === Supported Data Formats ===" -ForegroundColor Cyan
+        Write-Lang "=== StatTransfer 支持的数据格式 ===" "=== Supported Data Formats ===" -Color Cyan
         Write-Host ""
-        Write-Host "[CN] 统计软件格式:" -ForegroundColor Yellow
-        Write-Host "[EN] Statistical software formats:" -ForegroundColor Yellow
-        Write-Host "  .sav       SPSS 数据文件" -ForegroundColor White
-        Write-Host "  .dta       Stata 数据文件 (v4-16)" -ForegroundColor White
-        Write-Host "  .sas7bdat  SAS 数据文件" -ForegroundColor White
-        Write-Host "  .xpt       SAS 传输文件" -ForegroundColor White
-        Write-Host "  .RData     R 数据文件" -ForegroundColor White
-        Write-Host "  .sdd       SigmaPlot 文件" -ForegroundColor White
-        Write-Host "  .mtp       Minitab 文件" -ForegroundColor White
-        Write-Host "  .jmp       JMP 文件" -ForegroundColor White
-        Write-Host "  .dbf       dBase 文件" -ForegroundColor White
-        Write-Host "  .mdb/.accdb Microsoft Access 文件" -ForegroundColor White
+        Write-Lang "统计软件格式:" "Statistical software formats:" -Color Yellow
+        Write-Host "  .sav       SPSS data file" -ForegroundColor White
+        Write-Host "  .dta       Stata data file (v4-16)" -ForegroundColor White
+        Write-Host "  .sas7bdat  SAS data file" -ForegroundColor White
+        Write-Host "  .xpt       SAS transport file" -ForegroundColor White
+        Write-Host "  .RData     R data file" -ForegroundColor White
+        Write-Host "  .sdd       SigmaPlot file" -ForegroundColor White
+        Write-Host "  .mtp       Minitab file" -ForegroundColor White
+        Write-Host "  .jmp       JMP file" -ForegroundColor White
+        Write-Host "  .dbf       dBase file" -ForegroundColor White
+        Write-Host "  .mdb/.accdb Microsoft Access file" -ForegroundColor White
         Write-Host ""
-        Write-Host "[CN] 通用数据格式:" -ForegroundColor Yellow
-        Write-Host "[EN] Common data formats:" -ForegroundColor Yellow
-        Write-Host "  .csv       CSV 文件 (UTF-8, 带逗号分隔) / CSV file (UTF-8, comma-delimited)" -ForegroundColor White
+        Write-Lang "通用数据格式:" "Common data formats:" -Color Yellow
+        Write-Host "  .csv       CSV file (UTF-8, comma-delimited)" -ForegroundColor White
         Write-Host "  .tsv       TSV 文件 (Tab 分隔)" -ForegroundColor White
         Write-Host "  .txt       ASCII 固定宽度文件" -ForegroundColor White
         Write-Host "  .xlsx      Excel 工作簿" -ForegroundColor White
         Write-Host "  .xls       Excel 97-2003 文件" -ForegroundColor White
         Write-Host ""
-        Write-Host "[CN] 数据库格式:" -ForegroundColor Yellow
-        Write-Host "[EN] Database formats:" -ForegroundColor Yellow
-        Write-Host "  ODBC       [CN] 通过 ODBC 连接任意数据库 / [EN] Connect to any database via ODBC" -ForegroundColor White
+        Write-Lang "数据库格式:" "Database formats:" -Color Yellow
+        Write-Host "  ODBC       $(if ($script:isZH){"通过 ODBC 连接任意数据库"}else{"Connect to any database via ODBC"})" -ForegroundColor White
         Write-Host ""
-        Write-Host "[CN] 用法: statsoft-stattransfer run <输入文件> <输出文件>" -ForegroundColor Cyan
-        Write-Host "[EN] Usage: statsoft-stattransfer run <input_file> <output_file>" -ForegroundColor Cyan
+        Write-Lang "用法: statsoft-stattransfer run <输入文件> <输出文件>" "Usage: statsoft-stattransfer run <input_file> <output_file>" -Color Cyan
     }
 
     "run" {
         if ($Args.Count -lt 2) {
-            Write-Error "[CN] 用法: statsoft-stattransfer run <输入文件> <输出文件>"
-            Write-Error "[EN] Usage: statsoft-stattransfer run <input_file> <output_file>"
+            Write-Error (if ($script:isZH){"用法: statsoft-stattransfer run <输入文件> <输出文件>"}else{"Usage: statsoft-stattransfer run <input_file> <output_file>"})
             exit 1
         }
 
@@ -134,53 +130,47 @@ switch ($Command) {
         }
 
         if (-not (Test-Path $inputFile)) {
-            Write-Error "[CN] 输入文件不存在: $inputFile"
-            Write-Error "[EN] Input file not found: $inputFile"
+            Write-Error (if ($script:isZH){"输入文件不存在: $inputFile"}else{"Input file not found: $inputFile"})
             exit 1
         }
 
-        # 安全检查 - 输入文件路径必须在合理目录内
+        # Security check - input file path must be within a reasonable directory
         if (-not (Test-Path $outputFile -IsValid)) {
-            Write-Error "[CN] 输出路径格式无效: $outputFile"
-            Write-Error "[EN] Output path format invalid: $outputFile"
+            Write-Error (if ($script:isZH){"输出路径格式无效: $outputFile"}else{"Output path format invalid: $outputFile"})
             exit 1
         }
 
         # Dry-run: report what WOULD happen, write nothing, execute nothing (SDI-1).
         if ($env:STATSOFT_DRY_RUN -eq '1') {
-            Write-Host "[CN] 试运行（不写入任何文件、不执行转换）: $inputFile -> $outputFile" -ForegroundColor Yellow
-            Write-Host "[EN] Dry-run (no files written, no conversion executed): $inputFile -> $outputFile" -ForegroundColor Yellow
+            Write-Lang "试运行（不写入任何文件、不执行转换）: $inputFile -> $outputFile" "Dry-run (no files written, no conversion executed): $inputFile -> $outputFile" -Color Yellow
             exit 0
         }
 
         # Default-deny gate: a file-writing conversion requires explicit opt-in.
         if (-not (Test-StatTransferAuthorized)) {
-            Write-Error "[CN] 未授权写入 / Write not authorized (default-deny). 设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"
-            Write-Error "[EN] Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            Write-Error (if ($script:isZH){"未授权写入（默认拒绝）。设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"}else{"Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."})
             exit 1
         }
 
-        Write-Host "[CN] 统计软件数据格式转换" -ForegroundColor Cyan
-        Write-Host "[EN] StatTransfer data format conversion" -ForegroundColor Cyan
-        Write-Host "  输入 / Input: $inputFile" -ForegroundColor White
-        Write-Host "  输出 / Output: $outputFile" -ForegroundColor White
+        Write-Lang "统计软件数据格式转换" "StatTransfer data format conversion" -Color Cyan
+        Write-Lang "  输入: $inputFile" "  Input: $inputFile" -Color White
+        Write-Lang "  输出: $outputFile" "  Output: $outputFile" -Color White
 
-        # 创建输出目录（如果不存在）
+        # Create output directory (if it does not exist)
         $outputDir = Split-Path $outputFile -Parent
         if ($outputDir -and (-not (Test-Path $outputDir))) {
             New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
         }
 
-        # 构建命令
+        # Build command
         $cmdArgs = @($inputFile, $outputFile) + $extraArgs
 
         if ($LogFile) {
-            Write-Host "  日志 / Log: $LogFile" -ForegroundColor Gray
+            Write-Lang "  日志: $LogFile" "  Log: $LogFile" -Color Gray
         }
 
         Write-Host ""
-        Write-Host "[CN] 执行 StatTransfer..." -ForegroundColor Yellow
-        Write-Host "[EN] Executing StatTransfer..." -ForegroundColor Yellow
+        Write-Lang "执行 StatTransfer..." "Executing StatTransfer..." -Color Yellow
 
         $startTime = Get-Date
 
@@ -189,7 +179,7 @@ switch ($Command) {
         # and always removed in the finally block below — no predictable temp
         # filename that other local users/processes could pre-place or read.
         $stderrFile = (New-TemporaryFile).FullName
-        Write-Host "  临时错误日志（执行后自动删除）/ Temp stderr (auto-deleted): $stderrFile" -ForegroundColor Gray
+        Write-Lang "  临时错误日志（执行后自动删除）: $stderrFile" "  Temp stderr (auto-deleted): $stderrFile" -Color Gray
         try {
             $process = Start-Process -FilePath $stExePath `
                 -ArgumentList $cmdArgs `
@@ -200,15 +190,13 @@ switch ($Command) {
 
             $duration = (Get-Date) - $startTime
             Write-Host ""
-            Write-Host "[CN] 完成 (耗时: $($duration.TotalSeconds.ToString('F1'))秒)" -ForegroundColor Green
-            Write-Host "[EN] Done (duration: $($duration.TotalSeconds.ToString('F1'))s)" -ForegroundColor Green
-            Write-Host "退出码 / Exit code: $($process.ExitCode)" -ForegroundColor Gray
+            Write-Lang "完成 (耗时: $($duration.TotalSeconds.ToString('F1'))秒)" "Done (duration: $($duration.TotalSeconds.ToString('F1'))s)" -Color Green
+            Write-Lang "退出码: $($process.ExitCode)" "Exit code: $($process.ExitCode)" -Color Gray
 
             if ($process.ExitCode -ne 0 -and (Test-Path $stderrFile)) {
                 $stderrContent = Get-Content $stderrFile -Raw
                 if ($stderrContent -and $stderrContent.Trim()) {
-                    Write-Host "[CN] 错误信息:" -ForegroundColor Red
-                    Write-Host "[EN] Error details:" -ForegroundColor Red
+                    Write-Lang "错误信息:" "Error details:" -Color Red
                     Write-Host $stderrContent -ForegroundColor Red
                 }
             }
@@ -219,30 +207,27 @@ switch ($Command) {
 
     "batch" {
         if ($Args.Count -lt 2) {
-            Write-Error "[CN] 用法: statsoft-stattransfer batch <输入通配符> <输出目录>"
-            Write-Error "[EN] Usage: statsoft-stattransfer batch <input_glob> <output_dir>"
-            Write-Host '示例 / Example: statsoft-stattransfer batch "C:\data\*.sav" "C:\output\"'
+            Write-Error (if ($script:isZH){"用法: statsoft-stattransfer batch <输入通配符> <输出目录>"}else{"Usage: statsoft-stattransfer batch <input_glob> <output_dir>"})
+            Write-Lang '示例: statsoft-stattransfer batch "C:\data\*.sav" "C:\output\"' 'Example: statsoft-stattransfer batch "C:\data\*.sav" "C:\output\"'
             exit 1
         }
 
         $inputPattern = $Args[0]
         $outputDir = $Args[1]
 
-        # 解析通配符目录
+        # Resolve the glob directory
         $inputDir = Split-Path $inputPattern -Parent
         $inputFilter = Split-Path $inputPattern -Leaf
 
         # Dry-run: report the plan only, create nothing, convert nothing (SDI-1).
         if ($env:STATSOFT_DRY_RUN -eq '1') {
-            Write-Host "[CN] 试运行（不写入任何文件、不执行转换）: $inputPattern -> $outputDir" -ForegroundColor Yellow
-            Write-Host "[EN] Dry-run (no files written, no conversion executed): $inputPattern -> $outputDir" -ForegroundColor Yellow
+            Write-Lang "试运行（不写入任何文件、不执行转换）: $inputPattern -> $outputDir" "Dry-run (no files written, no conversion executed): $inputPattern -> $outputDir" -Color Yellow
             exit 0
         }
 
         # Default-deny gate: batch file-writing conversions require explicit opt-in.
         if (-not (Test-StatTransferAuthorized)) {
-            Write-Error "[CN] 未授权写入 / Write not authorized (default-deny). 设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"
-            Write-Error "[EN] Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."
+            Write-Error (if ($script:isZH){"未授权写入（默认拒绝）。设置 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1 以选择启用。"}else{"Write not authorized (default-deny). Set STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 to opt in."})
             exit 1
         }
 
@@ -250,20 +235,17 @@ switch ($Command) {
             New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
         }
 
-        Write-Host "[CN] 批量转换" -ForegroundColor Cyan
-        Write-Host "[EN] Batch conversion" -ForegroundColor Cyan
-        Write-Host "  输入模式 / Input pattern: $inputPattern" -ForegroundColor White
-        Write-Host "  输出目录 / Output directory: $outputDir" -ForegroundColor White
+        Write-Lang "批量转换" "Batch conversion" -Color Cyan
+        Write-Lang "  输入模式: $inputPattern" "  Input pattern: $inputPattern" -Color White
+        Write-Lang "  输出目录: $outputDir" "  Output directory: $outputDir" -Color White
 
         $files = Get-ChildItem -Path $inputDir -Filter $inputFilter
         if ($files.Count -eq 0) {
-            Write-Warning "[CN] 未找到匹配的文件: $inputPattern"
-            Write-Warning "[EN] No matching files found: $inputPattern"
+            Write-Warning (if ($script:isZH){"未找到匹配的文件: $inputPattern"}else{"No matching files found: $inputPattern"})
             exit 0
         }
 
-        Write-Host "[CN] 找到 $($files.Count) 个文件" -ForegroundColor White
-        Write-Host "[EN] Found $($files.Count) file(s)" -ForegroundColor White
+        Write-Lang "找到 $($files.Count) 个文件" "Found $($files.Count) file(s)" -Color White
         Write-Host ""
 
         $successCount = 0
@@ -299,7 +281,6 @@ switch ($Command) {
         }
 
         Write-Host ""
-        Write-Host "[CN] 结果: $successCount 成功, $failCount 失败" -ForegroundColor White
-        Write-Host "[EN] Result: $successCount succeeded, $failCount failed" -ForegroundColor White
+        Write-Lang "结果: $successCount 成功, $failCount 失败" "Result: $successCount succeeded, $failCount failed" -Color White
     }
 }

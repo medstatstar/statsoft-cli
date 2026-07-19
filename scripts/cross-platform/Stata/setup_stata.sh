@@ -161,7 +161,7 @@ PYEOF
 
 main() {
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "=== Stata 配置 (跨平台) ==="
+        echo "$(LANG_ZH "=== Stata 配置 (跨平台) ===" "=== Stata configuration (cross-platform) ===")"
     else
         echo "=== Stata Setup (Cross-Platform) ==="
     fi
@@ -180,7 +180,7 @@ main() {
             STATA_CMD="${STATA_CMD/SE/$STATA_EDITION}"
             STATA_CMD="${STATA_CMD/BE/$STATA_EDITION}"
         fi
-        # 统一验证：auto / 手动 / edition-rewrite 都需真实可执行 (SDI-1)
+        # Unified verification: auto / manual / edition-rewrite all require a real executable (SDI-1)
         if [[ ! ( -x "$STATA_CMD" || -x "$STATA_CMD.exe" ) ]]; then
             log_error "$(LANG_ZH "解析后 Stata 二进制不可执行，放弃保存" "Stata binary not executable after resolution; not saving")"
             return 1
@@ -198,24 +198,24 @@ main() {
     LANG_ZH "" ""
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
         LANG_ZH "请确认:" "请确认:"
-        echo "  1. Stata 已安装?"
-        echo "  2. 版本 (16/17/18)?"
-        echo "  3. 版本类型 (MP/SE/BE)?"
+        echo "$(LANG_ZH "  1. Stata 已安装?" "  1. Is Stata installed?")"
+        echo "$(LANG_ZH "  2. 版本 (16/17/18)?" "  2. Version (16/17/18)?")"
+        echo "$(LANG_ZH "  3. 版本类型 (MP/SE/BE)?" "  3. Edition (MP/SE/BE)?")"
         LANG_ZH "" ""
         LANG_ZH "版本类型说明:" "版本类型说明:"
-        echo "  MP = 多核并行版 (Multi-Processor)"
-        echo "  SE = 标准版 (Standard Edition)"
-        echo "  BE = 基础版 (Basic Edition)"
+        echo "$(LANG_ZH "  MP = 多核并行版 (Multi-Processor)" "  MP = multi-processor edition (Multi-Processor)")"
+        echo "$(LANG_ZH "  SE = 标准版 (Standard Edition)" "  SE = standard edition (Standard Edition)")"
+        echo "$(LANG_ZH "  BE = 基础版 (Basic Edition)" "  BE = basic edition (Basic Edition)")"
     else
         LANG_ZH "请确认:" "Please confirm:"
-        echo "  1. Stata 已安装?"
-        echo "  2. 版本 (16/17/18)?"
-        echo "  3. 版本类型 (MP/SE/BE)?"
+        echo "$(LANG_ZH "  1. Stata 已安装?" "  1. Is Stata installed?")"
+        echo "$(LANG_ZH "  2. 版本 (16/17/18)?" "  2. Version (16/17/18)?")"
+        echo "$(LANG_ZH "  3. 版本类型 (MP/SE/BE)?" "  3. Edition (MP/SE/BE)?")"
         LANG_ZH "" ""
         LANG_ZH "版本类型说明:" "Edition Guide:"
-        echo "  MP = 多核并行版 (Multi-Processor)"
-        echo "  SE = 标准版 (Standard Edition)"
-        echo "  BE = 基础版 (Basic Edition)"
+        echo "$(LANG_ZH "  MP = 多核并行版 (Multi-Processor)" "  MP = multi-processor edition (Multi-Processor)")"
+        echo "$(LANG_ZH "  SE = 标准版 (Standard Edition)" "  SE = standard edition (Standard Edition)")"
+        echo "$(LANG_ZH "  BE = 基础版 (Basic Edition)" "  BE = basic edition (Basic Edition)")"
     fi
 
     local manual_path resolved
@@ -247,7 +247,7 @@ main() {
             *SE*|*se*) STATA_EDITION="SE" ;;
             *)         STATA_EDITION="BE" ;;
         esac
-        # 统一验证管道：verify 在 save 之前 (SDI-1/SDI-4)
+        # Unified verification pipeline: verify runs before save (SDI-1/SDI-4)
         if verify_stata; then
             save_config
             return 0

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # run-spss-internal.py — Run SPSS syntax via SPSS built-in Python (no GUI)
 # Usage: "C:\Program Files\IBM\SPSS\Statistics\XX\Python3\python.exe" run-spss-internal.py <sps_file>
-# Note: 动态扫描任意盘符下的 SPSS 安装目录 / Dynamic scan SPSS on any drive
+# Note: dynamically scan for the SPSS install directory across any drive
 #
 # TRUSTED-INPUT-ONLY: This helper submits the given .sps syntax to the SPSS
 # processor via spss.Submit(). The syntax file is executed as code — supply
@@ -17,15 +17,15 @@ import re
 
 # SDI-3: Host scan (drive enumeration) and install-dir disclosure require STATSOFT_REVEAL=1
 if os.environ.get("STATSOFT_REVEAL") != "1":
-    print("[CN] 检测未启用：扫描 SPSS 安装目录和打印路径需要 STATSOFT_REVEAL=1")
-    print("[EN] Detection disabled; set STATSOFT_REVEAL=1 to scan SPSS installations and print install path.")
+    print("Detection disabled; set STATSOFT_REVEAL=1 to scan SPSS installations and print install path.")
     sys.exit(1)
 
-# Output bilingual helper
+# Output helper (English-only; the Chinese argument is kept for call-site parity
+# but is no longer printed).
 def log(msg_cn, msg_en=None):
     if msg_en is None:
         msg_en = msg_cn
-    print("[CN] " + msg_cn + "\n[EN] " + msg_en)
+    print(msg_en)
 
 
 def validate_syntax(syntax):
@@ -60,9 +60,9 @@ def validate_syntax(syntax):
 def _find_spss_home():
     """
     Auto-detect SPSS installation directory dynamically.
-    动态检测 SPSS 安装目录：遍历所有盘符和已知模式。
+    Dynamically detect the SPSS install dir: iterate all drives and known patterns.
     """
-    # 收集所有可用驱动器盘符 / Collect available drive letters
+    # Collect all available drive letters
     drives = ["C", "D", "E"]
     if sys.platform == "win32":
         try:
@@ -95,14 +95,14 @@ def _find_spss_home():
 # Auto-detect SPSS home
 spss_home, stats_python_path = _find_spss_home()
 if spss_home is None:
-    log("未检测到 SPSS Statistics 安装", "SPSS Statistics installation not detected")
-    log("请确认 SPSS 已正确安装，路径包含 SPSS\\Statistics\\<版本号>", "Please verify SPSS is correctly installed with path SPSS\\Statistics\\<version>")
+    log("SPSS Statistics installation not detected", "SPSS Statistics installation not detected")
+    log("Please verify SPSS is correctly installed with path SPSS\\Statistics\\<version>", "Please verify SPSS is correctly installed with path SPSS\\Statistics\\<version>")
     sys.exit(1)
 
 # Validate path security (pattern-based, not hardcoded)
 lowered = spss_home.lower()
 if not ("spss" in lowered and "statistics" in lowered):
-    log("SPSS 路径不在预期的安装目录内", "SPSS path is not within the expected installation directory")
+    log("SPSS path is not within the expected installation directory", "SPSS path is not within the expected installation directory")
     sys.exit(1)
 
 # Add SPSS Python package path
@@ -113,51 +113,51 @@ if spss_pkg not in sys.path:
 # Add SPSS bin path (DLL dependencies)
 os.environ["PATH"] = spss_home + ";" + os.environ.get("PATH", "")
 
-log("SPSS 安装目录: " + spss_home, "SPSS install dir: " + spss_home)
-log("内置 Python:   " + stats_python_path, "Built-in Python: " + stats_python_path)
+log("SPSS install dir: " + spss_home, "SPSS install dir: " + spss_home)
+log("Built-in Python: " + stats_python_path, "Built-in Python: " + stats_python_path)
 
 try:
     import spss
-    log("SPSS Python 模块加载成功", "SPSS Python module loaded successfully")
+    log("SPSS Python module loaded successfully", "SPSS Python module loaded successfully")
 except Exception as e:
-    log("无法加载 SPSS 模块: " + str(e), "Failed to load SPSS module: " + str(e))
+    log("Failed to load SPSS module: " + str(e), "Failed to load SPSS module: " + str(e))
     sys.exit(1)
 
 
 def run_syntax(sps_file):
     """Run syntax file via spss.Submit() (no GUI)"""
     if not os.path.exists(sps_file):
-        log("语法文件不存在: " + sps_file, "Syntax file not found: " + sps_file)
+        log("Syntax file not found: " + sps_file, "Syntax file not found: " + sps_file)
         return 1
 
     with open(sps_file, "r", encoding="utf-8", errors="replace") as f:
         syntax = f.read()
 
-    log("正在运行语法文件: " + sps_file, "Running syntax file: " + sps_file)
-    log("语法行数: " + str(len(syntax.splitlines())), "Syntax lines: " + str(len(syntax.splitlines())))
+    log("Running syntax file: " + sps_file, "Running syntax file: " + sps_file)
+    log("Syntax lines: " + str(len(syntax.splitlines())), "Syntax lines: " + str(len(syntax.splitlines())))
 
     # Validate syntax for safety
     valid, reason = validate_syntax(syntax)
     if not valid:
-        log("语法安全检查失败: " + reason, "Syntax security check failed: " + reason)
-        log("拒绝执行。请检查语法文件。", "Execution rejected. Please check the syntax file.")
+        log("Syntax security check failed: " + reason, "Syntax security check failed: " + reason)
+        log("Execution rejected. Please check the syntax file.", "Execution rejected. Please check the syntax file.")
         return 1
 
-    log("语法安全检查通过", "Syntax security check passed")
+    log("Syntax security check passed", "Syntax security check passed")
 
     try:
         spss.StartSPSS()
-        log("SPSS 处理器已启动（无 GUI，无闪屏）", "SPSS processor started (no GUI, no splash)")
+        log("SPSS processor started (no GUI, no splash)", "SPSS processor started (no GUI, no splash)")
 
         spss.Submit(syntax)
-        log("语法执行完成", "Syntax execution complete")
+        log("Syntax execution complete", "Syntax execution complete")
 
         spss.StopSPSS()
-        log("SPSS 处理器已停止", "SPSS processor stopped")
+        log("SPSS processor stopped", "SPSS processor stopped")
         return 0
 
     except Exception as e:
-        log("语法执行失败: " + str(e), "Syntax execution failed: " + str(e))
+        log("Syntax execution failed: " + str(e), "Syntax execution failed: " + str(e))
         import traceback
         traceback.print_exc()
         try:
@@ -169,7 +169,7 @@ def run_syntax(sps_file):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        log("用法: python.exe run-spss-internal.py <sps_file>", "Usage: python.exe run-spss-internal.py <sps_file>")
+        log("Usage: python.exe run-spss-internal.py <sps_file>", "Usage: python.exe run-spss-internal.py <sps_file>")
         sys.exit(1)
 
     sps_file = sys.argv[1]

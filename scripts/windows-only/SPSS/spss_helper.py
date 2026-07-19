@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-spss_helper.py — SPSS 无闪屏调用辅助脚本
+spss_helper.py - Helper for invoking SPSS without a splash screen.
 
-调用优先级（从高到低）：
-  1) stats.com 控制台版 -production silent -nologo（方案1：完全无闪屏，万无一失）
-     ✅ 日常跑复杂语法首选，无功能限制
-  2) SPSS 内置 Python StartSPSS() + Submit() + StopSPSS()（方案2：无闪屏）
-     ⚠️ 只能跑纯分析语法，**不能包含**以下命令：
-        - OUTPUT SAVE（保存输出文档）
-        - OUTPUT EXPORT / OUTPUT DISPLAY（导出/显示输出）
-        - HOST COMMAND（执行系统命令）
-        - XDATA / XSAVE（涉及 OUTPUT 对象时）
-     —— 遇到不确定是否涉及 OUTPUT/SAVE 的命令时，统一走方案1
-  3) stats.exe -production silent -nologo（方案3：可能有闪屏；严格模式需 STATSOFT_CONFIRM=1 显式确认）
+Call priority (highest to lowest):
+  1) stats.com console edition -production silent -nologo (option 1: fully
+     splash-free and foolproof). Daily complex-syntax runs; no feature limits.
+  2) SPSS bundled Python StartSPSS() + Submit() + StopSPSS() (option 2: no
+     splash). WARNING: runs pure analysis syntax only and MUST NOT include:
+        - OUTPUT SAVE (save the output document)
+        - OUTPUT EXPORT / OUTPUT DISPLAY (export/display output)
+        - HOST COMMAND (run OS commands)
+        - XDATA / XSAVE (when OUTPUT objects are involved)
+     When unsure whether a command touches OUTPUT/SAVE, always use option 1.
+  3) stats.exe -production silent -nologo (option 3: may show a splash; the
+     strict mode requires an explicit STATSOFT_CONFIRM=1 confirmation).
 
-⚠️ .spj 文件格式要求：
-  - 必须用 SPSS 26+ 新格式：<output>/<syntax> 子元素（非 attributes）
-  - 路径必须用正斜杠 / （反斜杠会导致 NullPointerException）
-  - <output> 元素不可缺少，否则 NullPointerException
+.spj file format requirements:
+  - Must use the SPSS 26+ new format: <output>/<syntax> sub-elements (not
+    attributes).
+  - Paths MUST use forward slashes / (backslashes cause NullPointerException).
+  - The <output> element is required, otherwise NullPointerException.
 """
 
 import os
@@ -28,7 +30,7 @@ import tempfile
 import shutil
 
 # ============================================================
-# 动态路径发现
+# Dynamic path discovery
 # ============================================================
 
 SPSS_ROOTS = [
@@ -49,7 +51,7 @@ DRIVES = ["C", "D", "E"]
 
 
 def _generate_candidates(exe_name):
-    """生成 SPSS 可执行文件候选路径"""
+    """Generate candidate paths for SPSS executables."""
     cands = []
     for root in SPSS_ROOTS:
         for ver in SPSS_VERSIONS:
@@ -63,9 +65,8 @@ def _generate_candidates(exe_name):
 
 
 def _log(msg_cn, msg_en):
-    """双语输出"""
-    print("[CN] " + msg_cn)
-    print("[EN] " + msg_en)
+    """Log helper; prints only the English message (default English)."""
+    print(msg_en)
 
 
 def _minimal_env(extra_path=None):
@@ -108,7 +109,7 @@ def _opt_in_confirm(prompt_cn, prompt_en):
         return True
     if os.environ.get("STATSOFT_CONFIRM") == "1" and sys.stdin.isatty():
         try:
-            sys.stdout.write(prompt_cn + " / " + prompt_en + " (y/N) ")
+            sys.stdout.write(prompt_en + " (y/N) ")
             sys.stdout.flush()
             ans = sys.stdin.readline().strip().lower()
             return ans in ("y", "yes")
@@ -118,7 +119,7 @@ def _opt_in_confirm(prompt_cn, prompt_en):
 
 
 def _validate_path(path, kind):
-    """验证 SPSS 路径"""
+    """Validate an SPSS path."""
     if not path:
         return None
     real = os.path.realpath(path)
@@ -179,7 +180,7 @@ def validate_syntax(syntax_text):
     ]
     for pat in forbidden:
         if re.search(pat, syntax_text, re.IGNORECASE | re.MULTILINE):
-            return False, "含受限命令: " + pat
+            return False, "Blocked command pattern: " + pat
     return True, ""
 
 
@@ -192,14 +193,15 @@ def _validate_spj(spj_file):
         with open(spj_file, "r", encoding="utf-8", errors="replace") as f:
             text = f.read()
     except Exception as e:
-        return False, "无法读取 .spj: " + str(e)
+        return False, "Unable to read .spj: " + str(e)
     return validate_syntax(text)
 
 
 def _run_silent(cmd, env=None, timeout=300):
-    """受控执行：仅接受 list 形式的命令（禁止 shell 字符串）。调用方须先校验可执行文件。"""
+    """Controlled execution: only accepts a list-form command (shell strings
+    forbidden). The caller must validate the executable beforehand."""
     if not isinstance(cmd, list) or not cmd:
-        _log("拒绝执行：命令必须为非空 list（禁止 shell）", "Rejected: command must be a non-empty list (shell forbidden)")
+        _log("Rejected: command must be a non-empty list (shell forbidden)", "Rejected: command must be a non-empty list (shell forbidden)")
         return 1, "", "invalid command"
     try:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
@@ -208,7 +210,7 @@ def _run_silent(cmd, env=None, timeout=300):
         except subprocess.TimeoutExpired:
             p.kill()
             stdout, stderr = p.communicate()
-            print("执行超时 ({}秒)".format(timeout))
+            print("Execution timed out ({}s)".format(timeout))
             return 1, "", "Timeout"
         out_str = stdout.decode("utf-8", errors="replace") if stdout else ""
         err_str = stderr.decode("utf-8", errors="replace") if stderr else ""
@@ -218,22 +220,22 @@ def _run_silent(cmd, env=None, timeout=300):
 
 
 # ============================================================
-# 首选：stats.com 控制台版（无闪屏）
+# Preferred: stats.com console edition (no splash)
 # ============================================================
 
 def run_console(spj_file, stats_com=None):
-    """首选：通过 stats.com 控制台版运行 .spj 文件（完全无闪屏）"""
-    if not _opt_in_confirm("⚠️ 即将通过 stats.com 运行 SPSS 语法，是否继续？",
+    """Preferred: run the .spj file via the stats.com console edition (fully splash-free)."""
+    if not _opt_in_confirm("⚠️ About to run SPSS syntax via stats.com. Continue?",
                            "⚠️ About to run SPSS syntax via stats.com. Continue?"):
-        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+        _log("Execution cancelled (not confirmed).", "Execution cancelled (not confirmed).")
         return 1
     if not os.path.exists(spj_file):
-        _log(".spj 文件不存在: " + spj_file, ".spj file not found: " + spj_file)
+        _log(".spj file not found: " + spj_file, ".spj file not found: " + spj_file)
         return 1
 
     ok, reason = _validate_spj(spj_file)
     if not ok:
-        _log("作业文件安全检查未通过: " + reason, "Job file security check failed: " + reason)
+        _log("Job file security check failed: " + reason, "Job file security check failed: " + reason)
         return 1
 
     if stats_com is None:
@@ -242,38 +244,38 @@ def run_console(spj_file, stats_com=None):
                 stats_com = c
                 break
         if stats_com is None:
-            _log("找不到 stats.com（控制台版）", "stats.com (console version) not found")
+            _log("stats.com (console version) not found", "stats.com (console version) not found")
             return 1
 
     validated = _validate_path(stats_com, "stats_com")
     if validated is None:
-        _log("stats.com 路径未通过安全验证", "stats.com path failed security validation")
+        _log("stats.com path failed security validation", "stats.com path failed security validation")
         return 1
     stats_com = validated
 
-    _log("正在通过 stats.com（控制台版）运行 Production Facility（完全无闪屏）...",
+    _log("Running via stats.com (console version) (NO SPLASH)...",
          "Running via stats.com (console version) (NO SPLASH)...")
     cmd = [stats_com, "-production", "silent", "-nologo", spj_file]
     returncode, stdout, stderr = _run_silent(cmd, timeout=300)
 
     if stdout: print(stdout)
     if stderr: print("ERROR: " + stderr)
-    _log("退出码: " + str(returncode), "Exit code: " + str(returncode))
+    _log("Exit code: " + str(returncode), "Exit code: " + str(returncode))
     return returncode
 
 
 # ============================================================
-# 备用1：SPSS 内置 Python（无闪屏）
+# Fallback 1: SPSS bundled Python (no splash)
 # ============================================================
 
 def run_internal(sps_file, stats_python_path=None):
-    """备用：通过 SPSS 内置 Python 运行语法（无闪屏）"""
-    if not _opt_in_confirm("⚠️ 即将通过 SPSS 内置 Python 运行语法，是否继续？",
+    """Fallback: run syntax via SPSS bundled Python (no splash)."""
+    if not _opt_in_confirm("⚠️ About to run syntax via SPSS bundled Python. Continue?",
                            "⚠️ About to run syntax via SPSS bundled Python. Continue?"):
-        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+        _log("Execution cancelled (not confirmed).", "Execution cancelled (not confirmed).")
         return 1
     if not os.path.exists(sps_file):
-        _log("语法文件不存在: " + sps_file, "Syntax file not found: " + sps_file)
+        _log("Syntax file not found: " + sps_file, "Syntax file not found: " + sps_file)
         return 1
 
     if stats_python_path is None:
@@ -282,12 +284,12 @@ def run_internal(sps_file, stats_python_path=None):
                 stats_python_path = c
                 break
         if stats_python_path is None:
-            _log("找不到 SPSS 内置 Python", "SPSS bundled Python not found")
+            _log("SPSS bundled Python not found", "SPSS bundled Python not found")
             return 1
 
     validated = _validate_path(stats_python_path, "python")
     if validated is None:
-        _log("Python 路径未通过安全验证", "Python path failed security validation")
+        _log("Python path failed security validation", "Python path failed security validation")
         return 1
     stats_python_path = validated
 
@@ -300,7 +302,7 @@ def run_internal(sps_file, stats_python_path=None):
         syntax_text = f.read()
     ok, reason = validate_syntax(syntax_text)
     if not ok:
-        _log("语法安全检查未通过: " + reason, "Syntax security check failed: " + reason)
+        _log("Syntax security check failed: " + reason, "Syntax security check failed: " + reason)
         return 1
 
     # The runner wrapper is written to a PRIVATE temp directory (0700) and
@@ -324,13 +326,13 @@ def run_internal(sps_file, stats_python_path=None):
 
     tmp_dir = tempfile.mkdtemp(prefix="statsoft_spss_")
     wrapper = os.path.join(tmp_dir, "_spss_runner.py")
-    _log("临时运行脚本（执行后自动删除）: " + wrapper,
+    _log("Temporary runner script (auto-deleted after run): " + wrapper,
          "Temporary runner script (auto-deleted after run): " + wrapper)
     try:
         with open(wrapper, "w", encoding="utf-8") as f:
             f.write(wrapper_code)
 
-        _log("正在通过 SPSS 内置 Python 运行语法（无 GUI/闪屏）...",
+        _log("Running syntax via SPSS bundled Python (NO GUI, NO SPLASH)...",
              "Running syntax via SPSS bundled Python (NO GUI, NO SPLASH)...")
         run_env = _minimal_env(helper_home)
 
@@ -345,18 +347,19 @@ def run_internal(sps_file, stats_python_path=None):
 
 
 # ============================================================
-# 备用2：stats.exe（可能有闪屏；尊重 STATSOFT_CONFIRM=1 显式确认门禁）
+# Fallback 2: stats.exe (may show a splash; respects the STATSOFT_CONFIRM=1
+# explicit-confirmation gate)
 # ============================================================
 
 def run_exe(spj_file, stats_exe=None):
-    """最后备选：通过 stats.exe 运行 Production Facility（可能有闪屏）"""
+    """Last fallback: run the Production Facility via stats.exe (may show a splash)."""
     if not os.path.exists(spj_file):
-        _log(".spj 文件不存在: " + spj_file, ".spj file not found: " + spj_file)
+        _log(".spj file not found: " + spj_file, ".spj file not found: " + spj_file)
         return 1
 
     ok, reason = _validate_spj(spj_file)
     if not ok:
-        _log("作业文件安全检查未通过: " + reason, "Job file security check failed: " + reason)
+        _log("Job file security check failed: " + reason, "Job file security check failed: " + reason)
         return 1
 
     if stats_exe is None:
@@ -365,47 +368,47 @@ def run_exe(spj_file, stats_exe=None):
                 stats_exe = c
                 break
         if stats_exe is None:
-            _log("找不到 stats.exe", "stats.exe not found")
+            _log("stats.exe not found", "stats.exe not found")
             return 1
 
     validated = _validate_path(stats_exe, "stats")
     if validated is None:
-        _log("stats.exe 路径未通过安全验证", "stats.exe path failed security validation")
+        _log("stats.exe path failed security validation", "stats.exe path failed security validation")
         return 1
     stats_exe = validated
 
-    _log("执行 Production Facility（stats.exe 方式，可能有闪屏）",
+    _log("Running Production Facility (via stats.exe, may show splash screen)",
          "Running Production Facility (via stats.exe, may show splash screen)")
-    if not _opt_in_confirm("⚠️ 即将执行 stats.exe，是否继续？", "⚠️ About to run stats.exe. Continue?"):
-        _log("已取消执行（未确认）", "Execution cancelled (not confirmed).")
+    if not _opt_in_confirm("⚠️ About to run stats.exe. Continue?", "⚠️ About to run stats.exe. Continue?"):
+        _log("Execution cancelled (not confirmed).", "Execution cancelled (not confirmed).")
         return 1
     cmd = [stats_exe, "-production", "silent", "-nologo", spj_file]
     returncode, stdout, stderr = _run_silent(cmd, timeout=300)
 
     if stdout: print(stdout)
     if stderr: print("ERROR: " + stderr)
-    _log("退出码: " + str(returncode), "Exit code: " + str(returncode))
+    _log("Exit code: " + str(returncode), "Exit code: " + str(returncode))
     return returncode
 
 
 # ============================================================
-# 工具函数
+# Utility functions
 # ============================================================
 
 def show_version(stats_python_path=None):
-    """显示 SPSS 版本"""
+    """Show the SPSS version."""
     if stats_python_path is None:
         for c in _generate_candidates("Python3/python.exe"):
             if os.path.exists(c):
                 stats_python_path = c
                 break
         if stats_python_path is None:
-            _log("找不到 SPSS 内置 Python", "SPSS bundled Python not found")
+            _log("SPSS bundled Python not found", "SPSS bundled Python not found")
             return 1
 
     validated = _validate_path(stats_python_path, "python")
     if validated is None:
-        _log("Python 路径未通过安全验证", "Python path failed security validation")
+        _log("Python path failed security validation", "Python path failed security validation")
         return 1
     stats_python_path = validated
 
@@ -420,31 +423,35 @@ def show_version(stats_python_path=None):
 
 
 def check_sps(sps_file):
-    """检查 .sps 文件是否存在并预览内容"""
+    """Check whether an .sps file exists and preview its content."""
     if not os.path.exists(sps_file):
-        _log(".sps 文件不存在: " + sps_file, ".sps file not found: " + sps_file)
+        _log(".sps file not found: " + sps_file, ".sps file not found: " + sps_file)
         return 1
     with open(sps_file, "r", encoding="utf-8", errors="replace") as f:
         content = f.read()
-    _log(".sps 文件: " + sps_file, ".sps file: " + sps_file)
-    _log("行数: " + str(len(content.splitlines())), "Lines: " + str(len(content.splitlines())))
+    _log(".sps file: " + sps_file, ".sps file: " + sps_file)
+    _log("Lines: " + str(len(content.splitlines())), "Lines: " + str(len(content.splitlines())))
     for i, line in enumerate(content.splitlines()[:10], 1):
         print("  " + str(i) + ": " + line)
     return 0
 
 
 def create_spj(sps_file, output_dir=None):
-    """创建标准 .spj 文件（SPSS 26+ 新格式，正斜杠路径）。
+    """Create a standard .spj file (SPSS 26+ new format, forward-slash paths).
 
-    这是一个持久化文件写入操作，因此与执行动作一样受 default-deny opt-in
-    闸门保护：默认拒绝写入，仅当 STATSOFT_AUTO_WRITE=1 或 STATSOFT_CONFIRM=1
-    且交互确认时才写盘。
+    This is a persistent-file write, so like execution it is protected by a
+    default-deny opt-in gate: writes are denied by default and only happen when
+    STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1 with an interactive confirmation.
 
-    默认输出路径为系统临时目录（通过 tempfile.mkdtemp 安全创建），不在用户
-    工作区落盘持久文件，与 manifest「唯一持久文件是 config.json」一致 (SDI-1/SDI-3/TP4)。
-    若用户显式传入 output_dir，则要求与执行相同的 per-run opt-in 确认，并强制
-    containment 在 .sps 所在目录内（禁止 `..` 上跳/绝对路径逃逸），写入前披露
-    目标路径，已存在同名文件时需再次确认覆盖。"""
+    The default output path is a system temp dir (safely created via
+    tempfile.mkdtemp); no durable file is left in the user's workspace, which is
+    consistent with the manifest "the only persistent file is config.json"
+    (SDI-1/SDI-3/TP4). If the user explicitly passes output_dir, it requires the
+    same per-run opt-in confirmation as execution and forces containment within
+    the .sps directory (no `..` traversal or absolute-path escape); the target
+    path is disclosed before writing, and overwriting an existing file requires
+    a second confirmation.
+    """
     sps_abs = os.path.abspath(sps_file).replace("\\", "/")
     base_name = os.path.splitext(os.path.basename(sps_file))[0]
     # Allowed base directory = the canonical parent of the .sps file.
@@ -467,7 +474,7 @@ def create_spj(sps_file, output_dir=None):
         except ValueError:
             common = None
         if common != allowed_base:
-            _log("已拒绝不安全的输出目录（必须位于 .sps 所在目录内）: " + output_dir_abs,
+            _log("Rejected unsafe output_dir (must be within the .sps directory): " + output_dir_abs,
                  "Rejected unsafe output_dir (must be within the .sps directory): " + output_dir_abs)
             return None
 
@@ -478,9 +485,9 @@ def create_spj(sps_file, output_dir=None):
 
     # Disclose the write target and require explicit opt-in (default-deny).
     if not _opt_in_confirm(
-            "⚠️ 即将写入作业文件 .spj: " + spj_file + " ，是否继续？",
+            "⚠️ About to WRITE job file .spj: " + spj_file + " . Continue?",
             "⚠️ About to WRITE job file .spj: " + spj_file + " . Continue?"):
-        _log("已取消 .spj 写入（未确认）", "Cancelled .spj write (not confirmed).")
+        _log("Cancelled .spj write (not confirmed).", "Cancelled .spj write (not confirmed).")
         if cleanup_temp:
             shutil.rmtree(output_dir_abs, ignore_errors=True)
         return None
@@ -488,9 +495,9 @@ def create_spj(sps_file, output_dir=None):
     # If a file already exists at the target, require an extra overwrite confirm.
     if os.path.exists(spj_file):
         if not _opt_in_confirm(
-                "⚠️ 目标 .spj 已存在，是否覆盖: " + spj_file + " ？",
+                "⚠️ Target .spj already exists. Overwrite " + spj_file + " ?",
                 "⚠️ Target .spj already exists. Overwrite " + spj_file + " ?"):
-            _log("已取消 .spj 覆盖（未确认）", "Cancelled .spj overwrite (not confirmed).")
+            _log("Cancelled .spj overwrite (not confirmed).", "Cancelled .spj overwrite (not confirmed).")
             if cleanup_temp:
                 shutil.rmtree(output_dir_abs, ignore_errors=True)
             return None
@@ -522,7 +529,7 @@ def create_spj(sps_file, output_dir=None):
     try:
         with open(spj_file, "w", encoding="utf-8") as f:
             f.write(xml)
-        print("已创建 .spj 文件: " + spj_file)
+        print("Created .spj file: " + spj_file)
         return spj_file
     finally:
         # Note: cleanup of the default temp dir is deferred to the caller.
@@ -533,18 +540,18 @@ def create_spj(sps_file, output_dir=None):
 
 
 # ============================================================
-# 主程序入口
+# Main entry point
 # ============================================================
 
 def main():
     if len(sys.argv) < 2:
-        print("用法 / Usage:")
-        print("  run-console <spj_file> [stats_com]     首选: stats.com")
-        print("  run-internal <sps_file> [stats_python] 备用1: 内置 Python")
-        print("  run-exe <spj_file> [stats_exe]         备用2: stats.exe (可能闪屏)")
-        print("  create-spj <sps_file> [output_dir]     创建 .spj 文件")
-        print("  check <sps_file>                       检查 .sps 文件")
-        print("  version [stats_python]                 显示版本")
+        print("Usage:")
+        print("  run-console <spj_file> [stats_com]     Preferred: stats.com")
+        print("  run-internal <sps_file> [stats_python] Fallback 1: bundled Python")
+        print("  run-exe <spj_file> [stats_exe]         Fallback 2: stats.exe (may splash)")
+        print("  create-spj <sps_file> [output_dir]     Create .spj file")
+        print("  check <sps_file>                       Check .sps file")
+        print("  version [stats_python]                 Show version")
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -552,42 +559,42 @@ def main():
         spj_file = sys.argv[2] if len(sys.argv) > 2 else None
         stats_com = sys.argv[3] if len(sys.argv) > 3 else None
         if spj_file is None:
-            _log("请提供 .spj 文件路径", "Please provide .spj file path")
+            _log("Please provide .spj file path", "Please provide .spj file path")
             sys.exit(1)
         sys.exit(run_console(spj_file, stats_com))
     elif cmd == "run-internal":
         sps_file = sys.argv[2] if len(sys.argv) > 2 else None
         stats_python_path = sys.argv[3] if len(sys.argv) > 3 else None
         if sps_file is None:
-            _log("请提供 .sps 文件路径", "Please provide .sps file path")
+            _log("Please provide .sps file path", "Please provide .sps file path")
             sys.exit(1)
         sys.exit(run_internal(sps_file, stats_python_path))
     elif cmd == "run-exe":
         spj_file = sys.argv[2] if len(sys.argv) > 2 else None
         stats_exe = sys.argv[3] if len(sys.argv) > 3 else None
         if spj_file is None:
-            _log("请提供 .spj 文件路径", "Please provide .spj file path")
+            _log("Please provide .spj file path", "Please provide .spj file path")
             sys.exit(1)
         sys.exit(run_exe(spj_file, stats_exe))
     elif cmd == "create-spj":
         sps_file = sys.argv[2] if len(sys.argv) > 2 else None
         output_dir = sys.argv[3] if len(sys.argv) > 3 else None
         if sps_file is None:
-            _log("请提供 .sps 文件路径", "Please provide .sps file path")
+            _log("Please provide .sps file path", "Please provide .sps file path")
             sys.exit(1)
         spj = create_spj(sps_file, output_dir)
         sys.exit(0 if spj else 1)
     elif cmd == "check":
         sps_file = sys.argv[2] if len(sys.argv) > 2 else None
         if sps_file is None:
-            _log("请提供 .sps 文件路径", "Please provide .sps file path")
+            _log("Please provide .sps file path", "Please provide .sps file path")
             sys.exit(1)
         sys.exit(check_sps(sps_file))
     elif cmd == "version":
         stats_python_path = sys.argv[2] if len(sys.argv) > 2 else None
         sys.exit(show_version(stats_python_path))
     else:
-        _log("未知命令: " + cmd, "Unknown command: " + cmd)
+        _log("Unknown command: " + cmd, "Unknown command: " + cmd)
         sys.exit(1)
 
 

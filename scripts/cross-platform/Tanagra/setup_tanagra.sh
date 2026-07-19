@@ -78,7 +78,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "Tanagra CLI 用法:" "Tanagra CLI Usage:"
-echo "  tanagra --help            # 显示 CLI 选项"
-echo "  tanagra -f script.txt    # 执行批脚本"
+echo "$(LANG_ZH "  tanagra --help            # 显示 CLI 选项" "  tanagra --help            # show CLI options")"
+echo "$(LANG_ZH "  tanagra -f script.txt    # 执行批脚本" "  tanagra -f script.txt    # execute batch script")"
 LANG_ZH "" ""
 LANG_ZH "支持：聚类、分类、关联规则、特征选择" "Supported: Clustering, Classification, Association Rules, Feature Selection"

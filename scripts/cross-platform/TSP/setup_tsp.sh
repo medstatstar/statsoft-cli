@@ -78,7 +78,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "TSP CLI 用法:" "TSP CLI Usage:"
-echo "  tsp commands.txt          # 执行 TSP 命令文件"
-echo "  tsp --help               # 显示 CLI 选项"
+echo "$(LANG_ZH "  tsp commands.txt          # 执行 TSP 命令文件" "  tsp commands.txt          # execute TSP command file")"
+echo "$(LANG_ZH "  tsp --help               # 显示 CLI 选项" "  tsp --help               # show CLI options")"
 LANG_ZH "" ""
 LANG_ZH "支持：时间序列、计量经济学、假设检验" "Supported: Time Series, Econometrics, Hypothesis Testing"

@@ -52,9 +52,9 @@ else
     echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
 fi
 
-# Check R Rattle package — Rscript 调用受 VERIFY 门约束（SDI-1）。
-# 仅当 VERIFY=1 时才执行 R 解释器；否则采用被动路径检测。
-# 路径仅在 REVEAL=1 时披露（Issue 7）。
+# Check R Rattle package — Rscript invocation is gated by the VERIFY gate (SDI-1).
+# Only execute the R interpreter when VERIFY=1; otherwise use passive path detection.
+# The path is disclosed only when REVEAL=1 (Issue 7).
 RATTLE_R=""
 if statsoft_verify; then
     if Rscript -e "library(rattle)" 2>/dev/null; then
@@ -117,7 +117,7 @@ fi
 
 LANG_ZH "" ""
 LANG_ZH "Rattle CLI 用法:" "Rattle CLI Usage:"
-echo "  rattle --cli               # CLI 模式运行 Rattle"
-echo "  rattle --script file.R    # 执行脚本"
+echo "$(LANG_ZH "  rattle --cli               # CLI 模式运行 Rattle" "  rattle --cli               # run Rattle in CLI mode")"
+echo "$(LANG_ZH "  rattle --script file.R    # 执行脚本" "  rattle --script file.R    # execute script")"
 LANG_ZH "" ""
 LANG_ZH "支持：数据挖掘、决策树、聚类、关联规则、文本挖掘" "Supported: Data Mining, Decision Trees, Clustering, Association Rules, Text Mining"

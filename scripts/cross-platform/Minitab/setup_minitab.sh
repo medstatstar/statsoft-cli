@@ -11,8 +11,8 @@ fi
 
 LANG_ZH() { [[ "$SCRIPT_LANG" == "zh" ]] && echo "$1" || echo "$2"; }
 
-# setup_minitab.sh - Minitab 统计软件环境检测与配置脚本
-# Minitab: 工业统计软件，Windows 为主，有 CLI 支持
+# setup_minitab.sh - Minitab statistical software environment detection and configuration script
+# Minitab: industrial statistics software, primarily Windows, with CLI support
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../_platform-detect.sh"
@@ -21,12 +21,12 @@ source "$SCRIPT_DIR/../_platform-detect.sh"
     LANG_ZH "平台" "Platform: $WB_OS ($WB_ARCH)"
 LANG_ZH "" ""
 
-# 检测 Minitab 是否安装
+# Detect whether Minitab is installed
 detect_minitab() {
     local minitab_cmd=""
     
     if [ "$WB_OS" = "windows" ]; then
-        # Windows: 检查常见安装路径
+        # Windows: check common installation paths
         local win_paths=(
             "C:/Program Files/Minitab/Minitab 21/mtb.exe"
             "C:/Program Files/Minitab/Minitab 20/mtb.exe"
@@ -40,16 +40,16 @@ detect_minitab() {
             fi
         done
         
-        # 检查 PATH
+        # Check PATH
         if [ -z "$minitab_cmd" ]; then
             minitab_cmd=$(which mtb 2>/dev/null)
         fi
     elif [ "$WB_OS" = "mac" ]; then
-        # Mac: Minitab 主要通过云版本或远程访问
+        # Mac: Minitab is mainly accessed via the cloud version or remote access
         LANG_ZH "⚠️ Minitab 在 macOS 上主要通过 Minitab Web App 或远程桌面访问" "⚠️ Minitab 在 macOS 上主要通过 Minitab Web App 或远程桌面访问"
         echo "   Minitab Web App: https://app.minitab.com/"
     elif [ "$WB_OS" = "linux" ]; then
-        # Linux: Minitab 主要通过云版本或远程访问
+        # Linux: Minitab is mainly accessed via the cloud version or remote access
         LANG_ZH "⚠️ Minitab 在 Linux 上主要通过 Minitab Web App 或远程桌面访问" "⚠️ Minitab 在 Linux 上主要通过 Minitab Web App 或远程桌面访问"
         echo "   Minitab Web App: https://app.minitab.com/"
     fi
@@ -63,13 +63,13 @@ detect_minitab() {
 statsoft_reveal() { [ "${STATSOFT_REVEAL:-0}" = "1" ]; }
 statsoft_verify() { [ "${STATSOFT_VERIFY:-0}" = "1" ]; }
 
-# 主流程
+# Main flow
 main() {
     if [ "$WB_OS" != "windows" ]; then
-        LANG_ZH "⚠️ Minitab 主要在 Windows 上运行" "⚠️ Minitab 主要在 Windows 上运行"
-        echo "   macOS/Linux 用户可以使用:"
+        LANG_ZH "⚠️ Minitab 主要在 Windows 上运行" "Minitab mainly runs on Windows"
+        echo "$(LANG_ZH "   macOS/Linux 用户可以使用:" "   macOS/Linux users can use:")"
         echo "   - Minitab Web App: https://app.minitab.com/"
-        echo "   - 远程桌面访问 Windows 上的 Minitab"
+        echo "$(LANG_ZH "   - 远程桌面访问 Windows 上的 Minitab" "   - Remote desktop to access Minitab on Windows")"
         LANG_ZH "" ""
     LANG_ZH "=== 配置信息" "Configuration Info ==="
         LANG_ZH "MINITAB_AVAILABLE=false" "MINITAB_AVAILABLE=false"
@@ -87,7 +87,7 @@ main() {
         echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
     fi
         
-        # 输出配置信息（供 AI Agent 读取）
+        # Output configuration info (for the AI Agent to read)
         LANG_ZH "" ""
     LANG_ZH "=== 配置信息" "Configuration Info ==="
         if statsoft_reveal; then
@@ -98,7 +98,7 @@ main() {
         LANG_ZH "MINITAB_OS=$WB_OS" "MINITAB_OS=$WB_OS"
         LANG_ZH "MINITAB_ARCH=$WB_ARCH" "MINITAB_ARCH=$WB_ARCH"
         
-        # 输出使用说明
+        # Output usage instructions
         LANG_ZH "" ""
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
     LANG_ZH "批处理命令" "Batch command:"
@@ -116,19 +116,19 @@ main() {
         echo "  PRT"
         LANG_ZH "" ""
     LANG_ZH "⚠️ 注意事项" "Notes:"
-        echo "  - Minitab 运行时可能有短暂闪屏（1-2秒）"
-        echo "  - 脚本末尾加 'STOP' 命令可自动退出 Minitab"
+        echo "$(LANG_ZH "  - Minitab 运行时可能有短暂闪屏（1-2秒）" "  - Minitab may show a brief splash screen when launching (1-2 seconds)")"
+        echo "$(LANG_ZH "  - 脚本末尾加 'STOP' 命令可自动退出 Minitab" "  - Adding a 'STOP' command at the end of the script exits Minitab automatically")"
         
     else
     LANG_ZH "❌ 未检测到 Minitab 安装" "Minitab installation not found"
         LANG_ZH "" ""
     LANG_ZH "=== 安装指南" "Installation Guide ==="
     LANG_ZH "Windows 安装步骤" "Windows installation steps:"
-        echo "  1. 访问 Minitab 官网: https://www.minitab.com/"
-        echo "  2. 下载 Minitab 试用版或输入许可证"
-        echo "  3. 运行安装程序，按默认设置安装"
+        echo "$(LANG_ZH "  1. 访问 Minitab 官网: https://www.minitab.com/" "  1. Visit the Minitab official website: https://www.minitab.com/")"
+        echo "$(LANG_ZH "  2. 下载 Minitab 试用版或输入许可证" "  2. Download the Minitab trial or enter a license")"
+        echo "$(LANG_ZH "  3. 运行安装程序，按默认设置安装" "  3. Run the installer and install with default settings")"
         if statsoft_reveal; then
-            echo "  4. 安装完成后，mtb.exe 通常在 C:\\Program Files\\Minitab\\Minitab XX\\"
+            echo "$(LANG_ZH "  4. 安装完成后，mtb.exe 通常在 C:\\Program Files\\Minitab\\Minitab XX\\" "  4. After installation, mtb.exe is usually at C:\\Program Files\\Minitab\\Minitab XX\\")"
         else
             echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
         fi

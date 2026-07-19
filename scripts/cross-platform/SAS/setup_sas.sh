@@ -124,9 +124,9 @@ verify_sas() {
     LANG_ZH "" ""
     echo "============================================"
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "  警告: 即将执行 SAS 验证"
+        echo "$(LANG_ZH "  警告: 即将执行 SAS 验证" "  Warning: about to run SAS verification")"
         if statsoft_reveal; then
-            echo "  将运行: $SAS_CMD -sysin test_sas.sas"
+            echo "$(LANG_ZH "  将运行: $SAS_CMD -sysin test_sas.sas" "  Will run: $SAS_CMD -sysin test_sas.sas")"
         else
             echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
         fi
@@ -208,7 +208,7 @@ PYEOF
 
 main() {
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "=== SAS 配置 (跨平台) ==="
+        echo "$(LANG_ZH "=== SAS 配置 (跨平台) ===" "=== SAS configuration (cross-platform) ===")"
     else
         echo "=== SAS Setup (Cross-Platform) ==="
     fi
@@ -225,7 +225,7 @@ main() {
         verify_sas
         LANG_ZH "" ""
         if [[ "$SCRIPT_LANG" == "zh" ]]; then
-            echo "=== 批处理调用示例 ==="
+            echo "$(LANG_ZH "=== 批处理调用示例 ===" "=== Batch invocation example ===")"
             LANG_ZH "简单批处理:" "简单批处理:"
             if statsoft_reveal; then
                 echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
@@ -240,7 +240,7 @@ main() {
                 echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
             fi
         else
-            echo "=== 批处理调用示例 ==="
+            echo "$(LANG_ZH "=== 批处理调用示例 ===" "=== Batch invocation example ===")"
             LANG_ZH "简单批处理:" "Simple batch:"
             if statsoft_reveal; then
                 echo "  $SAS_CMD -sysin \"path/to/program.sas\" -log \"path/to/output.log\" -print \"path/to/output.lst\""
@@ -261,8 +261,8 @@ main() {
     log_error "$(LANG_ZH "未检测到 SAS" "SAS not detected")."
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
         LANG_ZH "请确认:" "请确认:"
-        echo "  1. SAS Foundation 已安装?"
-        echo "  2. 安装路径?"
+        echo "$(LANG_ZH "  1. SAS Foundation 已安装?" "  1. Is SAS Foundation installed?")"
+        echo "$(LANG_ZH "  2. 安装路径?" "  2. Installation path?")"
     else
         LANG_ZH "请确认:" "Please confirm:"
         echo "  1. SAS Foundation installed?"
@@ -272,8 +272,8 @@ main() {
     # Detection-only: do NOT solicit a manual path or write config here. If SAS is
     # installed in a non-standard location, the user configures it explicitly.
     if [[ "$SCRIPT_LANG" == "zh" ]]; then
-        echo "  3. 若已安装但未检测到，请在 config.json 的 SAS.Path 中手动填写路径，"
-        echo "     或设置环境变量 STATSOFT_AUTO_WRITE=1 后重新运行本脚本以持久化检测结果。"
+        echo "$(LANG_ZH "  3. 若已安装但未检测到，请在 config.json 的 SAS.Path 中手动填写路径，" "  3. If installed but not detected, manually fill in the path in config.json under SAS.Path,")"
+        echo "$(LANG_ZH "     或设置环境变量 STATSOFT_AUTO_WRITE=1 后重新运行本脚本以持久化检测结果。" "     or set the environment variable STATSOFT_AUTO_WRITE=1 and re-run this script to persist the detection result.")"
     else
         echo "  3. If installed but not detected, set SAS.Path manually in config.json,"
         echo "     or re-run this script with STATSOFT_AUTO_WRITE=1 to persist a detected result."

@@ -1,5 +1,5 @@
-# statsoft-statistica.ps1 — Statistica CLI 包装器
-# 用法:
+# statsoft-statistica.ps1 — Statistica CLI wrapper
+# Usage:
 #   statsoft-statistica run <svb_file>
 #   statsoft-statistica version
 
@@ -11,6 +11,14 @@ param(
     [Parameter(Position=1)]
     [string]$FilePath
 )
+
+# Language detection: Chinese on zh-* UI culture, English otherwise.
+$script:isZH = [System.Globalization.CultureInfo]::CurrentUICulture.Name.StartsWith("zh")
+function Write-Lang {
+    param([string]$CN, [string]$EN, [System.ConsoleColor]$Color = "White")
+    if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
+    else { Write-Host $EN -ForegroundColor $Color }
+}
 
 # ============================================================
 # Execution authorization gate (SDI-1 / mirrors SPSS & R runners)
@@ -25,13 +33,13 @@ function Test-UserAuthorizedToRun {
     #   * STATSOFT_CONFIRM=1 AND a real TTY AND user answers y -> interactive confirm
     if ($env:STATSOFT_AUTO_WRITE -eq '1') { return $true }
     if ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host "[CN] 即将执行 Statistica 外部二进制（运行用户提供的 SVB 脚本），是否继续？(y/N) / [EN] About to run the Statistica external binary (user-supplied SVB script). Continue? (y/N)"
+        $ans = Read-Host (if ($script:isZH){"即将执行 Statistica 外部二进制（运行用户提供的 SVB 脚本），是否继续？(y/N)"}else{"About to run the Statistica external binary (user-supplied SVB script). Continue? (y/N)"})
         return ($ans -match '^[yY]')
     }
     return $false
 }
 
-# 初始化 / Init
+# Init
 $configPath = "$PSScriptRoot\..\config.json"
 $config = $null
 $statisticaExe = $null
@@ -52,33 +60,29 @@ if (-not $statisticaExe) {
 }
 
 if (-not $statisticaExe) {
-    Write-Error "[CN] Statistica not found. Run setup_statistica.ps1 first. / [EN] 未找到 Statistica，请先运行 setup_statistica.ps1"
+    Write-Error (if ($script:isZH){"未找到 Statistica，请先运行 setup_statistica.ps1"}else{"Statistica not found. Run setup_statistica.ps1 first."})
     exit 1
 }
 
 switch ($Command) {
     "run" {
         if (-not $FilePath -or -not (Test-Path $FilePath)) {
-            Write-Error "[CN] Script file not found: $FilePath / [EN] 脚本文件不存在: $FilePath"
+            Write-Error (if ($script:isZH){"脚本文件不存在: $FilePath"}else{"Script file not found: $FilePath"})
             exit 1
         }
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "[CN] 已取消执行（未确认）/ [EN] Execution cancelled (not confirmed)"
+            Write-Error (if ($script:isZH){"已取消执行（未确认）"}else{"Execution cancelled (not confirmed)"})
             exit 1
         }
-        Write-Host "[CN] Running Statistica script: $FilePath" -ForegroundColor Cyan
-        Write-Host "[EN] 运行 Statistica 脚本: $FilePath" -ForegroundColor Cyan
+        Write-Lang "运行 Statistica 脚本: $FilePath" "Running Statistica script: $FilePath" -Color Cyan
         & $statisticaExe /run $FilePath
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "[CN] Statistica execution complete" -ForegroundColor Green
-            Write-Host "[EN] Statistica 执行完成" -ForegroundColor Green
+            Write-Lang "Statistica 执行完成" "Statistica execution complete" -Color Green
         } else {
-            Write-Warning "[CN] Statistica exit code: $LASTEXITCODE"
-            Write-Warning "[EN] Statistica 退出码: $LASTEXITCODE"
+            Write-Warning (if ($script:isZH){"Statistica 退出码: $LASTEXITCODE"}else{"Statistica exit code: $LASTEXITCODE"})
         }
     }
     "version" {
-        Write-Host "[CN] Statistica executable: $statisticaExe" -ForegroundColor White
-        Write-Host "[EN] Statistica 可执行文件: $statisticaExe" -ForegroundColor White
+        Write-Lang "Statistica 可执行文件: $statisticaExe" "Statistica executable: $statisticaExe" -Color White
     }
 }

@@ -16,6 +16,14 @@ param(
     [switch]$Silent
 )
 
+# Language detection: Chinese on zh-* UI culture, English otherwise.
+$script:isZH = [System.Globalization.CultureInfo]::CurrentUICulture.Name.StartsWith("zh")
+function Write-Lang {
+    param([string]$CN, [string]$EN, [System.ConsoleColor]$Color = "White")
+    if ($script:isZH) { Write-Host $CN -ForegroundColor $Color }
+    else { Write-Host $EN -ForegroundColor $Color }
+}
+
 # ============================================================
 # Execution authorization gate — FAIL-CLOSED (default deny).
 # Proceed ONLY when an explicit opt-in is present:
@@ -28,7 +36,7 @@ function Test-UserAuthorizedToRun {
     $confirm = $env:STATSOFT_CONFIRM -eq '1'
     if ($autoWrite) { return $true }
     if ($confirm -and -not [Console]::IsInputRedirected) {
-        $ans = Read-Host "[CN] 确认运行 JMP？将执行第三方外部二进制 (y/N) / [EN] Confirm running JMP? Executes a third-party external binary (y/N)"
+        $ans = Read-Host (if ($script:isZH){"确认运行 JMP？将执行第三方外部二进制 (y/N)"}else{"Confirm running JMP? Executes a third-party external binary (y/N)"})
         return ($ans -match '^[yY]')
     }
     return $false
@@ -45,7 +53,7 @@ function Test-SafePath {
 # Read config
 $configPath = "$PSScriptRoot\..\config.json"
 if (-not (Test-Path $configPath)) {
-    Write-Error "[CN] 配置文件不存在: $configPath。请先运行 setup_jmp.ps1 / [EN] Config file not found: $configPath. Please run setup_jmp.ps1 first."
+    Write-Error (if ($script:isZH){"配置文件不存在: $configPath。请先运行 setup_jmp.ps1"}else{"Config file not found: $configPath. Please run setup_jmp.ps1 first."})
     exit 1
 }
 
@@ -53,7 +61,7 @@ $config = Get-Content $configPath | ConvertFrom-Json
 $jmpPath = $config.JMP.Path
 
 if (-not (Test-Path $jmpPath)) {
-    Write-Error "[CN] JMP 可执行文件不存在: $jmpPath / [EN] JMP executable not found: $jmpPath"
+    Write-Error (if ($script:isZH){"JMP 可执行文件不存在: $jmpPath"}else{"JMP executable not found: $jmpPath"})
     exit 1
 }
 
@@ -61,23 +69,21 @@ switch ($Command) {
     "run" {
         $jslFile = $Args[0]
         if (-not (Test-Path $jslFile)) {
-            Write-Error "[CN] JSL 脚本不存在: $jslFile / [EN] JSL script not found: $jslFile"
+            Write-Error (if ($script:isZH){"JSL 脚本不存在: $jslFile"}else{"JSL script not found: $jslFile"})
             exit 1
         }
         if (-not (Test-SafePath $jslFile)) {
-            Write-Error "[CN] 脚本路径含非法字符 / [EN] Script path contains illegal characters"
+            Write-Error (if ($script:isZH){"脚本路径含非法字符"}else{"Script path contains illegal characters"})
             exit 1
         }
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "[CN] 已取消执行（未确认）/ [EN] Execution cancelled (not confirmed)"
+            Write-Error (if ($script:isZH){"已取消执行（未确认）"}else{"Execution cancelled (not confirmed)"})
             exit 1
         }
 
         $logPath = if ($LogFile) { $LogFile } else { Join-Path $PWD "jmp-log.txt" }
-        Write-Host "[CN] 执行 JMP 脚本: $jslFile" -ForegroundColor Cyan
-        Write-Host "[EN] Executing JMP script: $jslFile" -ForegroundColor Cyan
-        Write-Host "[CN] 日志输出: $logPath" -ForegroundColor Gray
-        Write-Host "[EN] Log output: $logPath" -ForegroundColor Gray
+        Write-Lang "执行 JMP 脚本: $jslFile" "Executing JMP script: $jslFile" -Color Cyan
+        Write-Lang "日志输出: $logPath" "Log output: $logPath" -Color Gray
 
         $jmpArgs = @("/R", "`"$jslFile`"")
         if ($Silent) {
@@ -87,33 +93,31 @@ switch ($Command) {
         & $jmpPath $jmpArgs 2>&1 | Tee-Object -FilePath $logPath
 
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "[CN] JMP 执行完成" -ForegroundColor Green
-            Write-Host "[EN] JMP execution complete" -ForegroundColor Green
+            Write-Lang "JMP 执行完成" "JMP execution complete" -Color Green
         } else {
-            Write-Warning "[CN] JMP 退出码: $LASTEXITCODE"
-            Write-Warning "[EN] JMP exit code: $LASTEXITCODE"
+            Write-Warning (if ($script:isZH){"JMP 退出码: $LASTEXITCODE"}else{"JMP exit code: $LASTEXITCODE"})
         }
     }
 
     "data-info" {
         $jmpFile = $Args[0]
         if (-not (Test-Path $jmpFile)) {
-            Write-Error "[CN] JMP 数据文件不存在: $jmpFile / [EN] JMP data file not found: $jmpFile"
+            Write-Error (if ($script:isZH){"JMP 数据文件不存在: $jmpFile"}else{"JMP data file not found: $jmpFile"})
             exit 1
         }
         if (-not (Test-SafePath $jmpFile)) {
-            Write-Error "[CN] 数据文件路径含非法字符 / [EN] Data file path contains illegal characters"
+            Write-Error (if ($script:isZH){"数据文件路径含非法字符"}else{"Data file path contains illegal characters"})
             exit 1
         }
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "[CN] 已取消（未确认）/ [EN] Cancelled (not confirmed)"
+            Write-Error (if ($script:isZH){"已取消（未确认）"}else{"Cancelled (not confirmed)"})
             exit 1
         }
 
         # Generate a temporary JSL script to read the data structure. The data
         # file path is embedded ONLY after a safe-path check (no quotes/backticks),
         # and the temp file is disclosed and removed in a finally block.
-        Write-Host "[CN] 创建临时 JSL 脚本（仅本次运行，结束后删除）以获取数据结构:" -ForegroundColor Gray
+        Write-Lang "创建临时 JSL 脚本（仅本次运行，结束后删除）以获取数据结构:" "Creating temporary JSL script (this run only, deleted afterward) to read data structure:" -Color Gray
         $tempJsl = [System.IO.Path]::GetTempFileName() -replace '\.tmp$', '.jsl'
         Write-Host "  $tempJsl" -ForegroundColor Gray
         try {
@@ -128,12 +132,12 @@ switch ($Command) {
     "read-log" {
         $logPath = $Args[0]
         if (-not $logPath) {
-            Write-Error "[CN] 未提供日志路径 / [EN] No log path provided"
+            Write-Error (if ($script:isZH){"未提供日志路径"}else{"No log path provided"})
             exit 1
         }
         # Authorization gate (same as run/data-info) before any file read.
         if (-not (Test-UserAuthorizedToRun)) {
-            Write-Error "[CN] 已取消（未确认）/ [EN] Cancelled (not confirmed)"
+            Write-Error (if ($script:isZH){"已取消（未确认）"}else{"Cancelled (not confirmed)"})
             exit 1
         }
         # Canonicalize and restrict to the current working directory plus an
@@ -141,14 +145,14 @@ switch ($Command) {
         # arbitrary local file reader (SDI-3).
         $resolved = Resolve-Path -Path $logPath -ErrorAction SilentlyContinue
         if (-not $resolved) {
-            Write-Error "[CN] 日志文件不存在: $logPath / [EN] Log file not found: $logPath"
+            Write-Error (if ($script:isZH){"日志文件不存在: $logPath"}else{"Log file not found: $logPath"})
             exit 1
         }
         $full = $resolved.Path
         $allowedDir = (Resolve-Path -Path $PWD).Path
         if (-not ($full.StartsWith($allowedDir, [System.StringComparison]::OrdinalIgnoreCase) -and
                   ($full -match '\.(log|txt|csv)$'))) {
-            Write-Error "[CN] 拒绝读取：仅允许读取当前工作目录下的 .log/.txt/.csv 日志文件 / [EN] Refused: only .log/.txt/.csv log files under the current directory may be read"
+            Write-Error (if ($script:isZH){"拒绝读取：仅允许读取当前工作目录下的 .log/.txt/.csv 日志文件"}else{"Refused: only .log/.txt/.csv log files under the current directory may be read"})
             exit 1
         }
         Get-Content $full
