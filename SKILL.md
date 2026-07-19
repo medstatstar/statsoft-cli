@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.20",
+    "version": "2.6.21",
     "license": "MIT",
     "tags": ["统计软件", "Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
@@ -52,7 +52,7 @@ Activates historical code assets locked in statistical software (syntax, scripts
 
 ## 执行工作流 / Execution Workflow
 
-1. **检测平台 / Detect Platform** — `source scripts/cross-platform/_platform-detect.sh`
+1. **检测平台 / Detect Platform** — 跨平台 `source scripts/cross-platform/_platform-detect.sh`（设置 `$PLATFORM`/`$OS`/`$ARCH`）；Windows 由 `.ps1` 脚本内部处理，不 source 此文件
 2. **扫描前确认 / Pre-scan Confirmation** — 执行任何扫描前，必须提示用户选择并等待确认 / Before any scan, MUST prompt and wait：
    - 中文：「⚠️ 自动扫描系统可能耗时较长（Windows 约 30–60 秒）。若已安装软件 ≤3，建议直接指定路径跳过扫描。您的选择？」选项：A) 自动扫描  B) 手工指定路径
    - English: "⚠️ Auto-scan may take a while (~30s on Windows). If you have ≤3 packages, specify paths to skip. Your choice?" Options: A) Auto-scan  B) Specify paths
@@ -60,12 +60,11 @@ Activates historical code assets locked in statistical software (syntax, scripts
 3. **系统扫描 / System Scan**（仅当选 A）— 批量检测已安装软件 / Batch detect installed software：
    - Windows：`scripts/windows-only/scan/scan_all.ps1`；Mac/Linux：`scripts/cross-platform/scan/scan_all.sh`
    - 输出 JSON：`{"R":{"installed":true,"path":"...","version":"..."},...}`
-   - 默认仅回传 `installed` 布尔值；路径 / 版本需 `STATSOFT_REVEAL=1`
+   - 默认仅回传 `installed` 布尔值；路径 / 版本需 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1`+交互 y 才披露（注：`STATSOFT_REVEAL` 仅控制单个软件的 setup 检测期输出，不控制扫描批量结果）
 4. **选择配置模式 / Select Config Mode**：批量 / 指定 / 单软件（调用单个 `setup_*.ps1` 或 `setup_*.sh`）
 5. **检测与配置 / Detect & Setup** — 按平台路由到对应脚本，非 Windows 自动隐藏不兼容软件
 6. **保存配置 / Save Config** — 默认仅检测；仅当用户显式授权（`STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1` + 交互 y）才写入 `config.json`
-7. **写入记忆 / Write Memory**（需用户同意）— 确认后追加到 `~/.workbuddy/MEMORY.md`
-8. **输出完成摘要 / Output Summary** — 按 `references/completion-prompts.md` 模板输出
+7. **输出完成摘要 / Output Summary** — 按 `references/completion-prompts.md` 模板输出
 
 ## 默认拒绝闸门 / Default-Deny Gates
 

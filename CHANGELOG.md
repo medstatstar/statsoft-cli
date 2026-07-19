@@ -1,5 +1,14 @@
 # Changelog / 更新日志
 
+## v2.6.21 (2026-07-19)
+
+Execution Workflow 与代码实际设定再对齐（纠偏 v2.6.20 文档重构时的两处不一致）：
+
+- **删除「写入记忆 Write Memory」步骤**（原第 7 步）：该步骤要求技能追加 `~/.workbuddy/MEMORY.md`，违反 v2.6.7 确立的安全模型（技能唯一可持久化文件为 `config.json`，不写 MEMORY.md）；写 MEMORY.md 属 AI 助手 / 平台行为，非技能功能。删除后工作流恢复 1–7 连续。
+- **修正披露门描述**（原第 63 行）：扫描批量输出的路径/版本披露由 `STATSOFT_AUTO_WRITE=1` 或 `STATSOFT_CONFIRM=1`+交互 y 控制（与 `scan_all.ps1/.sh` 实际 consent gate 一致），而非 `STATSOFT_REVEAL`；`REVEAL` 仅控制单个软件 setup 检测期输出，已在文中注明区分。
+- **精确化平台检测**（第 55 行）：注明跨平台 `source _platform-detect.sh`，Windows 由 `.ps1` 内部处理、不 source 该文件。
+- frontmatter metadata 版本 bump 至 2.6.21。
+
 ## v2.6.20 (2026-07-19)
 
 SKILL.md 文档重构（中文在前、英文在后；总长度 84 → 约 110 行）：
