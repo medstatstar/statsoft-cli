@@ -10,6 +10,6 @@
 | 执行用户脚本 / Execute user-provided scripts | 🔴 高/High | Runs `.sps` content via SPSS Python, creating temporary wrapper scripts |
 | 网络访问 / Network access | 🟡 中/Medium | Downloads installers from CRAN, Anaconda repositories |
 
-**所需权限 / Permissions**: 本地文件读写 (config.json, temporary scripts)、进程执行 (statistical software binaries)、网络访问 (CRAN/Anaconda repositories)。 / Local file read-write (config.json, temporary scripts), process execution (statistical software binaries), network access (CRAN/Anaconda repositories).
+> 所需权限（本地文件读写 / 进程执行 / 网络访问）见 `SKILL.md` 的「核心权限」一节。
 
 **飞行前检查 / Pre-flight**: ✅ 审查所有脚本；✅ 确认 config.json 变更（自动备份）；✅ 确认任何下载任务；✅ 敏感项目需检查生成命令。

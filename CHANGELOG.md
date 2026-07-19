@@ -1,5 +1,19 @@
 # Changelog / 更新日志
 
+## v2.6.20 (2026-07-19)
+
+SKILL.md 文档重构（中文在前、英文在后；总长度 84 → 约 110 行）：
+
+- **一致性修复**：修正执行工作流编号错位（原两个"3"，现 1–8 连续）
+- **补齐功能设定**：新增「默认拒绝闸门」一节，显式列出 `AUTO_WRITE`/`CONFIRM`/`REVEAL`/`VERIFY`/`CMDSTAN_RUN` 五道 fail-closed 闸门，与代码实现对齐（此前 SKILL.md 完全未记载）
+- **新增内容**：概述、核心功能（34+ 软件分类清单）、信任与安全（风险等级 + 飞行前检查）
+- **去重**：删除 `references/trust-and-safety.md` 中与「核心权限」逐字重复的权限行（改为指向 SKILL.md）；`references/workflow.md` 精简为「闸门细节」补遗，去除与 SKILL.md 重复的流程步骤
+- 顺序统一为「中文 / 英文」
+
+## v2.6.19 (2026-07-18)
+
+SkillHub listing 更新（simplify displayName、refine summary 核心价值、streamline bilingual description）；因 SkillHub 不允许同版本覆盖，版本号 bump 至 2.6.19 重新发布（skillId=93580，pending review）。
+
 ## v2.6.18 (2026-07-18)
 
 ClawHub SkillSpector v2.6.17 残留 3 issue 修复（TP4 HIGH + 2xAST4 MEDIUM）：

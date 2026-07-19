@@ -1,41 +1,24 @@
-# Execution Workflow / 执行工作流
+# 工作流闸门细节 / Workflow Gating Detail
 
-本技能执行以下标准工作流。每一步都有默认拒绝闸门。/ This skill follows the standard workflow below. Every step is gated by default-deny.
+完整工作流步骤见 `SKILL.md` 的「执行工作流」一节。本文件仅补充各步骤的**默认拒绝闸门**细节，避免与 SKILL.md 重复。
 
-## Step 1: Detect Platform / 检测平台
+The full step-by-step workflow lives in `SKILL.md` (Execution Workflow). This file only supplements the per-step default-deny gating details, to avoid duplication with SKILL.md.
 
-Source `scripts/cross-platform/_platform-detect.sh` to identify OS and architecture.
+## 扫描披露 / Scan Disclosure
 
-## Step 2: Pre-scan Confirmation / 扫描前确认
+系统扫描默认仅回传 `installed` 布尔值。路径、版本等敏感细节需显式 `STATSOFT_REVEAL=1` 才输出。
 
-Prompt the user before scanning:
+The system scan returns only the `installed` boolean by default. Path / version details require `STATSOFT_REVEAL=1`.
 
-**EN**: "⚠️ Auto-scan may take a while (~30s on Windows). Scanning is read-only. Options: A) Auto-scan B) Specify paths manually"
-**CN**: "⚠️ 自动扫描系统可能耗时较长（Windows 约 30-60 秒）。扫描为只读操作。选项：A) 自动扫描 B) 手工指定软件路径"
+## 持久化闸门 / Persistence Gate
 
-User selects A → Step 3. User selects B → Step 4 (specify paths).
+`config.json` 仅在显式授权时写入：`STATSOFT_AUTO_WRITE=1`（非交互 / agent）或 `STATSOFT_CONFIRM=1` + 交互式 y。所有写入统一经 `scripts/common/write_config.py`：
 
-## Step 3: System Scan / 系统扫描
+- 仅接受技能根目录的规范 `config.json` 为目标（单一路径强制，fail-closed）；
+- 写入前先做时间戳备份 `config.json.bak.yyyymmdd_hhmmss`，再原子替换。
 
-- **Windows**: `scripts/windows-only/scan/scan_all.ps1`
-- **Mac/Linux**: `scripts/cross-platform/scan/scan_all.sh`
+Persistence happens only with explicit opt-in (`STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1` + interactive y). All writes go through `scripts/common/write_config.py`, which enforces a single canonical target and a timestamped backup before atomic replace.
 
-Output JSON: `{"R":{"installed":true,"path":"...","version":"..."},...}`
+## 第三方二进制 / Third-party Binaries
 
-The scan **reveals only `installed` boolean by default**. Path/version details require `STATSOFT_REVEAL=1`.
-
-## Step 4: Detect & Setup / 检测与配置
-
-Route to platform-specific script:
-- `scripts/windows-only/{tool}/setup_{tool}.ps1` (Windows)
-- `scripts/cross-platform/{tool}/setup_{tool}.sh` (cross-platform)
-
-## Step 5: Save Config / 保存配置
-
-Detection-only by default. Persist `config.json` only when explicitly opted in (`STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1` + interactive y).
-
-The writer (`scripts/common/write_config.py`) enforces a single canonical path.
-
-## Step 6: Output Summary / 输出完成摘要
-
-Follow `references/completion-prompts.md`.
+仅为版本 / 校验而启动第三方二进制需 `STATSOFT_VERIFY=1`；编译并运行用户 Stan 模型（不可信原生代码）需 `STATSOFT_CMDSTAN_RUN=1`。
