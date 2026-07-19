@@ -2,6 +2,8 @@
 
 [🇨🇳 中文 (Chinese)](./README_zh-CN.md) | [🇬🇧 English](./README.md)
 
+> 📝 **Changelog**: [CHANGELOG.md](./CHANGELOG.md)
+
 ---
 
 Cross-platform statistical software CLI integration for AI Agent (such as WorkBuddy / OpenClaw). 

@@ -128,7 +128,7 @@
 - ⚠️ JMP may display a brief splash screen (1-2 seconds), cannot be fully avoided
 - ⚠️ Script must end with `Exit();` or JMP GUI will remain open
 
-> See [ADDITIONAL_SOFTWARE.md → JMP](ADDITIONAL_SOFTWARE.md#jmp) for details
+> See [ADDITIONAL_SOFTWARE.md → JMP](../ADDITIONAL_SOFTWARE.md#jmp) for details
 
 ---
 
@@ -143,7 +143,7 @@
 |------|------|
 | Python `prismWriter` library | Can **parse** .pzfx structure (read/validate) without launching the GUI; the library itself also has the ability to **generate** .pzfx, but this skill **never calls or wraps any of its write operations** (consistent with command-examples.md: .pzfx read/write is outside this skill's allowed scope; if needed, do it manually outside this skill and take responsibility) |
 
-> See [ADDITIONAL_SOFTWARE.md → GraphPad Prism](ADDITIONAL_SOFTWARE.md#graphpad-prism) for details
+> See [ADDITIONAL_SOFTWARE.md → GraphPad Prism](../ADDITIONAL_SOFTWARE.md#graphpad-prism) for details
 
 ---
 
@@ -152,7 +152,7 @@
 - ✅ Stat/Transfer is a pure CLI tool, completely GUI-free, suitable for automation
 - ⚠️ Before conversion, confirm the target format supports the required data types
 
-> See [ADDITIONAL_SOFTWARE.md → Stat/Transfer](ADDITIONAL_SOFTWARE.md#stattransfer)
+> See [ADDITIONAL_SOFTWARE.md → Stat/Transfer](../ADDITIONAL_SOFTWARE.md#stattransfer)
 
 ---
 
@@ -162,7 +162,7 @@
 - ✅ Free software, suitable for econometric analysis
 - 💡 Supports reading Stata .dta, SAS .sas7bdat, Excel .xlsx, etc.
 
-> See [ADDITIONAL_SOFTWARE.md → Gretl](ADDITIONAL_SOFTWARE.md#gretl)
+> See [ADDITIONAL_SOFTWARE.md → Gretl](../ADDITIONAL_SOFTWARE.md#gretl)
 
 ---
 
@@ -172,7 +172,7 @@
 - ⚠️ Ensure the license is valid
 - 💡 Suitable for quality control and Six Sigma projects
 
-> See [ADDITIONAL_SOFTWARE.md → Minitab](ADDITIONAL_SOFTWARE.md#minitab)
+> See [ADDITIONAL_SOFTWARE.md → Minitab](../ADDITIONAL_SOFTWARE.md#minitab)
 
 ---
 
@@ -182,7 +182,7 @@
 - ⚠️ Requires Statistics and Machine Learning Toolbox
 - 💡 Suitable for engineering statistics, signal processing, and ML
 
-> See [ADDITIONAL_SOFTWARE.md → Matlab](ADDITIONAL_SOFTWARE.md#matlab) for details
+> See [ADDITIONAL_SOFTWARE.md → Matlab](../ADDITIONAL_SOFTWARE.md#matlab) for details
 
 ---
 
@@ -193,7 +193,7 @@
 - 💡 Suitable for symbolic mathematics, numerical analysis, statistical modeling, and visualization
 - ⚠️ WolframScript requires a commercial license with periodic activation
 
-> See [ADDITIONAL_SOFTWARE.md → Mathematica](ADDITIONAL_SOFTWARE.md#mathematica) for details
+> See [ADDITIONAL_SOFTWARE.md → Mathematica](../ADDITIONAL_SOFTWARE.md#mathematica) for details
 
 ---
 
@@ -203,7 +203,7 @@
 - ✅ High performance, suitable for big data and complex statistical computing
 - 💡 Common packages: Statistics, HypothesisTests, GLM, Turing (Bayesian)
 
-> See [ADDITIONAL_SOFTWARE.md → Julia](ADDITIONAL_SOFTWARE.md#julia) for details
+> See [ADDITIONAL_SOFTWARE.md → Julia](../ADDITIONAL_SOFTWARE.md#julia) for details
 
 ---
 
@@ -213,7 +213,7 @@
 - ⚠️ Windows-only, no macOS/Linux support
 - 💡 Suitable for time-series analysis, regression, and forecasting
 
-> See [ADDITIONAL_SOFTWARE.md → EViews](ADDITIONAL_SOFTWARE.md#eviews)
+> See [ADDITIONAL_SOFTWARE.md → EViews](../ADDITIONAL_SOFTWARE.md#eviews)
 
 ---
 
@@ -223,7 +223,7 @@
 - ⚠️ Windows-only, no macOS/Linux support
 - 💡 Suitable for data mining, machine learning, and statistical analysis
 
-> See [ADDITIONAL_SOFTWARE.md → Statistica](ADDITIONAL_SOFTWARE.md#statistica)
+> See [ADDITIONAL_SOFTWARE.md → Statistica](../ADDITIONAL_SOFTWARE.md#statistica)
 
 ---
 

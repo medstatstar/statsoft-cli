@@ -2,6 +2,8 @@
 
 [🇨🇳 中文 (Chinese)](./README_zh-CN.md) | [🇬🇧 English](./README.md)
 
+> 📝 **更新日志**：[CHANGELOG.md](./CHANGELOG.md)
+
 ---
 
 跨平台统计软件 CLI 集成技能，用于 AI Agent（如 WorkBuddy / OpenClaw ）。

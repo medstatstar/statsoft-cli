@@ -219,4 +219,4 @@ Use the test scripts in this directory to verify your software configuration:
 
 ---
 
-**📚 More Examples**: See [`ADDITIONAL_SOFTWARE.md`](./ADDITIONAL_SOFTWARE.md) for detailed use cases of all 31 supported software packages.
+**📚 More Examples**: See [`ADDITIONAL_SOFTWARE.md`](../ADDITIONAL_SOFTWARE.md) for detailed use cases of all 31 supported software packages.

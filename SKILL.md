@@ -99,6 +99,7 @@ This skill performs high-risk operations; understand the risk levels before use:
 
 - `ADDITIONAL_SOFTWARE.md` — extended software config (31 packages)
 - `references/command-examples.md` — per-software CLI command examples
+- `references/config-templates.md` — `config.json` templates & field reference
 - `references/version-specifics.md` — version differences
 - `references/completion-prompts.md` — completion prompt templates
 - `references/trust-and-safety.md` — risk levels & pre-flight details

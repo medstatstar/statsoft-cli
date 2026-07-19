@@ -36,7 +36,7 @@ This file contains configuration information for additional statistical software
 27. [Rattle](#rattle)
 28. [SHAZAM](#shazam)
 29. [SPSS Modeler](#spss-modeler)
-30. [Stat/Transfer](#stattranfer)
+30. [Stat/Transfer](#stattransfer)
 31. [Statistica](#statistica)
 32. [Tanagra](#tanagra)
 33. [TSP](#tsp)
