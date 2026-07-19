@@ -1,4 +1,4 @@
-# Configuration Completion Prompts
+# Configuration Completion Prompts / 配置完成提示
 
 > This document was extracted when SKILL.md was streamlined; it contains completion-prompt templates for each statistical software configuration.
 > After software detection completes, the AI should output completion notices to the user following the templates below.
@@ -665,13 +665,13 @@ desc <- jaspTools::descriptives(data, variables = c("var1", "var2"))
 
 ---
 
-## Generic Memory Template Format
+## Generic Memory Template Format / 通用记忆模板格式
 
 If the software is not listed in this document, use the following generic template:
 
 **English Memory Template**:
 ```
-### [Software] Environment
+### [Software] Environment / [软件] 环境
 
 - **Version**: [version]
 - **Executable Path**: `[path]`

@@ -12,13 +12,13 @@ Multiple versions of the same software can coexist — for example, R4.5 and R4.
 
 Note: If your goal is to **seamlessly read various statistical data files or convert between formats without loss**, we strongly recommend installing the standalone skill **statdata-transfer**. This skill can perfectly achieve data format conversion without relying on any statistical software support.
 
-## Purpose
+## Purpose / 目的
 
 Many statistical software packages have CLI (Command Line Interface) execution modes, but not everyone knows how to use them. This skill integrates these tools into the AI Agent environment for unified access, enabling statisticians to fully leverage these tools' capabilities. **The core value of this skill lies in activating historical code assets and solving the reusability problem in AI workflow automation**. Over years of project accumulation, teams have gathered reusable analysis code—R modeling scripts, SPSS syntax files, SAS macro programs, Stata do-files—and this skill brings them into a unified execution framework as standard AI workflow nodes.
 
-## Quick Start
+## Quick Start / 快速开始
 
-### One-Click Setup
+### One-Click Setup / 一键配置
 
 Trigger in AI Agent conversation:
 ```
@@ -28,7 +28,7 @@ Configure R statistical software
 
 The Agent will auto-detect the software path. **By default it only reports the detected path and does NOT modify `config.json`** (fail-closed / detection-only). To persist the result, opt in explicitly: set `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` and answer `y` at the prompt (interactive).
 
-### Verify Installation
+### Verify Installation / 验证安装
 
 ```
 Run SPSS syntax: SHOW VERSION.
@@ -37,31 +37,31 @@ Convert data.sav to data.dta
 
 ---
 
-## Use Cases
+## Use Cases / 使用场景
 
-### 1. Multi-Software Mixed Workflow
+### 1. Multi-Software Mixed Workflow / 多软件混合工作流
 Seamlessly invoke R modeling + SPSS descriptive + Stata data prep in a single AI Agent session.
 
-### 2. Historical Code Asset Reuse
+### 2. Historical Code Asset Reuse / 历史代码资产复用
 Bring R scripts, SPSS syntax, SAS macros, Stata do-files into the AI workflow as standard nodes.
 
-### 3. Data Format Conversion
+### 3. Data Format Conversion / 数据格式转换
 Stat/Transfer (a supported CLI tool) migrates data between software (SAS ↔ SPSS ↔ Stata ↔ Excel). For general format conversion without statistical software, use the statdata-transfer skill.
 
-### 4. SPSS Statistics Splash-Free Batch
+### 4. SPSS Statistics Splash-Free Batch / SPSS Statistics 无闪屏批处理
 Execute `.sps` syntax via built-in Python engine, skipping splash screen.
 
-### 5. SAS Batch Automation
+### 5. SAS Batch Automation / SAS 批处理自动化
 Schedule SAS macro programs via SAS CLI for periodic reporting.
 
-### 6. SPSS Modeler Batch
+### 6. SPSS Modeler Batch / SPSS Modeler 批处理
 Execute `.str` streams via `clemb.exe` in local mode.
 
 > 📚 **Full details for all 34 software packages** → see [`ADDITIONAL_SOFTWARE.md`](./ADDITIONAL_SOFTWARE.md)
 
 ---
 
-## Important Notes
+## Important Notes / 重要说明
 
 Splash Screen: The 34 supported statistical software packages have **varying levels of CLI support**. Some are fully command-line driven, while others may still require GUI interaction during use. The specific behavior varies by software:
 
@@ -73,7 +73,7 @@ After configuration is complete, the AI Agent will provide detailed notification
 
 ---
 
-## Excluded Software
+## Excluded Software / 未包含的软件
 
 The following software was evaluated but not included due to listed reasons. For data format conversion without statistical software dependency, see the statdata-transfer skill.
 
@@ -86,9 +86,9 @@ The following software was evaluated but not included due to listed reasons. For
 
 ---
 
-## Platform Support
+## Platform Support / 平台支持
 
-### Core Software
+### Core Software / 核心软件
 
 | Software | Windows Script | Cross-Platform Script | Verify |
 |----------|---------------|----------------------|--------|
@@ -99,7 +99,7 @@ The following software was evaluated but not included due to listed reasons. For
 
 (Full routing table with all additional software packages — see ADDITIONAL_SOFTWARE.md)
 
-## Project Structure
+## Project Structure / 项目结构
 
 ```
 statsoft-cli/
@@ -159,7 +159,7 @@ statsoft-cli/
 │   └── config-templates.md           # Config templates
 └── tests/                            # Test files
 
-## Usage
+## Usage / 使用方式
 
 This skill activates only on an **explicit, narrowly scoped request** that names the target tool and action (for example `configure R`, `run Stata <file>`, `convert data.sav to data.dta`). Free-form phrases like "configure statistical software" are intentionally not auto-activated for high-risk execution.
 
@@ -183,10 +183,10 @@ I read a paper about R
 Can you explain what Stata is?
 ```
 
-## Trust & Safety
+## Trust & Safety / 信任与安全
 
 This skill executes **high-risk operations** (running local executables, modifying configs, network access). See SKILL.md for full Trust & Safety documentation.
 
-## License
+## License / 许可证
 
 [MIT](LICENSE)

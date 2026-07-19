@@ -1,4 +1,4 @@
-# Trust & Safety
+# Trust & Safety / 信任与安全
 
 This skill performs **high-risk operations**. Understand risk levels before use:
 

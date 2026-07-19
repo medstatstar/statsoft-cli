@@ -1,9 +1,9 @@
-# Configuration & Memory Templates
+# Configuration & Memory Templates / 配置与记忆模板
 
-## SPSS Statistics Memory Template
+## SPSS Statistics Memory Template / SPSS Statistics 记忆模板
 
 ```markdown
-### SPSS Statistics Environment
+### SPSS Statistics Environment / SPSS Statistics 环境
 
 - **Version**: IBM SPSS Statistics [26/27/28/29/30/31]
 - **Main Executable**: `C:\Program Files\IBM\SPSS\Statistics\[version]\stats.exe`
@@ -33,9 +33,9 @@
   ```
 ```
 
-## SPSS Statistics Version Differences
+## SPSS Statistics Version Differences / SPSS Statistics 版本差异
 
-### Python Version Comparison
+### Python Version Comparison / Python 版本对比
 
 | SPSS Statistics Version | Bundled Python | f-string Support |
 |-------------------------|---------------|-----------------|
@@ -45,15 +45,15 @@
 | 29 | Python 3.10.4 | ✅ |
 | 30 | Python 3.10 | ✅ |
 
-### spss_helper.py Compatibility
+### spss_helper.py Compatibility / spss_helper.py 兼容性
 
 - SPSS Statistics 26: Script uses `%s` / `.format()`, no f-string
 - SPSS Statistics 27+: Script can use f-string and modern Python
 
-## SPSS Modeler Memory Template
+## SPSS Modeler Memory Template / SPSS Modeler 记忆模板
 
 ```markdown
-### SPSS Modeler Environment
+### SPSS Modeler Environment / SPSS Modeler 环境
 
 - **Version**: IBM SPSS Modeler [18.0/18.1/18.2/18.3/18.4/18.5/18.6]
 - **Main Executable**: `C:\Program Files\IBM\SPSS\Modeler\[version]\bin\clemb.exe`
@@ -70,7 +70,7 @@
 - **Difference from Statistics**: Statistics is a statistical analysis tool, Modeler is a data mining/modeling tool
 ```
 
-## SPSSModeler Version Differences
+## SPSSModeler Version Differences / SPSS Modeler 版本差异
 
 | Version | clemb.exe Path | Notes |
 |---------|---------------|-------|
@@ -78,10 +78,10 @@
 | 18.5 | `C:\Program Files\IBM\SPSS\Modeler\18.5\bin\clemb.exe` | Performance improvements |
 | 18.0 | `C:\Program Files\IBM\SPSS\Modeler\18.0\bin\clemb.exe` | Classic stable |
 
-## Stata Memory Template
+## Stata Memory Template / Stata 记忆模板
 
 ```markdown
-### Stata Environment
+### Stata Environment / Stata 环境
 
 - **Version**: Stata [VERSION] [EDITION] (MP/SE/BE)
 - **Main Executable Path**: `[STATA_EXE_PATH]` (e.g., `StataMP-64.exe`)
@@ -94,7 +94,7 @@
   ```
 ```
 
-## Stata Version Differences
+## Stata Version Differences / Stata 版本差异
 
 | Edition | License Match | Notes |
 |---------|--------------|-------|
@@ -102,10 +102,10 @@
 | SE (Special Edition) | ✅ Single-core | Mid-size data |
 | BE (Basic Edition) | ✅ Limited | No parallelism |
 
-## R Memory Template
+## R Memory Template / R 记忆模板
 
 ```markdown
-### R Environment
+### R Environment / R 环境
 
 - **Version**: R [VERSION]
 - **Rscript Path**: `[RSCRIPT_EXE_PATH]`
@@ -115,16 +115,16 @@
   ```
 ```
 
-## SAS Memory Template
+## SAS Memory Template / SAS 记忆模板
 
 ```markdown
-### SAS Environment
+### SAS Environment / SAS 环境
 
 - **Version**: SAS [VERSION] (e.g., 9.4)
 - **Executable Path**: `[SAS_EXE_PATH]`
 ```
 
-## R — Alternative when R is not available
+## R — Alternative when R is not available / R —— 当 R 不可用时（替代方案）
 
 | R Package | Anaconda Python Alternative |
 |-----------|---------------------------|
@@ -134,7 +134,7 @@
 | survival | lifelines |
 | lme4 / nlme | statsmodels |
 
-## Configuration File (config.json)
+## Configuration File (config.json) / 配置文件（config.json）
 
 ```json
 {
@@ -146,7 +146,7 @@
 }
 ```
 
-## Common Errors & Solutions
+## Common Errors & Solutions / 常见错误与解决方案
 
 | Software | Error | Cause | Solution |
 |----------|-------|-------|----------|
@@ -161,9 +161,9 @@
 | SAS | License expired | Expired license | Update license file |
 | SAS | Encoding issue | Encoding mismatch | `options encoding='utf-8';` |
 
-## Completion Prompt Templates
+## Completion Prompt Templates / 完成提示模板
 
-### SPSS (preferred success)
+### SPSS (preferred success) / SPSS（首选成功）
 
 ```
 ✅ SPSS [version] configuration complete!
@@ -219,7 +219,7 @@
   sas -sysin "prog.sas" -log "out.log" -print "out.lst"
 ```
 
-## Platform-Specific Paths
+## Platform-Specific Paths / 平台相关路径
 
 ### R
 - Windows: `C:\Program Files\R\`
@@ -231,16 +231,16 @@
 - Mac: `/Applications/Stata/`
 - Linux: `/usr/local/stata/`
 
-### SPSS (Windows only)
+### SPSS (Windows only) / SPSS（仅 Windows）
 `C:\Program Files\IBM\SPSS\Statistics\26\` → `31`
 
-### JMP (Windows only)
+### JMP (Windows only) / JMP（仅 Windows）
 `C:\Program Files\JMP\16\`; `\17\`
 
-### GraphPad (Windows only)
+### GraphPad (Windows only) / GraphPad（仅 Windows）
 `C:\Program Files\GraphPad\Prism 9\`; `\10\`
 
-## Advanced Mode Scripts
+## Advanced Mode Scripts / 高级模式脚本
 
 | Software | Windows Command |
 |----------|-----------------|

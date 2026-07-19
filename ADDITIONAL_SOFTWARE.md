@@ -1,10 +1,10 @@
-# Additional Statistical Software Support
+# Additional Statistical Software Support / 附加统计软件支持
 
 This file contains configuration information for additional statistical software in the `statsoft-cli` skill (core software SPSS Statistics, R, Stata, SAS see SKILL.md).
 
 ---
 
-## Table of Contents
+## Table of Contents / 目录
 
 0. [Script Routing Tables](#script-routing-tables)
 1. [AMOS](#amos)
@@ -45,7 +45,7 @@ This file contains configuration information for additional statistical software
 
 ---
 
-## Script Routing Tables
+## Script Routing Tables / 脚本路由表
 
 > **GUI Software Note**: The following software **have no CLI mode** — they launch a GUI and cannot run fully silent. This skill provides detection and manual-launch guidance only (you open the GUI yourself); it never auto-launches GUI applications and offers no batch automation.
 > - **AMOS** — GUI only
@@ -53,7 +53,7 @@ This file contains configuration information for additional statistical software
 > - **JASP** — Requires GUI
 > - **jamovi** — Requires GUI
 
-### Windows Only
+### Windows Only / 仅 Windows
 
 | Software | Configuration Script | CLI Wrapper | Verify |
 |----------|----------------------|-------------|--------|
@@ -73,7 +73,7 @@ This file contains configuration information for additional statistical software
 | Statistica | `scripts/windows-only/Statistica/setup_statistica.ps1` | `scripts/windows-only/Statistica/statsoft-statistica.ps1` | `Statistica.exe /?` |
 | Origin | `scripts/windows-only/Origin/setup_origin.ps1` | — | `origin97 -h test.ogs` |
 
-### Cross-Platform
+### Cross-Platform / 跨平台
 
 > **Note**: JASP and jamovi require GUI, cannot run in pure CLI silent mode.
 
@@ -107,11 +107,11 @@ This file contains configuration information for additional statistical software
 
 ## AMOS
 
-### Introduction
+### Introduction / 简介
 
 AMOS is a Structural Equation Modeling (SEM) software from the SPSS family, Windows-only. After installation, it can be found in the Start Menu, and displays a GUI when running.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -119,7 +119,7 @@ AMOS is a Structural Equation Modeling (SEM) software from the SPSS family, Wind
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️⚠️⚠️ No CLI mode — GUI launches when called (unavoidable)
 - 💡 Suitable for SEM, path analysis, confirmatory factor analysis
@@ -128,11 +128,11 @@ AMOS is a Structural Equation Modeling (SEM) software from the SPSS family, Wind
 
 ## CmdStan
 
-### Introduction
+### Introduction / 简介
 
 CmdStan is the command-line interface for the Stan statistical platform, pure CLI support, completely splash-free, for Bayesian MCMC sampling.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -140,7 +140,7 @@ CmdStan is the command-line interface for the Stan statistical platform, pure CL
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - ✅ Suitable for Bayesian statistical modeling and MCMC sampling
@@ -150,11 +150,11 @@ CmdStan is the command-line interface for the Stan statistical platform, pure CL
 
 ## EViews
 
-### Introduction
+### Introduction / 简介
 
 EViews is an econometrics time series analysis software (Windows-only), has CLI support (batch mode), may have splash screen.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -162,14 +162,14 @@ EViews is an econometrics time series analysis software (Windows-only), has CLI 
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 # Run EViews program file
 "EViews.exe" "program.prg" /r
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️ EViews batch mode may have splash screen
 - ⚠️ Windows-only, no macOS/Linux support
@@ -179,11 +179,11 @@ EViews is an econometrics time series analysis software (Windows-only), has CLI 
 
 ## GenStat
 
-### Introduction
+### Introduction / 简介
 
 GenStat is an agricultural statistics and data analysis software, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -191,7 +191,7 @@ GenStat is an agricultural statistics and data analysis software, pure CLI suppo
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Suitable for agricultural statistics, experimental design, data analysis
@@ -200,11 +200,11 @@ GenStat is an agricultural statistics and data analysis software, pure CLI suppo
 
 ## GraphPad Prism
 
-### Introduction
+### Introduction / 简介
 
 GraphPad Prism is scientific graphing and statistical analysis software, **does not have a CLI mode** — calling it will launch the GUI (unavoidable).
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -212,7 +212,7 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 | macOS | ✅ | ❌ (no CLI) | ⚠️⚠️⚠️ GUI only |
 | Linux | ❌ | ❌ | — |
 
-### Installation Paths
+### Installation Paths / 安装路径
 
 **Windows**:
 - `C:\Program Files\GraphPad\Prism 8\prism.exe`
@@ -222,22 +222,22 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 **macOS**:
 - `/Applications/GraphPad Prism.app/Contents/MacOS/GraphPad Prism`
 
-### How to Launch (manual GUI launch only, no CLI batch)
+### How to Launch (manual GUI launch only, no CLI batch) / 如何启动（仅手动 GUI，无 CLI 批处理）
 
 > ⚠️ GraphPad Prism **has no CLI mode** and cannot be run silently/batch via command line.
 > This skill does **not** provide any `prism.exe` command-line call, and does **not create or modify** any GraphPad Prism project/data files (including `.pzfx`); only the following are supported:
 > 1. Manually double-click to open the GUI (or the user launches it themselves);
 > 2. The user operates their project/data files within GraphPad Prism themselves.
 
-### ⚠️ Important Limitation
+### ⚠️ Important Limitation / ⚠️ 重要限制
 
 GraphPad Prism **has no CLI mode**, calling it will launch the GUI. This differs from SPSS (Production Facility), R (Rscript), Stata (batch mode).
 
-### Alternatives
+### Alternatives / 替代方案
 
 - ⚠️ This skill does NOT support any automation that creates or modifies `.pzfx` files in the background (including Python `prismWriter`); such operations are out of scope and must be performed manually by the user in their own GraphPad Prism environment.
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️⚠️⚠️ No CLI mode — GUI launches when called (unavoidable)
 - 💡 This skill provides detection and manual-launch guidance only; it NEVER creates or modifies Prism `.pzfx` project/data files
@@ -246,11 +246,11 @@ GraphPad Prism **has no CLI mode**, calling it will launch the GUI. This differs
 
 ## Gretl
 
-### Introduction
+### Introduction / 简介
 
 Gretl is a free, cross-platform econometrics software with pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -258,14 +258,14 @@ Gretl is a free, cross-platform econometrics software with pure CLI support, com
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 # Run script
 gretlcli -b script.inp
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - ✅ Free software, suitable for econometrics analysis
@@ -274,11 +274,11 @@ gretlcli -b script.inp
 
 ## H2O.ai
 
-### Introduction
+### Introduction / 简介
 
 H2O.ai is an automated machine learning platform, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -286,7 +286,7 @@ H2O.ai is an automated machine learning platform, pure CLI support, completely s
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Suitable for AutoML, deep learning, predictive analytics
@@ -295,11 +295,11 @@ H2O.ai is an automated machine learning platform, pure CLI support, completely s
 
 ## JAGS
 
-### Introduction
+### Introduction / 简介
 
 JAGS (Just Another Gibbs Sampler) is a Bayesian MCMC sampling software, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -307,13 +307,13 @@ JAGS (Just Another Gibbs Sampler) is a Bayesian MCMC sampling software, pure CLI
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 jags scriptfile
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Suitable for Bayesian modeling, syntax compatible with WinBUGS/OpenBUGS
@@ -322,11 +322,11 @@ jags scriptfile
 
 ## JASP
 
-### Introduction
+### Introduction / 简介
 
 JASP is an open-source statistical analysis software offering both classical and Bayesian statistical methods. Requires GUI to run.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -334,7 +334,7 @@ JASP is an open-source statistical analysis software offering both classical and
 | macOS | ✅ | ❌ (no pure CLI) | ⚠️⚠️⚠️ Requires GUI |
 | Linux | ✅ | ❌ (no pure CLI) | ⚠️⚠️⚠️ Requires GUI |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️⚠️⚠️ JASP requires GUI, cannot fully avoid splash screen
 - 💡 Suitable for academic research and teaching, user-friendly interface
@@ -343,11 +343,11 @@ JASP is an open-source statistical analysis software offering both classical and
 
 ## JMP
 
-### Introduction
+### Introduction / 简介
 
 JMP is an interactive visualization statistical software by SAS, supports JSL script batch processing (`/R` parameter), may have brief splash screen (1-2 seconds) when running.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -355,7 +355,7 @@ JMP is an interactive visualization statistical software by SAS, supports JSL sc
 | macOS | ✅ | ✅ (`/R` parameter) | ⚠️ Brief (1-2 sec) |
 | Linux | ❌ | ❌ | — |
 
-### Installation Paths
+### Installation Paths / 安装路径
 
 **Windows**:
 - `C:\Program Files\SAS\JMP\JMP.exe`
@@ -364,7 +364,7 @@ JMP is an interactive visualization statistical software by SAS, supports JSL sc
 **macOS**:
 - `/Applications/JMP.app/Contents/MacOS/JMP`
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 # Windows
@@ -374,7 +374,7 @@ JMP is an interactive visualization statistical software by SAS, supports JSL sc
 JMP -R "script.jsl"
 ```
 
-### JSL Script Template
+### JSL Script Template / JSL 脚本模板
 
 ```jsl
 // script.jsl — JMP script
@@ -397,16 +397,16 @@ Close(dt, NoSave);
 Exit();
 ```
 
-### ⚠️ Splash Screen Issue
+### ⚠️ Splash Screen Issue / ⚠️ 闪屏问题
 
 JMP is a GUI application; even when using the `/R` batch mode, it may still display a startup splash screen when running. The splash screen lasts only briefly (1-2 seconds), and JMP will auto-close after the script finishes (if the script ends with `Exit();`).
 
-### Notes
+### Notes / 说明
 
 - ⚠️ **The script must end with `Exit();`**, otherwise the JMP GUI stays open
 - **Compared with GraphPad**: GraphPad has no CLI at all, while JMP has a CLI (`/R` parameter) and supports batch processing
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️ JMP may show a brief splash screen (1-2 sec) when running, unavoidable
 - ⚠️ The script must end with `Exit();`
@@ -415,11 +415,11 @@ JMP is a GUI application; even when using the `/R` batch mode, it may still disp
 
 ## Julia
 
-### Introduction
+### Introduction / 简介
 
 Julia is a high-performance scientific computing language, pure CLI support, completely splash-free, suitable for Bayesian statistics and high-performance computing.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -427,13 +427,13 @@ Julia is a high-performance scientific computing language, pure CLI support, com
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 julia script.jl
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - ✅ High performance, suitable for big data and complex statistical computing
@@ -443,11 +443,11 @@ julia script.jl
 
 ## KNIME
 
-### Introduction
+### Introduction / 简介
 
 KNIME is an open-source data analytics workflow platform, pure CLI support (execute workflows via command line), completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -455,7 +455,7 @@ KNIME is an open-source data analytics workflow platform, pure CLI support (exec
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI batch processing supported, completely GUI-free, no splash screen
 - 💡 Suitable for visual workflow orchestration and automated data pipelines
@@ -464,11 +464,11 @@ KNIME is an open-source data analytics workflow platform, pure CLI support (exec
 
 ## LIMDEP
 
-### Introduction
+### Introduction / 简介
 
 LIMDEP is an econometrics and discrete choice analysis software (Windows-only), has CLI support, suitable for microeconometrics research.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -476,13 +476,13 @@ LIMDEP is an econometrics and discrete choice analysis software (Windows-only), 
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 limdep commands.txt
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for econometrics analysis
 - ⚠️ Windows-only, no macOS/Linux support
@@ -492,11 +492,11 @@ limdep commands.txt
 
 ## Mathematica
 
-### Introduction
+### Introduction / 简介
 
 Mathematica is a mathematical computing and statistical analysis platform developed by Wolfram Research, pure CLI support (`wolframscript`), completely splash-free. Executes Wolfram Language scripts via command line, supporting symbolic computation, numerical analysis, statistical modeling, and visualization.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -504,7 +504,7 @@ Mathematica is a mathematical computing and statistical analysis platform develo
 | macOS | ✅ | ✅ (`wolframscript`) | ❌ |
 | Linux | ✅ | ✅ (`wolframscript`) | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 # Run Wolfram Language script
@@ -520,7 +520,7 @@ wolframscript
 "C:\Program Files\Wolfram Research\Mathematica\14.0\MathKernel.exe" -noprompt < script.m
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool (`wolframscript`), completely GUI-free, no splash screen
 - ✅ Cross-platform support (Win/Mac/Linux)
@@ -531,11 +531,11 @@ wolframscript
 
 ## Matlab
 
-### Introduction
+### Introduction / 简介
 
 Matlab is an engineering computation and statistics software, has CLI support (`-batch` mode), completely splash-free (when using `-batch` parameter).
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -543,14 +543,14 @@ Matlab is an engineering computation and statistics software, has CLI support (`
 | macOS | ✅ | ✅ (`-batch`) | ❌ (with -batch) |
 | Linux | ✅ | ✅ (`-batch`) | ❌ (with -batch) |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 # Run script (no GUI)
 matlab -batch "run('script.m')"
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Completely GUI-free when using `-batch` parameter
 - ⚠️ Requires Statistics and Machine Learning Toolbox
@@ -560,11 +560,11 @@ matlab -batch "run('script.m')"
 
 ## Microfit
 
-### Introduction
+### Introduction / 简介
 
 Microfit is an econometrics time series analysis software (Windows-only), has CLI support.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -572,13 +572,13 @@ Microfit is an econometrics time series analysis software (Windows-only), has CL
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 microfit commands.txt
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for econometric time series
 - ⚠️ Windows-only, no macOS/Linux support
@@ -587,11 +587,11 @@ microfit commands.txt
 
 ## Minitab
 
-### Introduction
+### Introduction / 简介
 
 Minitab is an industrial statistics and Six Sigma software, has CLI support (batch mode), may have brief splash screen.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -599,7 +599,7 @@ Minitab is an industrial statistics and Six Sigma software, has CLI support (bat
 | macOS | ⚠️ Limited | ⚠️ Limited | ⚠️ Brief |
 | Linux | ⚠️ Limited | ⚠️ Limited | ⚠️ Brief |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️ Minitab batch mode may have brief splash screen
 - 💡 Suitable for quality control and Six Sigma projects
@@ -608,11 +608,11 @@ Minitab is an industrial statistics and Six Sigma software, has CLI support (bat
 
 ## Mplus
 
-### Introduction
+### Introduction / 简介
 
 Mplus is a Structural Equation Modeling (SEM) and latent variable analysis software, has CLI support, suitable for complex statistical modeling.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -620,13 +620,13 @@ Mplus is a Structural Equation Modeling (SEM) and latent variable analysis softw
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ❌ | ❌ | — |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 mplus model.inp
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for SEM and latent variable analysis
 - 💡 Suitable for multilevel, growth, mixture models
@@ -635,11 +635,11 @@ mplus model.inp
 
 ## NCSS
 
-### Introduction
+### Introduction / 简介
 
 NCSS is a statistical analysis software (Windows-only), has CLI support (batch mode), suitable for medical statistics, sample size calculation, etc.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -647,7 +647,7 @@ NCSS is a statistical analysis software (Windows-only), has CLI support (batch m
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for statistical analysis
 - ⚠️ Windows-only, no macOS/Linux support
@@ -657,11 +657,11 @@ NCSS is a statistical analysis software (Windows-only), has CLI support (batch m
 
 ## NLOGIT
 
-### Introduction
+### Introduction / 简介
 
 NLOGIT is a discrete choice econometrics software (Windows-only), has CLI support, an extended version of LIMDEP.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -669,13 +669,13 @@ NLOGIT is a discrete choice econometrics software (Windows-only), has CLI suppor
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 nlogit commands.txt
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for discrete choice analysis
 - ⚠️ Windows-only, no macOS/Linux support
@@ -685,11 +685,11 @@ nlogit commands.txt
 
 ## OpenBUGS
 
-### Introduction
+### Introduction / 简介
 
 OpenBUGS is an open-source Bayesian MCMC sampling software, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -697,7 +697,7 @@ OpenBUGS is an open-source Bayesian MCMC sampling software, pure CLI support, co
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Suitable for Bayesian modeling, open-source WinBUGS alternative
@@ -706,11 +706,11 @@ OpenBUGS is an open-source Bayesian MCMC sampling software, pure CLI support, co
 
 ## Orange
 
-### Introduction
+### Introduction / 简介
 
 Orange is an open-source visual data mining and ML software, has CLI support (Python-based), may display graphical interface when running.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -718,7 +718,7 @@ Orange is an open-source visual data mining and ML software, has CLI support (Py
 | macOS | ✅ | ✅ | ⚠️ May have |
 | Linux | ✅ | ✅ | ⚠️ May have |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️ CLI support available, but some operations may involve GUI
 - 💡 Suitable for visual data mining, ML, data exploration
@@ -727,11 +727,11 @@ Orange is an open-source visual data mining and ML software, has CLI support (Py
 
 ## OriginLab Origin
 
-### Introduction
+### Introduction / 简介
 
 Origin is a professional scientific graphing and data analysis software with over 1 million users worldwide, deeply embedded in Chinese research institutions. Supports LabTalk script batch processing, can execute data analysis tasks via command line.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -739,13 +739,13 @@ Origin is a professional scientific graphing and data analysis software with ove
 | macOS | ✅ | ⚠️ Limited | ⚠️ May have |
 | Linux | ❌ | ❌ | — |
 
-### Installation Paths
+### Installation Paths / 安装路径
 
 **Windows**:
 - `C:\Program Files\OriginLab\Origin2025\Origin95.exe`
 - `C:\Program Files\OriginLab\Origin2024\Origin95.exe`
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 # Windows — run LabTalk script
@@ -754,7 +754,7 @@ Origin is a professional scientific graphing and data analysis software with ove
 # Or compile and execute via Origin C
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ LabTalk CLI support, completely GUI-free (-h mode)
 - ✅ Over 1M users worldwide, widely used in Chinese research institutions
@@ -764,11 +764,11 @@ Origin is a professional scientific graphing and data analysis software with ove
 
 ## OxMetrics
 
-### Introduction
+### Introduction / 简介
 
 OxMetrics is an econometrics software suite, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -776,7 +776,7 @@ OxMetrics is an econometrics software suite, pure CLI support, completely splash
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Suitable for econometrics, financial time series, predictive modeling
@@ -785,11 +785,11 @@ OxMetrics is an econometrics software suite, pure CLI support, completely splash
 
 ## PSPP
 
-### Introduction
+### Introduction / 简介
 
 PSPP is an open-source alternative to SPSS, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -797,7 +797,7 @@ PSPP is an open-source alternative to SPSS, pure CLI support, completely splash-
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Open-source, SPSS syntax compatible
@@ -806,11 +806,11 @@ PSPP is an open-source alternative to SPSS, pure CLI support, completely splash-
 
 ## Q (MRKS)
 
-### Introduction
+### Introduction / 简介
 
 Q (MRKS) is a market research analysis software (Windows-only), supports CLI mode for market research analytics.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -818,7 +818,7 @@ Q (MRKS) is a market research analysis software (Windows-only), supports CLI mod
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, suitable for market research analysis
 - ⚠️ Windows-only, no macOS/Linux support
@@ -828,11 +828,11 @@ Q (MRKS) is a market research analysis software (Windows-only), supports CLI mod
 
 ## Rattle
 
-### Introduction
+### Introduction / 简介
 
 Rattle is a visual data mining interface for R, has CLI support (`--cli` mode), suitable for data mining tasks.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -840,7 +840,7 @@ Rattle is a visual data mining interface for R, has CLI support (`--cli` mode), 
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available (`--cli` mode), completely GUI-free
 - 💡 Suitable for data exploration, statistical analysis, ML modeling
@@ -849,11 +849,11 @@ Rattle is a visual data mining interface for R, has CLI support (`--cli` mode), 
 
 ## SHAZAM
 
-### Introduction
+### Introduction / 简介
 
 SHAZAM is an econometrics software, has CLI support, suitable for economic statistics and econometric analysis.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -861,13 +861,13 @@ SHAZAM is an econometrics software, has CLI support, suitable for economic stati
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 shazam commands.txt
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, completely GUI-free, no splash screen
 - 💡 Suitable for econometrics, statistical analysis, data processing
@@ -876,11 +876,11 @@ shazam commands.txt
 
 ## SPSS Modeler
 
-### Introduction
+### Introduction / 简介
 
 SPSS Modeler is IBM's data mining and predictive analytics software (Windows-only), executes .str stream files via the `clemb.exe` command-line tool.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -888,12 +888,12 @@ SPSS Modeler is IBM's data mining and predictive analytics software (Windows-onl
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Installation Paths
+### Installation Paths / 安装路径
 
 **Windows**:
 - `C:\Program Files\IBM\SPSS\Modeler\18.0\clemb.exe`
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```powershell
 # Execute stream file in local mode
@@ -903,7 +903,7 @@ clemb -local -stream "model.str" -execute
 clemb -local -pyscript "script.py" -execute
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI execution via `clemb.exe`, completely GUI-free, no splash screen
 - ⚠️ Windows-only, no macOS/Linux support
@@ -913,11 +913,11 @@ clemb -local -pyscript "script.py" -execute
 
 ## Stat/Transfer
 
-### Introduction
+### Introduction / 简介
 
 Stat/Transfer is a pure CLI data format conversion tool, completely GUI-free, suitable for automation. Supports format conversion between Stata, SPSS, SAS, R, Excel, etc.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -925,20 +925,20 @@ Stat/Transfer is a pure CLI data format conversion tool, completely GUI-free, su
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Command Line Format
+### Command Line Format / 命令行格式
 
 ```bash
-# Single-file conversion
+# Single-file conversion / 单文件转换
 "[ST_EXE_PATH]" in.sas7bdat out.dta
 
-# Batch conversion
+# Batch conversion / 批处理转换
 "[ST_EXE_PATH]" in\*.sav out\*.dta
 
 # Command-file batch
 "[ST_EXE_PATH]" myfile.stcmd
 ```
 
-### Supported Formats
+### Supported Formats / 支持格式
 
 | Format | Extension |
 |--------|-----------|
@@ -949,7 +949,7 @@ Stat/Transfer is a pure CLI data format conversion tool, completely GUI-free, su
 | Excel | `.xlsx`, `.xls` |
 | CSV | `.csv`, `.tsv` |
 
-### Role in AI Workflow
+### Role in AI Workflow / 在 AI 工作流中的角色
 
 ```
 Historical data (.sas7bdat)
@@ -961,7 +961,7 @@ Analysis results
 Delivery format (.xlsx / .sas7bdat)
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, suitable for automation
 - 💡 Role in AI workflow: data format conversion bridge
@@ -970,13 +970,13 @@ Delivery format (.xlsx / .sas7bdat)
 
 ## Statistica
 
-### Introduction
+### Introduction / 简介
 
 Statistica is a data mining and machine learning software (Windows-only), has CLI support (SVB script batch processing), may have splash screen.
 
 > ⚠️ **Detection-only + manual guidance (SDI-1 safety boundary)**: `setup_statistica.ps1` is detection-only and never writes `config.json`. Executing an SVB script goes through the guarded runner `statsoft-statistica.ps1` with a `Test-UserAuthorizedToRun` gate (same as SPSS/R runners).
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -984,7 +984,7 @@ Statistica is a data mining and machine learning software (Windows-only), has CL
 | macOS | ❌ | ❌ | — |
 | Linux | ❌ | ❌ | — |
 
-### Detection & Manual-Guidance Notes
+### Detection & Manual-Guidance Notes / 检测与手动指引说明
 
 - ⚠️ `setup_statistica.ps1` detection-only, writes no config.json
 - ⚠️ Executing an SVB requires the guarded runner + explicit confirmation
@@ -996,11 +996,11 @@ Statistica is a data mining and machine learning software (Windows-only), has CL
 
 ## Tanagra
 
-### Introduction
+### Introduction / 简介
 
 Tanagra is an open-source data mining and ML software, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -1008,7 +1008,7 @@ Tanagra is an open-source data mining and ML software, pure CLI support, complet
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Open-source, suitable for data mining and ML teaching/research
@@ -1017,11 +1017,11 @@ Tanagra is an open-source data mining and ML software, pure CLI support, complet
 
 ## TSP
 
-### Introduction
+### Introduction / 简介
 
 TSP is a time series and econometrics software, has CLI support, suitable for time series analysis and econometric modeling.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -1029,13 +1029,13 @@ TSP is a time series and econometrics software, has CLI support, suitable for ti
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Batch Command
+### Batch Command / 批处理命令
 
 ```bash
 tsp commands.txt
 ```
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ CLI support available, completely GUI-free, no splash screen
 - 💡 Suitable for time series analysis, econometrics, financial modeling
@@ -1044,11 +1044,11 @@ tsp commands.txt
 
 ## Weka
 
-### Introduction
+### Introduction / 简介
 
 Weka is an open-source machine learning and data mining software, pure CLI support, completely splash-free.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -1056,7 +1056,7 @@ Weka is an open-source machine learning and data mining software, pure CLI suppo
 | macOS | ✅ | ✅ | ❌ |
 | Linux | ✅ | ✅ | ❌ |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ✅ Pure CLI tool, completely GUI-free, no splash screen
 - 💡 Open-source, suitable for ML, data mining, predictive analytics
@@ -1065,11 +1065,11 @@ Weka is an open-source machine learning and data mining software, pure CLI suppo
 
 ## jamovi
 
-### Introduction
+### Introduction / 简介
 
 jamovi is an open-source statistical analysis software with a spreadsheet-style data analysis interface. Requires GUI to run.
 
-### Platform Support
+### Platform Support / 平台支持
 
 | Platform | Supported | CLI Support | Splash Screen |
 |----------|-----------|-------------|---------------|
@@ -1077,7 +1077,7 @@ jamovi is an open-source statistical analysis software with a spreadsheet-style 
 | macOS | ✅ | ❌ (no pure CLI) | ⚠️⚠️⚠️ Requires GUI |
 | Linux | ✅ | ❌ (no pure CLI) | ⚠️⚠️⚠️ Requires GUI |
 
-### Configuration Completion Notes
+### Configuration Completion Notes / 配置完成说明
 
 - ⚠️⚠️⚠️ jamovi requires GUI, cannot fully avoid splash screen
 - 💡 Open-source, user-friendly, suitable for academic research and teaching

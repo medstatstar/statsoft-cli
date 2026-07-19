@@ -27,15 +27,15 @@ metadata:
   }
 ---
 
-# Language
+# Language / 语言
 
 This skill responds in the user's current input language (Chinese or English) and auto-detects / switches accordingly. The runtime scripts embed a locale check (`$script:isZH` in PowerShell, `SCRIPT_LANG` in Bash) so all user-facing prompts switch to Chinese on a `zh-*` UI culture and to English otherwise. Code comments and documentation are English-only.
 
-## Overview
+## Overview / 概述
 
 Activates historical code assets locked in statistical software (syntax, scripts, projects) and wires them into AI workflows via automated detection, configuration, and execution.
 
-## Core Functions
+## Core Functions / 核心功能
 
 Covers 34+ statistical / data-science packages, auto-routed by platform; non-Windows auto-hides incompatible software:
 
@@ -46,7 +46,7 @@ Covers 34+ statistical / data-science packages, auto-routed by platform; non-Win
 
 Full platform matrix in `references/platform-support.md`; extended config in `ADDITIONAL_SOFTWARE.md`.
 
-## Execution Workflow
+## Execution Workflow / 执行工作流
 
 1. **Detect Platform** — cross-platform `source scripts/cross-platform/_platform-detect.sh` (sets `$PLATFORM`/`$OS`/`$ARCH`); Windows handled inside `.ps1` scripts, no source
 2. **Pre-scan Confirmation** — before any scan, MUST prompt and wait:
@@ -61,7 +61,7 @@ Full platform matrix in `references/platform-support.md`; extended config in `AD
 6. **Save Config** — detect-only by default; writes `config.json` only with explicit authorization (`STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1` + interactive y)
 7. **Output Summary** — per `references/completion-prompts.md` template
 
-## Default-Deny Gates
+## Default-Deny Gates / 默认拒绝闸门
 
 All persistence and sensitive operations are **off by default** and require explicit authorization (fail-closed), consistent with the scripts:
 
@@ -75,13 +75,13 @@ All persistence and sensitive operations are **off by default** and require expl
 
 All writes go through `scripts/common/write_config.py`: accepts only the canonical `config.json` under the skill root, and before writing takes a timestamped backup (`config.json.bak.yyyymmdd_hhmmss`) then atomic-replaces.
 
-## Core Permissions
+## Core Permissions / 核心权限
 
 - **Local file read-write** — `config.json`, temp scripts
 - **Process execution** — statistical software binaries
 - **Network access** — CRAN / Anaconda repos
 
-## Trust & Safety
+## Trust & Safety / 信任与安全
 
 This skill performs high-risk operations; understand the risk levels before use:
 
@@ -95,7 +95,7 @@ This skill performs high-risk operations; understand the risk levels before use:
 
 **Pre-flight**: ✅ review all scripts; ✅ confirm config.json changes (auto-backup); ✅ confirm any downloads; ✅ inspect generated commands for sensitive projects.
 
-## Reference Files
+## Reference Files / 参考文件
 
 - `ADDITIONAL_SOFTWARE.md` — extended software config (31 packages)
 - `references/command-examples.md` — per-software CLI command examples
