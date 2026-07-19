@@ -19,7 +19,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.22",
+    "version": "2.6.23",
     "license": "MIT",
     "tags": ["Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",

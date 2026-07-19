@@ -1,5 +1,12 @@
 # Changelog / 更新日志
 
+## v2.6.23 (2026-07-19) / 版本 2.6.23
+
+- Full alignment to the "locale auto-switch" standard: SKILL.md body, references/*.md (7), and ADDITIONAL_SOFTWARE.md changed to English monolingual (frontmatter displayName/description/triggers keep bilingual for marketplace discovery); .ps1 runners/setup scripts removed hardcoded [CN]/[EN] and inline "中文 / English", unified on Write-Lang + $script:isZH locale switching; .sh setup scripts wrapped ~100 hardcoded-Chinese echo lines into LANG_ZH; all Chinese code comments translated to English.
+- Document headings made bilingual (English first, Chinese after); body text stays English; software-name headings (R/Stata/SPSS) stay English.
+- Fixed cross-reference dead links: completion-prompts.md (12 links) and example_workflow.md (1 link) ADDITIONAL_SOFTWARE.md paths gained `../`; SKILL.md Reference Files list gained config-templates.md; README files gained CHANGELOG link; ADDITIONAL_SOFTWARE.md TOC anchor typo `#stattranfer` fixed.
+- Fixed two real bugs: setup_statistica.ps1 Write-Info/Warn/Error printed both languages in every locale (now switches properly); setup_r.sh stat_categories en-branch mistakenly showed Chinese (now pure-English keys + parallel zh labels).
+
 ## v2.6.22 (2026-07-19)
 
 SKILL.md 双语排版顺序对齐新规范（准备提交 GitHub 的技能）：
