@@ -2,6 +2,9 @@
 name: statsoft-cli
 slug: statsoft-cli
 displayName: 统计软件接入助手 / Statsoft-CLI
+version: "2.6.23"
+summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
+license: MIT
 description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML), bilingual. Core value: activating historical code assets for AI workflow automation."
 triggers:
   - "SPSS"
