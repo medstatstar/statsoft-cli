@@ -34,6 +34,15 @@ metadata:
 
 This skill responds in the user's current input language (Chinese or English) and auto-detects / switches accordingly. The runtime scripts embed a locale check (`$script:isZH` in PowerShell, `SCRIPT_LANG` in Bash) so all user-facing prompts switch to Chinese on a `zh-*` UI culture and to English otherwise. Code comments and documentation are English-only.
 
+## Documentation / 文档
+
+Pick the README that matches your language for human-readable, language-specific guides:
+
+- **English guide** → [`README.md`](./README.md)
+- **中文指南** → [`README_zh-CN.md`](./README_zh-CN.md)
+
+The SKILL.md body, `references/*.md`, and `ADDITIONAL_SOFTWARE.md` are English-only and agent-facing; runtime command prompts switch to Chinese / English by locale. For end-to-end walkthroughs, examples, and troubleshooting in your language, open the README above.
+
 ## Overview / 概述
 
 Activates historical code assets locked in statistical software (syntax, scripts, projects) and wires them into AI workflows via automated detection, configuration, and execution.
