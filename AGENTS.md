@@ -19,7 +19,7 @@
 
 - Detection scripts are **detect-only by default**. Writing to `config.json` is fail-closed: it requires explicit opt-in — `STATSOFT_AUTO_WRITE=1` (non-interactive / agent) or `STATSOFT_CONFIRM=1` plus a TTY "y" answer. Never block an agent.
 - All `config.json` writes go through `scripts/common/write_config.py`: timestamped backup (`config.json.bak.yyyyMMdd_HHMMSS`) + atomic `os.replace`. Canonical targets: skill-root `config.json` and `scripts/windows-only/config.json`.
-- GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) are detected and given a manual launch guide only; never driven via CLI / headless.
+- GUI-only software (AMOS, GraphPad Prism, JASP, jamovi, Minitab) are detected and given a manual launch guide only; never driven via CLI / headless. Note: `mtb.exe /run` launches the Minitab GUI window (observed title `Minitab - [Untitled]`), so it is not headless-safe.
 
 ### 3. Software / R Package Install
 

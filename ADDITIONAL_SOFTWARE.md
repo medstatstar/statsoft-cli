@@ -64,7 +64,7 @@ This file contains configuration information for additional statistical software
 | LIMDEP | `scripts/windows-only/Limdep/setup_limdep.ps1` | — | `limdep commands.txt` |
 | Mathematica | `scripts/windows-only/Mathematica/setup_mathematica.ps1` | `scripts/cross-platform/Mathematica/setup_mathematica.sh` | `wolframscript -code "Print[1]"` |
 | Microfit | `scripts/windows-only/Microfit/setup_microfit.ps1` | — | `microfit commands.txt` |
-| Minitab | `scripts/windows-only/Minitab/setup_minitab.ps1` | — | `mtb.exe /?` |
+| Minitab | `scripts/windows-only/Minitab/setup_minitab.ps1` | — | No CLI (manual GUI launch; `mtb.exe /run` opens GUI) |
 | Mplus | `scripts/windows-only/Mplus/setup_mplus.ps1` | — | `mplus model.inp` |
 | NCSS | `scripts/windows-only/NCSS/setup_ncss.ps1` | — | Check install |
 | NLOGIT | `scripts/windows-only/NLOGIT/setup_nlogit.ps1` | — | `nlogit commands.txt` |
@@ -90,7 +90,7 @@ This file contains configuration information for additional statistical software
 | KNIME | — | `scripts/cross-platform/KNIME/setup_knime.sh` | Check install |
 | Mathematica | — | `scripts/cross-platform/Mathematica/setup_mathematica.sh` | `wolframscript -code "Print[1]"` |
 | Matlab | — | `scripts/cross-platform/Matlab/setup_matlab.sh` | `matlab -batch "exit"` |
-| Minitab | — | `scripts/cross-platform/Minitab/setup_minitab.sh` | `mtb.exe /?` |
+| Minitab | — | `scripts/cross-platform/Minitab/setup_minitab.sh` | No CLI (manual GUI launch; `mtb.exe /run` opens GUI) |
 | Mplus | — | `scripts/cross-platform/Mplus/setup_mplus.sh` | `mplus model.inp` |
 | OpenBUGS | — | `scripts/cross-platform/OpenBUGS/setup_openbugs.sh` | `openbugs --help` |
 | Orange | — | `scripts/cross-platform/Orange/setup_orange.sh` | `orange-canvas --help` |
@@ -590,20 +590,21 @@ microfit commands.txt
 
 ### Introduction
 
-Minitab is an industrial statistics and Six Sigma software, has CLI support (batch mode), may have brief splash screen.
+Minitab is an industrial statistics and Six Sigma software. **`mtb.exe /run` does NOT run headless** — it launches the full Minitab GUI window (observed window title `Minitab - [Untitled]`), so it is not safe for agent-driven batch automation. Treat Minitab as a **GUI-only** tool: detect the install (path / version) and give a manual launch guide, exactly like AMOS / GraphPad / JASP / jamovi.
 
 ### Platform Support
 
-| Platform | Supported | CLI Support | Splash Screen |
-|----------|-----------|-------------|---------------|
-| Windows | ✅ | ✅ (batch mode) | ⚠️ Brief |
-| macOS | ⚠️ Limited | ⚠️ Limited | ⚠️ Brief |
-| Linux | ⚠️ Limited | ⚠️ Limited | ⚠️ Brief |
+| Platform | Supported | Headless CLI | Notes |
+|----------|-----------|--------------|-------|
+| Windows | ✅ | ❌ (`mtb.exe /run` opens GUI) | Detect + manual launch only |
+| macOS | ⚠️ Limited | ❌ | Minitab Web App / remote desktop |
+| Linux | ⚠️ Limited | ❌ | Minitab Web App / remote desktop |
 
 ### Configuration Completion Notes
 
-- ⚠️ Minitab batch mode may have brief splash screen
-- 💡 Suitable for quality control and Six Sigma projects
+- ⚠️ `mtb.exe /?` is NOT a help flag — it launches the Minitab GUI. Do not use it for detection.
+- ⚠️ `mtb.exe /run "script.mtb"` opens the Minitab GUI and may hang waiting on the window; never call it from the agent.
+- 💡 Suitable for quality control and Six Sigma projects; run analyses interactively in the Minitab GUI.
 
 ---
 

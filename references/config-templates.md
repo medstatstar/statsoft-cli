@@ -130,13 +130,8 @@
 ### Minitab Environment
 
 - **Version**: Minitab [22/21/20/19/18]
-- **Main Executable (batch engine)**: `C:\Program Files\Minitab\Minitab [VERSION]\mtb.exe`
-- **Invocation Priority**:
-  1. **Approach 1 (preferred, CLI)**: `mtb.exe /run "script.mtb"` → runs a Minitab script file; end the script with `STOP` to auto-exit Minitab
-     ```powershell
-     & "C:\Program Files\Minitab\Minitab 22\mtb.exe" /run "analysis.mtb"
-     ```
-  2. **Approach 2 (project mode)**: `mtb.exe /P "project.mpj"` → open/run a project (may show a brief splash screen)
+- **Main Executable**: `C:\Program Files\Minitab\Minitab [VERSION]\mtb.exe`
+- **Automation**: ❌ **GUI-only** — `mtb.exe /run "script.mtb"` opens the Minitab GUI window and is not headless-safe; never call it from the agent. Detect the install and let the user run analyses interactively (or via Minitab Web App).
 - **Config Field**: `config.json > "Minitab"`
 - **macOS / Linux**: No native CLI; use Minitab Web App (https://app.minitab.com/) or remote desktop to a Windows host
 ```

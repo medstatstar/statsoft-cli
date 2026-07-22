@@ -432,16 +432,15 @@ wolframscript -code "p = Plot[Sin[x], {x, 0, 6 Pi}, PlotLabel -> \"Sine Wave\"];
 
 ### Minitab
 
+> ⚠️ **Minitab is GUI-only for automation.** `mtb.exe /run "script.mtb"` launches the full Minitab GUI window (not headless) and may hang. Do **not** drive Minitab from the agent — detect the install and let the user run analyses interactively.
+
 ```powershell
-# Basic batch run of a Minitab script (.mtb)
-& "C:\Program Files\Minitab\Minitab 22\mtb.exe" /run "analysis.mtb"
+# Detection only — verify mtb.exe exists; do NOT call /run headlessly
+$mtb = "C:\Program Files\Minitab\Minitab 22\mtb.exe"
+if (Test-Path $mtb) { Write-Host "Minitab detected: $mtb" }
 ```
 
-```text
-# analysis.mtb — minimal example (end the script with STOP to auto-exit Minitab)
-Note "Hello from Minitab CLI"
-Stop
-```
+For actual analysis, open Minitab (GUI) and load your `.mtb` / `.mpj` project, or use the Minitab Web App (https://app.minitab.com/).
 
 ### Matlab
 

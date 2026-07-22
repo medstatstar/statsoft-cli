@@ -105,7 +105,7 @@ main() {
     LANG_ZH "=== 使用说明" "Usage Instructions ==="
     LANG_ZH "批处理命令" "Batch command:"
         if statsoft_reveal; then
-            echo "  \"$minitab_path\" /run script.mtb"
+            echo "  $minitab_path  (GUI-only: 'mtb.exe /run' opens the Minitab GUI, not headless)"
         else
             echo "$(LANG_ZH "检测到软件（路径/版本已隐藏；设置 STATSOFT_REVEAL=1 可显示）" "Software detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal).")"
         fi
@@ -118,8 +118,8 @@ main() {
         echo "  PRT"
         LANG_ZH "" ""
     LANG_ZH "⚠️ 注意事项" "Notes:"
-        echo "$(LANG_ZH "  - Minitab 运行时可能有短暂闪屏（1-2秒）" "  - Minitab may show a brief splash screen when launching (1-2 seconds)")"
-        echo "$(LANG_ZH "  - 脚本末尾加 'STOP' 命令可自动退出 Minitab" "  - Adding a 'STOP' command at the end of the script exits Minitab automatically")"
+        echo "$(LANG_ZH "  - Minitab 是 GUI 软件：mtb.exe /run 会弹出 Minitab 主窗口，并非无头批处理" "  - Minitab is GUI software: 'mtb.exe /run' opens the Minitab main window, NOT headless batch")"
+        echo "$(LANG_ZH "  - 分析请在 Minitab GUI 中交互进行，或由用户手动启动" "  - Run analyses interactively in the Minitab GUI, or launch it manually")"
         
     else
     LANG_ZH "❌ 未检测到 Minitab 安装" "Minitab installation not found"

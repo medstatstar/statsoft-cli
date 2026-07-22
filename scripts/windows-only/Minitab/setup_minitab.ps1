@@ -1,5 +1,5 @@
 # setup_minitab.ps1 — Detect and configure Minitab (Windows)
-# Minitab is Windows-primary; the batch engine is mtb.exe.
+# Minitab is Windows-primary; detection only — `mtb.exe /run` launches the Minitab GUI, not headless.
 
 # ============================================================
 # Language Detection

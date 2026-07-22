@@ -51,9 +51,9 @@ Activates historical code assets locked in statistical software (syntax, scripts
 Covers 34+ statistical / data-science packages, auto-routed by platform; non-Windows auto-hides incompatible software:
 
 - **Cross-platform (Win / Mac / Linux, CLI)**: R, Stata, SAS, CmdStan, GenStat, Gretl, H2O.ai, JAGS, Julia, KNIME, Mathematica, Matlab, OpenBUGS, Orange, OxMetrics, PSPP, Rattle, SHAZAM, Stat/Transfer, Tanagra, TSP, Weka
-- **Windows + limited cross-platform**: Mplus, Minitab
+- **Windows + limited cross-platform**: Mplus
 - **Windows-only CLI**: SPSS Statistics, EViews, JMP, LIMDEP, Microfit, NCSS, NLOGIT, Origin, Q(MRKS), SPSS Modeler, Statistica
-- **GUI-only detection + manual launch guide**: AMOS, GraphPad Prism, JASP, jamovi (never drive batch via CLI)
+- **GUI-only detection + manual launch guide**: AMOS, GraphPad Prism, JASP, jamovi, Minitab (never drive batch via CLI; `mtb.exe /run` opens the Minitab GUI, not headless)
 
 Full platform matrix in `references/platform-support.md`; extended config in `ADDITIONAL_SOFTWARE.md`.
 

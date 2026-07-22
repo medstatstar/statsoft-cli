@@ -1,0 +1,7 @@
+# Force LF line endings for shell scripts so the shebang works on macOS/Linux.
+# ClawHub/SkillHub publish the working tree directly; with core.autocrlf=true on
+# Windows, a plain checkout would reconvert .sh to CRLF and break the shebang
+# (#!/bin/bash^M -> "bad interpreter") on POSIX systems. eol=lf overrides that.
+*.sh eol=lf
+# Keep this file itself LF as well (harmless either way, but tidy).
+*.gitattributes eol=lf
