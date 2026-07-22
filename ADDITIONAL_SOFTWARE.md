@@ -230,7 +230,7 @@ GraphPad Prism is scientific graphing and statistical analysis software, **does 
 > 1. Manually double-click to open the GUI (or the user launches it themselves);
 > 2. The user operates their project/data files within GraphPad Prism themselves.
 
-### ⚠️ Important Limitation / ⚠️ 重要限制
+### ⚠️ Important Limitation
 
 GraphPad Prism **has no CLI mode**, calling it will launch the GUI. This differs from SPSS (Production Facility), R (Rscript), Stata (batch mode).
 
@@ -375,7 +375,7 @@ JMP is an interactive visualization statistical software by SAS, supports JSL sc
 JMP -R "script.jsl"
 ```
 
-### JSL Script Template / JSL 脚本模板
+### JSL Script Template
 
 ```jsl
 // script.jsl — JMP script
@@ -398,7 +398,7 @@ Close(dt, NoSave);
 Exit();
 ```
 
-### ⚠️ Splash Screen Issue / ⚠️ 闪屏问题
+### ⚠️ Splash Screen Issue
 
 JMP is a GUI application; even when using the `/R` batch mode, it may still display a startup splash screen when running. The splash screen lasts only briefly (1-2 seconds), and JMP will auto-close after the script finishes (if the script ends with `Exit();`).
 

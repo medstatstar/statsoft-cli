@@ -1,6 +1,6 @@
-# Platform Support / 平台支持
+# Platform Support
 
-## Full Matrix / 完整矩阵
+## Full Matrix
 
 | Category | Software | Notes |
 |----------|----------|-------|
@@ -10,10 +10,10 @@
 | 🔴 Windows only | SPSS Statistics, EViews, JMP, LIMDEP, Microfit, NCSS, NLOGIT, Origin, Q (MRKS), SPSS Modeler, Statistica | Windows-only CLI |
 | 🔴 GUI-only (detection + manual-launch only) | AMOS, GraphPad Prism, JASP, jamovi | Can detect and guide manual GUI launch; no CLI batch automation |
 
-## GUI-Only Software / 仅 GUI 软件
+## GUI-Only Software
 
 GUI-only software (AMOS, GraphPad Prism, JASP, jamovi) is limited to **detection + manual-launch guidance** — this skill never drives them via CLI/headless automation, and never creates or modifies their project/data files (including GraphPad Prism `.pzfx`).
 
-## Version-Specific Notes / 版本特定说明
+## Version-Specific Notes
 
 See `version-specifics.md` for version differences (SPSS 26/30, R 4.5/4.1, Python 3.4/3.13).

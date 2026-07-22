@@ -2,10 +2,11 @@
 name: statsoft-cli
 slug: statsoft-cli
 displayName: 统计软件接入助手 / Statsoft-CLI
-version: "2.6.23"
-summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
+cn_name: 统计软件接入助手
+version: "2.7.0"
+summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
 license: MIT
-description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML), bilingual. Core value: activating historical code assets for AI workflow automation."
+description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML, etc.), bilingual. Core value: activating historical code assets for AI workflow automation."
 triggers:
   - "SPSS"
   - "SPSS Statistics"
@@ -22,7 +23,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.6.23",
+    "version": "2.7.0",
     "license": "MIT",
     "tags": ["Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
@@ -30,24 +31,22 @@ metadata:
   }
 ---
 
-# Language / 语言
-
-This skill responds in the user's current input language (Chinese or English) and auto-detects / switches accordingly. The runtime scripts embed a locale check (`$script:isZH` in PowerShell, `SCRIPT_LANG` in Bash) so all user-facing prompts switch to Chinese on a `zh-*` UI culture and to English otherwise. Code comments and documentation are English-only.
-
-## Documentation / 文档
+## Language
 
 Pick the README that matches your language for human-readable, language-specific guides:
 
 - **English guide** → [`README.md`](./README.md)
 - **中文指南** → [`README_zh-CN.md`](./README_zh-CN.md)
 
+This skill responds in the user's current input language (Chinese or English) and auto-detects / switches accordingly. The runtime scripts embed a locale check (`$script:isZH` in PowerShell, `SCRIPT_LANG` in Bash) so all user-facing prompts switch to Chinese on a `zh-*` UI culture and to English otherwise. Code comments and documentation are English-only.
+
 The SKILL.md body, `references/*.md`, and `ADDITIONAL_SOFTWARE.md` are English-only and agent-facing; runtime command prompts switch to Chinese / English by locale. For end-to-end walkthroughs, examples, and troubleshooting in your language, open the README above.
 
-## Overview / 概述
+## Overview
 
 Activates historical code assets locked in statistical software (syntax, scripts, projects) and wires them into AI workflows via automated detection, configuration, and execution.
 
-## Core Functions / 核心功能
+## Core Functions
 
 Covers 34+ statistical / data-science packages, auto-routed by platform; non-Windows auto-hides incompatible software:
 
@@ -58,7 +57,7 @@ Covers 34+ statistical / data-science packages, auto-routed by platform; non-Win
 
 Full platform matrix in `references/platform-support.md`; extended config in `ADDITIONAL_SOFTWARE.md`.
 
-## Execution Workflow / 执行工作流
+## Execution Workflow
 
 1. **Detect Platform** — cross-platform `source scripts/cross-platform/_platform-detect.sh` (sets `$PLATFORM`/`$OS`/`$ARCH`); Windows handled inside `.ps1` scripts, no source
 2. **Pre-scan Confirmation** — before any scan, MUST prompt and wait:
@@ -73,7 +72,7 @@ Full platform matrix in `references/platform-support.md`; extended config in `AD
 6. **Save Config** — detect-only by default; writes `config.json` only with explicit authorization (`STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1` + interactive y)
 7. **Output Summary** — per `references/completion-prompts.md` template
 
-## Default-Deny Gates / 默认拒绝闸门
+## Default-Deny Gates
 
 All persistence and sensitive operations are **off by default** and require explicit authorization (fail-closed), consistent with the scripts:
 
@@ -87,13 +86,13 @@ All persistence and sensitive operations are **off by default** and require expl
 
 All writes go through `scripts/common/write_config.py`: accepts only the canonical `config.json` under the skill root, and before writing takes a timestamped backup (`config.json.bak.yyyymmdd_hhmmss`) then atomic-replaces.
 
-## Core Permissions / 核心权限
+## Core Permissions
 
 - **Local file read-write** — `config.json`, temp scripts
 - **Process execution** — statistical software binaries
 - **Network access** — CRAN / Anaconda repos
 
-## Trust & Safety / 信任与安全
+## Trust & Safety
 
 This skill performs high-risk operations; understand the risk levels before use:
 
@@ -107,7 +106,7 @@ This skill performs high-risk operations; understand the risk levels before use:
 
 **Pre-flight**: ✅ review all scripts; ✅ confirm config.json changes (auto-backup); ✅ confirm any downloads; ✅ inspect generated commands for sensitive projects.
 
-## Reference Files / 参考文件
+## Reference Files
 
 - `ADDITIONAL_SOFTWARE.md` — extended software config (31 packages)
 - `references/command-examples.md` — per-software CLI command examples

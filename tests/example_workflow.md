@@ -1,11 +1,11 @@
-# Multi-Software Workflow Example / 多软件工作流示例
+# Multi-Software Workflow Example
 
 > This file demonstrates how to combine multiple statistical software in a single AI Agent workflow.
 > 本文件演示如何在单个 AI Agent 工作流中组合使用多款统计软件。
 
 ---
 
-## Scenario / 场景
+## Scenario
 
 **Research Question**: Analyze customer churn factors using historical code assets from R, SPSS, Stata, and SAS.
 
@@ -13,9 +13,9 @@
 
 ---
 
-## Workflow / 工作流
+## Workflow
 
-### Step 1: Data Preparation with R / 数据准备（R）
+### Step 1: Data Preparation with R
 
 **Purpose**: Clean and prepare raw data using existing R scripts.
 **目的**: 使用现有 R 脚本清理和准备原始数据。
@@ -44,7 +44,7 @@ Run R script test_r_cleaning.R to clean customer data
 
 ---
 
-### Step 2: Descriptive Statistics with SPSS / 描述统计（SPSS）
+### Step 2: Descriptive Statistics with SPSS
 
 **Purpose**: Generate descriptive statistics and visualizations using existing SPSS syntax.
 **目的**: 使用现有 SPSS 语法生成描述性统计和可视化。
@@ -77,7 +77,7 @@ Run SPSS syntax test_spss_descriptive.sps
 
 ---
 
-### Step 3: Regression Analysis with Stata / 回归分析（Stata）
+### Step 3: Regression Analysis with Stata
 
 **Purpose**: Run logistic regression using existing Stata do-files.
 **目的**: 使用现有 Stata do-file 运行逻辑回归。
@@ -107,7 +107,7 @@ Run Stata do-file test_stata_regression.do
 
 ---
 
-### Step 4: Report Generation with SAS / 报告生成（SAS）
+### Step 4: Report Generation with SAS
 
 **Purpose**: Generate final report with tables and charts using existing SAS macros.
 **目的**: 使用现有 SAS 宏程序生成包含表格和图表的终期报告。
@@ -148,7 +148,7 @@ Run SAS program test_sas_report.sas
 > ⚠️ **安全提示 / Safety**: 以下命令会依次执行外部脚本（R/SPSS/Stata/SAS）并在本地生成/覆盖文件。执行前请审阅所有被引用的脚本与输出路径，建议在隔离的工作目录中以最小权限运行。
 > ⚠️ **Safety**: the commands below execute external scripts (R/SPSS/Stata/SAS) and create or overwrite local files. Review every referenced script and output path before running, and prefer an isolated working directory with least privilege.
 
-## Multi-step Workflow — one explicit step at a time / 多步骤工作流（逐步显式执行）
+## Multi-step Workflow — one explicit step at a time
 
 > ⚠️ **Do NOT trigger a whole pipeline from a single broad prompt.** Each step
 > executes an external statistical binary and may create/overwrite files, so it
@@ -191,7 +191,7 @@ Agent 必须在每一步后停下等待您审阅；不得自动串联步骤或�
 
 ---
 
-## Key Benefits / 核心优势
+## Key Benefits
 
 | Benefit / 优势 | Description / 说明 |
 |----------------|-------------------|
@@ -204,7 +204,7 @@ Agent 必须在每一步后停下等待您审阅；不得自动串联步骤或�
 
 ---
 
-## Test These Scripts / 测试这些脚本
+## Test These Scripts
 
 Use the test scripts in this directory to verify your software configuration:
 

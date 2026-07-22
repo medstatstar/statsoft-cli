@@ -1,6 +1,14 @@
-# Changelog / 更新日志
+# Changelog
 
-## v2.6.23 (2026-07-19) / 版本 2.6.23
+## v2.7.0 (2026-07-22)
+
+Improved Minitab support and bilingual compliance cleanup:
+
+- **Minitab (Windows)**: added `scripts/windows-only/Minitab/setup_minitab.ps1` (detects `mtb.exe`, fail-closed persist gate); added Minitab detection block to `scan_all.ps1`; fixed `setup_minitab.sh` path list (added 22/23, was capped at 21) + converted to LF; fixed `ADDITIONAL_SOFTWARE.md` routing (added Windows `.ps1` route, `Minitab -?` → `mtb.exe /?`); fixed `command-examples.md` (`mtb.exe /run "analysis.mtb"`); added Minitab section to `config-templates.md`. Minitab 22.3.0.0 detected and persisted locally.
+- **write_config.py fixes** (pre-existing bugs affecting all windows-only setup scripts): accept `scripts/windows-only/config.json` as canonical target; read JSON with `utf-8-sig` to tolerate BOM written by WinPS `Set-Content`. `scan_all.ps1` gained UTF-8 BOM so its consent-gate Chinese parses correctly on Windows PowerShell 5.1.
+- **Bilingual compliance (per ct-base policy)**: stripped residual bilingual headings across `references/*.md` / `ADDITIONAL_SOFTWARE.md` / `README.md` (103 headings, English-only kept); added required `cn_name` frontmatter field; added English-only `AGENTS.md`. `tests/README.md` exempted as internal test doc. `summary` kept Chinese-only (allowed per ct-base summary exception).
+
+## v2.6.23 (2026-07-19)
 
 - Full alignment to the "locale auto-switch" standard: SKILL.md body, references/*.md (7), and ADDITIONAL_SOFTWARE.md changed to English monolingual (frontmatter displayName/description/triggers keep bilingual for marketplace discovery); .ps1 runners/setup scripts removed hardcoded [CN]/[EN] and inline "中文 / English", unified on Write-Lang + $script:isZH locale switching; .sh setup scripts wrapped ~100 hardcoded-Chinese echo lines into LANG_ZH; all Chinese code comments translated to English.
 - Document headings made bilingual (English first, Chinese after); body text stays English; software-name headings (R/Stata/SPSS) stay English.

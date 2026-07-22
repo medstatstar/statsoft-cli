@@ -1,6 +1,6 @@
 # SPSS Splash-free Call Test / SPSS 无闪屏调用测试
 
-## Test Purpose / 测试目的
+## Test Purpose
 
 验证 SPSS 无闪屏调用方式是否正常工作。
 
@@ -10,9 +10,9 @@ Verify that the SPSS splash-free call method works correctly.
 >
 > Running this test **executes the third-party SPSS binary** and **writes a file** `test-data.sav` (~5 rows) to disk. This is an expected artifact of a manually-run test — do not run it silently in automation. See "Cleanup" at the end to remove it afterward.
 
-## Test Method / 测试方法
+## Test Method
 
-### Preferred Method (Completely Splash-free) / 首选方式（完全无闪屏）
+### Preferred Method (Completely Splash-free)
 
 使用 SPSS 内置 Python 的 `spss` 模块直接运行语法，不调用 `stats.exe`，完全无 GUI。
 
@@ -29,7 +29,7 @@ Use SPSS built-in Python's `spss` module to run syntax directly, without calling
   "[SKILL_DIR]/tests/test-syntax.sps"
 ```
 
-### Backup Method (No Splash) / 备用方式（无闪屏）
+### Backup Method (No Splash)
 
 通过 `stats.com`（控制台版）调用 .spj 文件，完全无闪屏：
 
@@ -54,18 +54,18 @@ Call .spj file via `stats.exe -production`. This method may display splash scree
   "[SKILL_DIR]/tests/test-job.spj"
 ```
 
-## Test Files / 测试文件
+## Test Files
 
 - `test-syntax.sps` — SPSS 语法文件，生成测试数据并保存
 - `test-job.spj` — SPSS 生产作业文件（备用方式使用）
 
-## Expected Results / 预期结果
+## Expected Results
 
 1. **无闪屏** — 运行时不显示 SPSS GUI 窗口
 2. **输出文件生成** — 生成 `test-data.sav` 文件
 3. **数据正确** — `test-data.sav` 包含 5 条记录，id 和 score 两列
 
-## Verification Method / 验证方法
+## Verification Method
 
 ```bash
 # 检查输出文件是否生成
@@ -79,7 +79,7 @@ print(df)
 "
 ```
 
-## Cleanup / 清理
+## Cleanup
 
 测试会写入 `test-data.sav`。测试完成后删除该文件即可清除所有磁盘副作用 / The test writes `test-data.sav`; delete it after the test to remove all disk side effects:
 
@@ -87,7 +87,7 @@ print(df)
 rm -f "[SKILL_DIR]/test-data.sav"
 ```
 
-## Notes / 注意事项
+## Notes
 
 1. SPSS 26 内置 Python 3.4，不支持 f-string，所有字符串格式化必须用 `%s` 或 `.format()`
 2. 确保输出路径有写权限

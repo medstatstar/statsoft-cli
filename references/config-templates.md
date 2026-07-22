@@ -1,9 +1,9 @@
 # Configuration & Memory Templates
 
-## SPSS Statistics Memory Template / SPSS Statistics 记忆模板
+## SPSS Statistics Memory Template
 
 ```markdown
-### SPSS Statistics Environment / SPSS Statistics 环境
+### SPSS Statistics Environment
 
 - **Version**: IBM SPSS Statistics [26/27/28/29/30/31]
 - **Main Executable**: `C:\Program Files\IBM\SPSS\Statistics\[version]\stats.exe`
@@ -33,9 +33,9 @@
   ```
 ```
 
-## SPSS Statistics Version Differences / SPSS Statistics 版本差异
+## SPSS Statistics Version Differences
 
-### Python Version Comparison / Python 版本对比
+### Python Version Comparison
 
 | SPSS Statistics Version | Bundled Python | f-string Support |
 |-------------------------|---------------|-----------------|
@@ -45,15 +45,15 @@
 | 29 | Python 3.10.4 | ✅ |
 | 30 | Python 3.10 | ✅ |
 
-### spss_helper.py Compatibility / spss_helper.py 兼容性
+### spss_helper.py Compatibility
 
 - SPSS Statistics 26: Script uses `%s` / `.format()`, no f-string
 - SPSS Statistics 27+: Script can use f-string and modern Python
 
-## SPSS Modeler Memory Template / SPSS Modeler 记忆模板
+## SPSS Modeler Memory Template
 
 ```markdown
-### SPSS Modeler Environment / SPSS Modeler 环境
+### SPSS Modeler Environment
 
 - **Version**: IBM SPSS Modeler [18.0/18.1/18.2/18.3/18.4/18.5/18.6]
 - **Main Executable**: `C:\Program Files\IBM\SPSS\Modeler\[version]\bin\clemb.exe`
@@ -70,7 +70,7 @@
 - **Difference from Statistics**: Statistics is a statistical analysis tool, Modeler is a data mining/modeling tool
 ```
 
-## SPSSModeler Version Differences / SPSS Modeler 版本差异
+## SPSSModeler Version Differences
 
 | Version | clemb.exe Path | Notes |
 |---------|---------------|-------|
@@ -78,10 +78,10 @@
 | 18.5 | `C:\Program Files\IBM\SPSS\Modeler\18.5\bin\clemb.exe` | Performance improvements |
 | 18.0 | `C:\Program Files\IBM\SPSS\Modeler\18.0\bin\clemb.exe` | Classic stable |
 
-## Stata Memory Template / Stata 记忆模板
+## Stata Memory Template
 
 ```markdown
-### Stata Environment / Stata 环境
+### Stata Environment
 
 - **Version**: Stata [VERSION] [EDITION] (MP/SE/BE)
 - **Main Executable Path**: `[STATA_EXE_PATH]` (e.g., `StataMP-64.exe`)
@@ -94,7 +94,7 @@
   ```
 ```
 
-## Stata Version Differences / Stata 版本差异
+## Stata Version Differences
 
 | Edition | License Match | Notes |
 |---------|--------------|-------|
@@ -102,10 +102,10 @@
 | SE (Special Edition) | ✅ Single-core | Mid-size data |
 | BE (Basic Edition) | ✅ Limited | No parallelism |
 
-## R Memory Template / R 记忆模板
+## R Memory Template
 
 ```markdown
-### R Environment / R 环境
+### R Environment
 
 - **Version**: R [VERSION]
 - **Rscript Path**: `[RSCRIPT_EXE_PATH]`
@@ -115,19 +115,19 @@
   ```
 ```
 
-## SAS Memory Template / SAS 记忆模板
+## SAS Memory Template
 
 ```markdown
-### SAS Environment / SAS 环境
+### SAS Environment
 
 - **Version**: SAS [VERSION] (e.g., 9.4)
 - **Executable Path**: `[SAS_EXE_PATH]`
 ```
 
-## Minitab Memory Template / Minitab 记忆模板
+## Minitab Memory Template
 
 ```markdown
-### Minitab Environment / Minitab 环境
+### Minitab Environment
 
 - **Version**: Minitab [22/21/20/19/18]
 - **Main Executable (batch engine)**: `C:\Program Files\Minitab\Minitab [VERSION]\mtb.exe`
@@ -141,7 +141,7 @@
 - **macOS / Linux**: No native CLI; use Minitab Web App (https://app.minitab.com/) or remote desktop to a Windows host
 ```
 
-## R — Alternative when R is not available / R —— 当 R 不可用时（替代方案）
+## R — Alternative when R is not available
 
 | R Package | Anaconda Python Alternative |
 |-----------|---------------------------|
@@ -180,7 +180,7 @@
 
 ## Completion Prompt Templates
 
-### SPSS (preferred success) / SPSS（首选成功）
+### SPSS (preferred success)
 
 ```
 ✅ SPSS [version] configuration complete!
@@ -248,13 +248,13 @@
 - Mac: `/Applications/Stata/`
 - Linux: `/usr/local/stata/`
 
-### SPSS (Windows only) / SPSS（仅 Windows）
+### SPSS (Windows only)
 `C:\Program Files\IBM\SPSS\Statistics\26\` → `31`
 
-### JMP (Windows only) / JMP（仅 Windows）
+### JMP (Windows only)
 `C:\Program Files\JMP\16\`; `\17\`
 
-### GraphPad (Windows only) / GraphPad（仅 Windows）
+### GraphPad (Windows only)
 `C:\Program Files\GraphPad\Prism 9\`; `\10\`
 
 ## Advanced Mode Scripts

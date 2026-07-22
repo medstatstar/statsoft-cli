@@ -81,7 +81,7 @@ Rscript -e "library(arrow); df <- read_parquet('big_data.parquet'); print(dim(df
 
 ## SPSS
 
-### 🎯 Usage Recommendation / 🎯 使用建议
+### 🎯 Usage Recommendation
 
 > **For daily complex syntax runs** → **use Approach 1** (`stats.com` + `.spj`, foolproof)
 >
@@ -95,7 +95,7 @@ Rscript -e "library(arrow); df <- read_parquet('big_data.parquet'); print(dim(df
 
 ---
 
-### ⭐ Preferred approach (completely splash-free) / ⭐ 推荐方式（完全无闪屏）
+### ⭐ Preferred approach (completely splash-free)
 
 Run directly through the SPSS built-in Python `spss` module:
 
@@ -128,7 +128,7 @@ Or use `stats.exe` (GUI version, may show a splash screen):
 "C:\Program Files\IBM\SPSS\Statistics\XX\stats.exe" -production "job.spj" silent -nologo
 ```
 
-### .spj file XML structure / .spj 文件 XML 结构
+### .spj file XML structure
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -200,7 +200,7 @@ statsoft-modeler run "C:\path\to\churn_model.str"
 & "C:\Program Files\IBM\SPSS\Modeler\18.0\bin\clemb.exe" -local -stream "churn_model.str" -log "run.log" -execute
 ```
 
-### Python script mode (recommended) / Python 脚本模式（推荐）
+### Python script mode (recommended)
 
 ```powershell
 # Run Python script (within Modeler session)
@@ -216,7 +216,7 @@ statsoft-modeler run-script "C:\path\to\train_model.py"
 
 > ⚠️ This skill does NOT support remote Modeler Server execution. `statsoft-modeler` provides LOCAL (`-local`) mode only — there is no `server-run` subcommand, and the skill never initiates remote connections or handles remote credentials.
 
-### Python script example (run within Modeler) / Python 脚本示例（在 Modeler 内运行）
+### Python script example (run within Modeler)
 
 ```python
 # train_model.py — SPSS Modeler Python script
@@ -243,7 +243,7 @@ output_node.Export("C:/output/results.csv")
 
 ## Stata
 
-### ⚠️ Version and parameter reference table / ⚠️ 版本与参数参考表
+### ⚠️ Version and parameter reference table
 
 | Version | Windows silent flag | Mac/Linux silent flag |
 |------|-----------------|-------------------|
@@ -276,7 +276,7 @@ stata-mp -e do "script.do"
 | Stata 14/15 | `StataMP` | `StataSE` | `Stata` |
 | Stata 16+ | `StataMP-64.exe` | `StataSE-64.exe` | `Stata-64.exe` |
 
-### do-file template / do 文件模板
+### do-file template
 
 ```stata
 * script.do — Stata batch script
@@ -303,7 +303,7 @@ log close
 sas -sysin "prog.sas" -log "out.log" -print "out.lst"
 ```
 
-### SAS program template / SAS 程序模板
+### SAS program template
 
 ```sas
 * prog.sas — SAS batch program;
@@ -547,7 +547,7 @@ tanagra -f script.txt
 
 ## Orange
 
-### Python module approach (recommended) / Python 模块方式（推荐）
+### Python module approach (recommended)
 
 ```bash
 # Via Python module
@@ -564,7 +564,7 @@ conda install -c conda-forge orange3
 
 ## H2O.ai
 
-### Python approach (recommended) / Python 方式（推荐）
+### Python approach (recommended)
 
 > ⚠️ **Network & download note**: `h2o.init()` / `h2o start` starts a **local web server** on this machine (default port 54321, browser-accessible); the first run **downloads components** over the network; `pip install h2o` also requires network access. Before starting the H2O server, the Agent must explain this network behavior to the user and obtain explicit confirmation, and must never expose the port to the public internet.
 
@@ -596,10 +596,10 @@ genstat commands.txt
 
 ## Rattle
 
-### CLI mode / CLI 模式
+### CLI mode
 
 ```bash
-# CLI mode / CLI 模式
+# CLI mode
 rattle --cli
 
 # Via R package
@@ -689,7 +689,7 @@ REM Run LabTalk batch script
 "C:\Program Files\OriginLab\Origin2025\origin97.exe" -h "script.ogs"
 ```
 
-### LabTalk script template / LabTalk 脚本模板
+### LabTalk script template
 
 ```labtalk
 // script.ogs — Origin LabTalk script
