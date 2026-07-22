@@ -3,7 +3,7 @@ name: statsoft-cli
 slug: statsoft-cli
 displayName: 统计软件接入助手 / Statsoft-CLI
 cn_name: 统计软件接入助手
-version: "2.7.0"
+version: "2.7.1"
 summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
 license: MIT
 description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML, etc.), bilingual. Core value: activating historical code assets for AI workflow automation."
@@ -23,7 +23,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.7.0",
+    "version": "2.7.1",
     "license": "MIT",
     "tags": ["Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
@@ -35,8 +35,8 @@ metadata:
 
 Pick the README that matches your language for human-readable, language-specific guides:
 
-- **English guide** → [`README.md`](./README.md)
-- **中文指南** → [`README_zh-CN.md`](./README_zh-CN.md)
+- **English guide** → [README.md](https://github.com/medstatstar/statsoft-cli/blob/main/README.md)
+- **中文指南** → [README_zh-CN.md](https://github.com/medstatstar/statsoft-cli/blob/main/README_zh-CN.md)
 
 This skill responds in the user's current input language (Chinese or English) and auto-detects / switches accordingly. The runtime scripts embed a locale check (`$script:isZH` in PowerShell, `SCRIPT_LANG` in Bash) so all user-facing prompts switch to Chinese on a `zh-*` UI culture and to English otherwise. Code comments and documentation are English-only.
 

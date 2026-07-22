@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.7.1 (2026-07-22)
+
+Bug fixes (no feature changes):
+
+- **Minitab reclassified as GUI-only**: `mtb.exe /run` launches the full Minitab GUI and hangs headless (verified via `tasklist /V`), so it is now detect-only + manual launch guide, consistent with AMOS/GraphPad/JASP/jamovi. Updated SKILL.md, AGENTS.md, ADDITIONAL_SOFTWARE.md, command-examples.md, config-templates.md, setup_minitab.ps1/.sh. Removed the inaccurate `mtb.exe /?` and `/run` batch examples.
+- **cross-platform `*.sh` CRLF → LF**: converted 27 working-copy shell scripts to LF and added `.gitattributes` with `*.sh eol=lf` so they stay LF on every platform checkout (previously `core.autocrlf=true` reconverted to CRLF on Windows, breaking the shebang for ClawHub/SkillHub publishes on macOS/Linux).
+- **Fixed README links on SkillHub**: SKILL.md `## Language` guide links now point to absolute GitHub blob URLs because SkillHub's markdown renderer wrongly resolves relative links against a global `/skills/` base and drops the skill slug, producing dead links. Absolute GitHub URLs render correctly on every platform.
+
 ## v2.7.0 (2026-07-22)
 
 Improved Minitab support and bilingual compliance cleanup:
