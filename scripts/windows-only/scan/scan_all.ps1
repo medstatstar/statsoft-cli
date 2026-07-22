@@ -1,4 +1,4 @@
-# scan_all.ps1 — Windows on-demand detection of installed statistical software
+﻿# scan_all.ps1 — Windows on-demand detection of installed statistical software
 # Output JSON: {"R":{"installed":true,"path":"...","version":"..."},...}
 # Detection uses registry uninstall entries + a small set of well-known install
 # paths + command resolution.
@@ -468,6 +468,45 @@ if (Want "Mplus") {
     $foundMplus = $regMplus
     if (-not $foundMplus) { $foundMplus = $regMplus2 }
     Add-RResult "Mplus" $foundMplus $foundMplus.Path $foundMplus.Version
+}
+
+# Minitab
+if (Want "Minitab") {
+    # Prefer the core "Minitab NN" / "Minitab Statistical Software" entry over the
+    # "Minitab Modules" / "minitab shared" add-on, and pick the highest version.
+    $regRoots = @(
+        "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall",
+        "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
+    $minitabCore = $null
+    foreach ($root in $regRoots) {
+        $keys = Get-ChildItem $root -ErrorAction SilentlyContinue
+        foreach ($key in $keys) {
+            $props = Get-ItemProperty $key.PSPath -ErrorAction SilentlyContinue
+            if ($props.DisplayName -match 'Minitab' -and $props.DisplayName -notmatch 'Modules|Shared') {
+                if (-not $minitabCore -or ($props.DisplayVersion -gt $minitabCore.Version)) {
+                    $minitabCore = @{ Path = $props.InstallLocation; Version = $props.DisplayVersion; DisplayName = $props.DisplayName }
+                }
+            }
+        }
+    }
+    $foundMinitab = $minitabCore
+    if (-not $foundMinitab) {
+        $mPaths = @(
+            "C:\Program Files\Minitab\Minitab 22",
+            "C:\Program Files\Minitab\Minitab 21",
+            "C:\Program Files\Minitab\Minitab 20",
+            "C:\Program Files\Minitab\Minitab 19",
+            "C:\Program Files (x86)\Minitab\Minitab 18"
+        )
+        foreach ($mp in $mPaths) {
+            if (Test-Path (Join-Path $mp "mtb.exe")) {
+                $foundMinitab = @{ Path = $mp; Version = (Split-Path $mp -Leaf) -replace 'Minitab ',''; DisplayName = "Minitab" }
+                break
+            }
+        }
+    }
+    Add-RResult "Minitab" $foundMinitab $foundMinitab.Path $foundMinitab.Version
 }
 
 # SHAZAM

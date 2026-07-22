@@ -50,7 +50,7 @@ import datetime
 def _read_json(arg_path, from_stdin):
     if arg_path:
         try:
-            with open(arg_path, "r", encoding="utf-8") as fh:
+            with open(arg_path, "r", encoding="utf-8-sig") as fh:
                 return fh.read()
         except Exception as exc:  # pragma: no cover - defensive
             sys.stderr.write("write_config.py: cannot read JSON file %s: %s\n" % (arg_path, exc))
@@ -80,12 +80,19 @@ def main():
     # rejected outright, so a buggy or malicious wrapper cannot redirect writes
     # to an arbitrary location or turn this helper into a generic file writer.
     _self_dir = os.path.dirname(os.path.abspath(__file__))
+    # Skill root config.json (scripts/common -> ../..), AND the live windows-only
+    # runtime config (scripts/common -> ../windows-only). Both live inside the skill
+    # directory, so neither expands the writable surface; they only let the existing
+    # windows-only setup_*.ps1 writers (which resolve "..\config.json" to
+    # scripts/windows-only/config.json) reach their actual target instead of being
+    # rejected. Pre-existing scripts/common scripts themselves persist to root.
     canonical_cfg = os.path.normpath(os.path.join(_self_dir, "..", "..", "config.json"))
+    canonical_cfg_win = os.path.normpath(os.path.join(_self_dir, "..", "windows-only", "config.json"))
     target_abs = os.path.normpath(os.path.abspath(target_path))
-    if target_abs != canonical_cfg:
+    if target_abs != canonical_cfg and target_abs != canonical_cfg_win:
         sys.stderr.write(
             "write_config.py: target path rejected — persistence is restricted to the "
-            "canonical skill-root config.json (%s). Got: %s\n" % (canonical_cfg, target_path)
+            "canonical config.json locations (%s or %s). Got: %s\n" % (canonical_cfg, canonical_cfg_win, target_path)
         )
         return 2
     json_src = _read_json(args[1] if len(args) > 1 else None,

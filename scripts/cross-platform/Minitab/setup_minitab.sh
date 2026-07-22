@@ -28,6 +28,8 @@ detect_minitab() {
     if [ "$WB_OS" = "windows" ]; then
         # Windows: check common installation paths
         local win_paths=(
+            "C:/Program Files/Minitab/Minitab 23/mtb.exe"
+            "C:/Program Files/Minitab/Minitab 22/mtb.exe"
             "C:/Program Files/Minitab/Minitab 21/mtb.exe"
             "C:/Program Files/Minitab/Minitab 20/mtb.exe"
             "C:/Program Files/Minitab/Minitab 19/mtb.exe"

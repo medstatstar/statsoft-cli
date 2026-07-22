@@ -1,10 +1,10 @@
-# Command Invocation Examples / 命令调用示例
+# Command Invocation Examples
 
 > This document contains CLI command invocation examples for each statistical software package.
 
 ---
 
-## Table of Contents / 目录
+## Table of Contents
 
 1. [R](#r)
 2. [SPSS](#spss)
@@ -32,7 +32,7 @@
 
 ## R
 
-### Basic run / 基本运行
+### Basic run
 
 ```bash
 # Run R script
@@ -42,14 +42,14 @@ Rscript --vanilla "script.R"
 R CMD BATCH "script.R" "output.Rout"
 ```
 
-### Package installation (requires explicit user confirmation before network download/install) / 包安装（联网下载/安装前需明确用户确认）
+### Package installation (requires explicit user confirmation before network download/install)
 
 ```bash
 # Downloads from CRAN and modifies the local R environment; requires explicit user confirmation before running — do not install without it
 Rscript -e "install.packages('pkg', repos='https://cran.r-project.org')"
 ```
 
-### Batch script template / 批处理脚本模板
+### Batch script template
 
 ```r
 # script.R
@@ -64,7 +64,7 @@ write.csv(result$coefficients, "results.csv", row.names=FALSE)
 save(result, file="results.RData")
 ```
 
-### Common scenarios / 常见场景
+### Common scenarios
 
 ```bash
 # Read SPSS .sav file
@@ -114,7 +114,7 @@ AI Agent (Bash tool)
           → SPSS runs in background (zero window)
 ```
 
-### Fallback approach / 备用方式
+### Fallback approach
 
 Run the .spj file via `stats.com` (console version, completely splash-free):
 
@@ -148,7 +148,7 @@ Or use `stats.exe` (GUI version, may show a splash screen):
 
 **Key**: the `<output>` element must not be omitted, otherwise a NullPointerException is thrown.
 
-### Automated Python script (completely GUI-free) / 自动化 Python 脚本（完全无 GUI）
+### Automated Python script (completely GUI-free)
 
 ```python
 import sys, os
@@ -190,7 +190,7 @@ print(df.head())
 
 ## SPSS Modeler
 
-### Batch execute .str stream file / 批处理执行 .str 流文件
+### Batch execute .str stream file
 
 ```powershell
 # Via statsoft-modeler CLI
@@ -212,7 +212,7 @@ statsoft-modeler run-script "C:\path\to\train_model.py"
     -log "train.log" -execute
 ```
 
-### Remote Modeler Server mode (not supported) / 远程 Modeler 服务器模式（不支持）
+### Remote Modeler Server mode (not supported)
 
 > ⚠️ This skill does NOT support remote Modeler Server execution. `statsoft-modeler` provides LOCAL (`-local`) mode only — there is no `server-run` subcommand, and the skill never initiates remote connections or handles remote credentials.
 
@@ -252,7 +252,7 @@ output_node.Export("C:/output/results.csv")
 
 **Key**: Stata 12 uses `-e`, Stata 13+ uses `-b`. Using the wrong version parameter triggers a confirmation dialog!
 
-### Basic batch example / 基本批处理示例
+### Basic batch example
 
 ```bash
 # Stata 13+ (Windows)
@@ -268,7 +268,7 @@ stata-mp -b do "script.do"
 stata-mp -e do "script.do"
 ```
 
-### Version and executable file reference / 版本与可执行文件参考
+### Version and executable file reference
 
 | Version | MP | SE | BE |
 |------|----|----|-----|
@@ -293,7 +293,7 @@ log close
 
 ## SAS
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Windows
@@ -331,7 +331,7 @@ run;
 
 ## JMP
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```powershell
 # Batch mode (may show brief splash screen 1-2 seconds)
@@ -371,7 +371,7 @@ Exit();
 
 ## StatTransfer
 
-### Single-file conversion / 单文件转换
+### Single-file conversion
 
 ```bash
 # SPSS → Stata
@@ -384,7 +384,7 @@ st in.csv out.sav
 st in.sas7bdat out.rda
 ```
 
-### Batch conversion / 批处理转换
+### Batch conversion
 
 ```bash
 # Batch-convert all .sav in a directory to .dta
@@ -396,7 +396,7 @@ st myfile.stcmd
 
 ---
 
-## Other software / 其他软件
+## Other software
 
 ### Gretl
 
@@ -433,8 +433,14 @@ wolframscript -code "p = Plot[Sin[x], {x, 0, 6 Pi}, PlotLabel -> \"Sine Wave\"];
 ### Minitab
 
 ```powershell
-# Basic batch / 基本批处理
-& "C:\Program Files\Minitab\Minitab 21\Minitab.exe" /P "macro.mtb"
+# Basic batch run of a Minitab script (.mtb)
+& "C:\Program Files\Minitab\Minitab 22\mtb.exe" /run "analysis.mtb"
+```
+
+```text
+# analysis.mtb — minimal example (end the script with STOP to auto-exit Minitab)
+Note "Hello from Minitab CLI"
+Stop
 ```
 
 ### Matlab
@@ -468,7 +474,7 @@ julia script.jl
 
 ## JAGS
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Run JAGS script
@@ -485,7 +491,7 @@ Rscript -e "library(rjags); jags.model('script.dat', data)"
 
 ## SHAZAM
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Run SHAZAM command file
@@ -502,7 +508,7 @@ shazam commands.txt
 
 ## OxMetrics
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Show CLI options
@@ -516,7 +522,7 @@ oxmetrics -b commands.txt
 
 ## TSP
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Run TSP command file
@@ -527,7 +533,7 @@ tsp commands.txt
 
 ## Tanagra
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Show CLI options
@@ -579,7 +585,7 @@ pip install h2o
 
 ## GenStat
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Run GenStat command file
@@ -604,7 +610,7 @@ Rscript -e "library(rattle); rattle()"
 
 ## OpenBUGS
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```bash
 # Show help
@@ -618,7 +624,7 @@ openbugs -b script.txt
 
 ## LIMDEP
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```batch
 REM Run LIMDEP command file
@@ -629,7 +635,7 @@ limdep commands.txt
 
 ## NLOGIT
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```batch
 REM Run NLOGIT command file
@@ -640,7 +646,7 @@ nlogit commands.txt
 
 ## Microfit
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```batch
 REM Run Microfit command file
@@ -651,7 +657,7 @@ microfit commands.txt
 
 ## NCSS
 
-### Basic batch / 基本批处理
+### Basic batch
 
 ```batch
 REM Run NCSS batch analysis
@@ -676,7 +682,7 @@ Export = "results.html"
 
 ## Origin (OriginLab)
 
-### Run LabTalk script / 运行 LabTalk 脚本
+### Run LabTalk script
 
 ```batch
 REM Run LabTalk batch script

@@ -1,4 +1,4 @@
-# Configuration & Memory Templates / 配置与记忆模板
+# Configuration & Memory Templates
 
 ## SPSS Statistics Memory Template / SPSS Statistics 记忆模板
 
@@ -124,6 +124,23 @@
 - **Executable Path**: `[SAS_EXE_PATH]`
 ```
 
+## Minitab Memory Template / Minitab 记忆模板
+
+```markdown
+### Minitab Environment / Minitab 环境
+
+- **Version**: Minitab [22/21/20/19/18]
+- **Main Executable (batch engine)**: `C:\Program Files\Minitab\Minitab [VERSION]\mtb.exe`
+- **Invocation Priority**:
+  1. **Approach 1 (preferred, CLI)**: `mtb.exe /run "script.mtb"` → runs a Minitab script file; end the script with `STOP` to auto-exit Minitab
+     ```powershell
+     & "C:\Program Files\Minitab\Minitab 22\mtb.exe" /run "analysis.mtb"
+     ```
+  2. **Approach 2 (project mode)**: `mtb.exe /P "project.mpj"` → open/run a project (may show a brief splash screen)
+- **Config Field**: `config.json > "Minitab"`
+- **macOS / Linux**: No native CLI; use Minitab Web App (https://app.minitab.com/) or remote desktop to a Windows host
+```
+
 ## R — Alternative when R is not available / R —— 当 R 不可用时（替代方案）
 
 | R Package | Anaconda Python Alternative |
@@ -134,7 +151,7 @@
 | survival | lifelines |
 | lme4 / nlme | statsmodels |
 
-## Configuration File (config.json) / 配置文件（config.json）
+## Configuration File (config.json)
 
 ```json
 {
@@ -146,7 +163,7 @@
 }
 ```
 
-## Common Errors & Solutions / 常见错误与解决方案
+## Common Errors & Solutions
 
 | Software | Error | Cause | Solution |
 |----------|-------|-------|----------|
@@ -161,7 +178,7 @@
 | SAS | License expired | Expired license | Update license file |
 | SAS | Encoding issue | Encoding mismatch | `options encoding='utf-8';` |
 
-## Completion Prompt Templates / 完成提示模板
+## Completion Prompt Templates
 
 ### SPSS (preferred success) / SPSS（首选成功）
 
@@ -219,7 +236,7 @@
   sas -sysin "prog.sas" -log "out.log" -print "out.lst"
 ```
 
-## Platform-Specific Paths / 平台相关路径
+## Platform-Specific Paths
 
 ### R
 - Windows: `C:\Program Files\R\`
@@ -240,7 +257,7 @@
 ### GraphPad (Windows only) / GraphPad（仅 Windows）
 `C:\Program Files\GraphPad\Prism 9\`; `\10\`
 
-## Advanced Mode Scripts / 高级模式脚本
+## Advanced Mode Scripts
 
 | Software | Windows Command |
 |----------|-----------------|
