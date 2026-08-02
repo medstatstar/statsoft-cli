@@ -42,11 +42,11 @@ detect_gretl() {
         
         # Check PATH
         if [ -z "$gretl_cmd" ]; then
-            gretl_cmd=$(which gretlcli 2>/dev/null)
+            gretl_cmd=$(command -v gretlcli 2>/dev/null)
         fi
     else
         # Mac/Linux: check PATH
-        gretl_cmd=$(which gretlcli 2>/dev/null)
+        gretl_cmd=$(command -v gretlcli 2>/dev/null)
         
         # Mac: check the Applications directory
         if [ -z "$gretl_cmd" ] && [ "$WB_OS" = "mac" ]; then
@@ -58,7 +58,7 @@ detect_gretl() {
         # Linux: check the package manager
         if [ -z "$gretl_cmd" ] && [ "$WB_OS" = "linux" ]; then
             if command -v gretlcli &> /dev/null; then
-                gretl_cmd=$(which gretlcli)
+                gretl_cmd=$(command -v gretlcli)
             fi
         fi
     fi

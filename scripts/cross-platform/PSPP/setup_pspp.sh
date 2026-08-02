@@ -20,7 +20,7 @@ CONFIG_PATH="$(dirname "$0")/../../config.json"
 
 PSPP_BIN=""
 if command -v pspp &>/dev/null; then
-    PSPP_BIN="$(which pspp)"
+    PSPP_BIN="$(command -v pspp)"
 elif [ -n "${PSPP_HOME:-}" ] && [ -d "$PSPP_HOME" ]; then
     PSPP_BIN="$PSPP_HOME/pspp"
 elif [ -f "/usr/bin/pspp" ]; then

@@ -1,4 +1,4 @@
-# Setup script for Microfit
+﻿# Setup script for Microfit
 # Time series and econometric software
 # Reference: https://www.econometrics.com/
 
@@ -86,7 +86,9 @@ if ($microfitExe) {
 
 # Persist ONLY when explicitly opted in. Do NOT read or modify config.json
 # during default (detection-only) runs (SDI-3).
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 $autoWrite = $env:STATSOFT_AUTO_WRITE -eq '1'
 $confirm = $env:STATSOFT_CONFIRM -eq '1'
 $persist = $autoWrite -or ($confirm -and -not [Console]::IsInputRedirected)

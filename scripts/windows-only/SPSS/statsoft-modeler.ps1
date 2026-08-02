@@ -1,4 +1,4 @@
-# statsoft-modeler.ps1 -- SPSS Modeler LOCAL CLI wrapper (batch mode)
+﻿# statsoft-modeler.ps1 -- SPSS Modeler LOCAL CLI wrapper (batch mode)
 # Uses clemb.exe (CLEmbedded Modeler) in -local mode ONLY.
 # This wrapper performs LOCAL execution only; it does NOT connect to any
 # SPSS Modeler Server (remote/server execution is out of scope for this skill).
@@ -18,7 +18,9 @@ param(
 )
 
 $scriptDir  = Split-Path $MyInvocation.MyCommand.Path -Parent
-$configPath = Join-Path $scriptDir "..\config.json"
+$configPath = Join-Path $scriptDir "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $scriptDir "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $scriptDir "..\..\config.json" }
 
 # Locate clemb.exe -- try config.json first
 $clembExe = $null

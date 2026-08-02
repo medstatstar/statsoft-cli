@@ -118,48 +118,56 @@
     "mode": "simple"
   },
   "CmdStan": {
+    "installed": true,
     "version": "2.30+",
     "path": "~/.cmdstanpy/cmdstan",
     "platform": "all",
     "mode": "simple"
   },
   "Weka": {
+    "installed": true,
     "version": "3.8+",
     "path": "/usr/local/share/weka",
     "platform": "all",
     "mode": "simple"
   },
   "KNIME": {
+    "installed": true,
     "version": "4.7+",
     "path": "/opt/knime",
     "platform": "all",
     "mode": "simple"
   },
   "jamovi": {
+    "installed": true,
     "version": "2.4+",
     "path": "/usr/bin",
     "platform": "all",
     "mode": "simple"
   },
   "JASP": {
+    "installed": true,
     "version": "0.18+",
     "path": "/usr/bin",
     "platform": "all",
     "mode": "simple"
   },
   "PSPP": {
+    "installed": true,
     "version": "2.0+",
     "path": "/usr/bin",
     "platform": "all",
     "mode": "simple"
   },
   "Mplus": {
+    "installed": true,
     "version": "8.11",
     "path": "C:\\Program Files\\Mplus",
-    "platform": "win",
+    "platform": "windows",
     "mode": "simple"
   },
   "Mathematica": {
+    "installed": true,
     "version": "14.0",
     "path": "[MATHEMATICA_INSTALL_PATH]/wolframscript.exe",
     "kernel_path": "[MATHEMATICA_INSTALL_PATH]/MathKernel.exe",
@@ -167,33 +175,46 @@
     "mode": "simple"
   },
   "AMOS": {
+    "installed": true,
     "version": "29.0",
     "path": "C:\\Program Files\\IBM\\SPSS\\Amos",
-    "platform": "win",
+    "platform": "windows",
     "mode": "simple"
   },
   "Q_MRKS": {
+    "installed": true,
     "version": "6.0",
     "path": "C:\\Program Files\\Q Research",
-    "platform": "win",
+    "platform": "windows",
     "mode": "simple"
   },
   "StatTransfer": {
+    "installed": true,
     "version": "[VERSION]",
     "path": "[STATTRANSFER_INSTALL_PATH]",
     "mode": "simple",
     "platform": "windows"
   },
   "NCSS": {
+    "installed": true,
     "version": "2024",
     "path": "[NCSS_INSTALL_PATH]",
     "mode": "simple",
     "platform": "windows"
   },
   "Origin": {
+    "installed": true,
     "version": "2025",
     "path": "[ORIGIN_INSTALL_PATH]",
     "mode": "simple",
     "platform": "windows"
+  },
+  "Minitab": {
+    "installed": true,
+    "version": "[MINITAB_VERSION]",
+    "path": "[MINITAB_INSTALL_PATH]",
+    "exe": "[MINITAB_INSTALL_PATH]\\mtb.exe",
+    "platform": "windows",
+    "mode": "simple"
   }
 }

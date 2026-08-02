@@ -1,4 +1,4 @@
-# setup_spss.ps1 — SPSS Statistics 检测与配置（后台静默运行）
+﻿# setup_spss.ps1 — SPSS Statistics 检测与配置（后台静默运行）
 # 用法: powershell -ExecutionPolicy Bypass -File setup_spss.ps1 [-Version "26"]
 # 注意：SPSS 26+ 版主程序为 stats.exe，无 spsswin.exe
 # ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables.

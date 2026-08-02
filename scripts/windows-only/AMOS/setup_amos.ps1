@@ -1,4 +1,4 @@
-# setup_amos.ps1 — AMOS detection and configuration (Windows)
+﻿# setup_amos.ps1 — AMOS detection and configuration (Windows)
 # Detection performs common path and registry searches
 # ⚠️ SETUP tool: detects installed software AND persists config to config.json (timestamped backup + explicit y/N confirmation). NOT a read-only scanner. GUI-only software: detection/launch only, no CLI batch.
 
@@ -63,7 +63,9 @@ param(
 $ErrorActionPreference = "SilentlyContinue"
 
 $scriptDir = Split-Path $MyInvocation.MyCommand.Path -Parent
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 # Load existing config (ordered)
 $config = [ordered]@{}
@@ -209,7 +211,7 @@ $config["AMOS"] = [ordered]@{
     "path"      = (Split-Path $amosExe -Parent)
     "exe"       = $amosExe
     "version"   = $ver
-    "platform"  = "win"
+    "platform"  = "windows"
 }
 
 Save-StatSoftConfig -ConfigPath $configPath -Config $config

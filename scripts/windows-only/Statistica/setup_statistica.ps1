@@ -1,4 +1,4 @@
-# Statistica detection & manual-guidance script
+﻿# Statistica detection & manual-guidance script
 # Supported platform: Windows-only
 #
 # IMPORTANT (SkillSpector SDI-1 / SDI-4 fix):

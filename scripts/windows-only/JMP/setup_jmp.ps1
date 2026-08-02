@@ -1,4 +1,4 @@
-# setup_jmp.ps1 — JMP detection and configuration script
+﻿# setup_jmp.ps1 — JMP detection and configuration script
 # Usage: powershell -ExecutionPolicy Bypass -File setup_jmp.ps1
 # ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables.
 

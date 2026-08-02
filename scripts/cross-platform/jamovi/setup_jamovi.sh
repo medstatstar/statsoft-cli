@@ -21,7 +21,7 @@ CONFIG_PATH="$(dirname "$0")/../../config.json"
 
 JAMOVI_BIN=""
 if command -v jamovi &>/dev/null; then
-    JAMOVI_BIN="$(which jamovi)"
+    JAMOVI_BIN="$(command -v jamovi)"
 elif [ -n "${JAMOVI_HOME:-}" ] && [ -d "$JAMOVI_HOME" ]; then
     JAMOVI_BIN="$JAMOVI_HOME/jamovi"
 elif [ -f "/Applications/jamovi.app/Contents/MacOS/jamovi" ]; then

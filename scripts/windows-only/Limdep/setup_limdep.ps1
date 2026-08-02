@@ -1,4 +1,4 @@
-# Setup script for LIMDEP
+﻿# Setup script for LIMDEP
 # Econometric software for limited and qualitative dependent variable models
 # Reference: https://limdep.com/
 
@@ -85,7 +85,9 @@ if ($limdepExe) {
 # Issue 9 fix: read config.json + build config object ONLY after opt-in is confirmed.
 # Gate (default-deny): persist only when STATSOFT_AUTO_WRITE=1 or STATSOFT_CONFIRM=1.
 $canPersist = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 if ($limdepExe -and $canPersist) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json

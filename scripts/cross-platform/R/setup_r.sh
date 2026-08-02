@@ -269,50 +269,28 @@ scan_packages() {
     echo "============================================"
     LANG_ZH "" ""
 
-    declare -A stat_categories
-    declare -A stat_categories_zh
-    stat_categories["Descriptive Statistics"]="psych pastecs DescTools summarizeR"
-    stat_categories_zh["Descriptive Statistics"]="描述统计"
-    stat_categories["Hypothesis Testing"]="stats car lmtest nortest"
-    stat_categories_zh["Hypothesis Testing"]="假设检验"
-    stat_categories["Regression"]="stats car MASS lme4 nlme survival rms"
-    stat_categories_zh["Regression"]="回归分析"
-    stat_categories["Multivariate Analysis"]="stats MASS psych FactoMineR factoextra"
-    stat_categories_zh["Multivariate Analysis"]="多变量分析"
-    stat_categories["Bayesian"]="rjags coda bayesrunjags"
-    stat_categories_zh["Bayesian"]="贝叶斯统计"
-    stat_categories["Meta Analysis"]="metafor meta"
-    stat_categories_zh["Meta Analysis"]="Meta 分析"
-    stat_categories["Psychometrics"]="psych lavaan semPlot mirt"
-    stat_categories_zh["Psychometrics"]="问卷与心理测量"
-    stat_categories["Data Manipulation"]="dplyr tidyr data.table reshape2"
-    stat_categories_zh["Data Manipulation"]="数据操作"
-    stat_categories["Data Visualization"]="ggplot2 plotly shiny lattice"
-    stat_categories_zh["Data Visualization"]="数据可视化"
-    stat_categories["Machine Learning"]="caret randomForest xgboost mlr3"
-    stat_categories_zh["Machine Learning"]="机器学习"
-    stat_categories["Time Series"]="forecast tseries zoo xts"
-    stat_categories_zh["Time Series"]="时间序列"
-    stat_categories["Spatial Statistics"]="spdep raster sf"
-    stat_categories_zh["Spatial Statistics"]="空间统计"
-    stat_categories["Survival Analysis"]="survival cmprsk survminer"
-    stat_categories_zh["Survival Analysis"]="生存分析"
-    stat_categories["Epidemiology"]="Epi epitools"
-    stat_categories_zh["Epidemiology"]="流行病学"
-    stat_categories["Sample Size"]="pwr samplesize"
-    stat_categories_zh["Sample Size"]="样本量计算"
-    stat_categories["SEM"]="lavaan semPlot OpenMx"
-    stat_categories_zh["SEM"]="结构方程"
+    # Portable category tables (indexed arrays — no associative arrays, so this
+    # works on macOS's default bash 3.2 as well as bash 4+).
+    cat_keys=("Descriptive Statistics" "Hypothesis Testing" "Regression" "Multivariate Analysis" "Bayesian" "Meta Analysis" "Psychometrics" "Data Manipulation" "Data Visualization" "Machine Learning" "Time Series" "Spatial Statistics" "Survival Analysis" "Epidemiology" "Sample Size" "SEM")
+    cat_pkgs=("psych pastecs DescTools summarizeR" "stats car lmtest nortest" "stats car MASS lme4 nlme survival rms" "stats MASS psych FactoMineR factoextra" "rjags coda bayesrunjags" "metafor meta" "psych lavaan semPlot mirt" "dplyr tidyr data.table reshape2" "ggplot2 plotly shiny lattice" "caret randomForest xgboost mlr3" "forecast tseries zoo xts" "spdep raster sf" "survival cmprsk survminer" "Epi epitools" "pwr samplesize" "lavaan semPlot OpenMx")
+    cat_zh=("描述统计" "假设检验" "回归分析" "多变量分析" "贝叶斯统计" "Meta 分析" "问卷与心理测量" "数据操作" "数据可视化" "机器学习" "时间序列" "空间统计" "生存分析" "流行病学" "样本量计算" "结构方程")
 
-    for cat in "${!stat_categories[@]}"; do
+    for i in "${!cat_keys[@]}"; do
+        local cat="${cat_keys[$i]}"
+        local pkgs="${cat_pkgs[$i]}"
+        local zh="${cat_zh[$i]}"
         local found_pkgs=()
-        for pkg in ${stat_categories[$cat]}; do
+        for pkg in $pkgs; do
             if grep -qw "^${pkg}$" "$pkg_list_file" 2>/dev/null; then
                 found_pkgs+=("$pkg")
             fi
         done
         if [[ ${#found_pkgs[@]} -gt 0 ]]; then
-            LANG_ZH "✅ ${stat_categories_zh[$cat]}: ${found_pkgs[*]}" "✅ ${cat}: ${found_pkgs[*]}"
+            if [[ "$SCRIPT_LANG" == "zh" ]]; then
+                echo "✅ ${zh}: ${found_pkgs[*]}"
+            else
+                echo "✅ ${cat}: ${found_pkgs[*]}"
+            fi
         fi
     done
 

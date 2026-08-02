@@ -27,7 +27,7 @@ detect_julia() {
     local julia_cmd=""
     
     # All platforms: check PATH
-    julia_cmd=$(which julia 2>/dev/null)
+    julia_cmd=$(command -v julia 2>/dev/null)
     
     if [ -z "$julia_cmd" ]; then
         # Windows: check common installation paths

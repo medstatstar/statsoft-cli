@@ -147,6 +147,19 @@ def main():
         json.dump(data, fh, indent=2, ensure_ascii=False)
     os.replace(tmp, target_path)
     print("Config written to: " + target_path)
+
+    # Dual-canonical mirror (B5 hardening): keep the sibling canonical config in
+    # sync so readers (e.g. windows-only/statsoft-r.ps1, which resolves
+    # "..\config.json") never see a stale copy after a write to the other one.
+    for sib in (canonical_cfg, canonical_cfg_win):
+        if sib != target_abs and os.path.exists(sib):
+            sib_bak = sib + ".bak." + datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            shutil.copy2(sib, sib_bak)
+            sib_tmp = sib + ".tmp." + str(os.getpid())
+            with open(sib_tmp, "w", encoding="utf-8") as fh:
+                json.dump(data, fh, indent=2, ensure_ascii=False)
+            os.replace(sib_tmp, sib)
+            print("Config mirrored to: " + sib)
     return 0
 
 

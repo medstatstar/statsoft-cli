@@ -1,4 +1,4 @@
-# setup_graphpad.ps1 — GraphPad Prism detection and configuration script
+﻿# setup_graphpad.ps1 — GraphPad Prism detection and configuration script
 # Usage: powershell -ExecutionPolicy Bypass -File setup_graphpad.ps1
 # ⚠️ SETUP tool: DETECTION-ONLY. Detects installed software and prints manual configuration guidance. It does NOT write config.json or user environment variables. GUI-only software: detection/launch only, no CLI batch.
 

@@ -1,4 +1,4 @@
-# statsoft-graphpad.ps1 — GraphPad Prism GUI helper (detection and reading only; no CLI / no batch automation)
+﻿# statsoft-graphpad.ps1 — GraphPad Prism GUI helper (detection and reading only; no CLI / no batch automation)
 # GraphPad Prism has no CLI mode and cannot run silent batch jobs. This script only:
 #   1) Manually launch the GraphPad Prism GUI to open a file (no wait, no analysis driving)
 #   2) Read-only read/validate .pzfx file structure (via the prismwriter Python library, no GUI)
@@ -28,7 +28,9 @@ function Write-Lang {
 }
 
 # Read config
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (-not (Test-Path $configPath)) {
     Write-Error (if ($script:isZH){"配置文件不存在: $configPath。请先运行 setup_graphpad.ps1"}else{"Config file not found: $configPath. Please run setup_graphpad.ps1 first."})
     exit 1

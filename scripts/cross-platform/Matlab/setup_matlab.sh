@@ -42,11 +42,11 @@ detect_matlab() {
         
         # Check PATH
         if [ -z "$matlab_cmd" ]; then
-            matlab_cmd=$(which matlab 2>/dev/null)
+            matlab_cmd=$(command -v matlab 2>/dev/null)
         fi
     else
         # Mac/Linux: check PATH
-        matlab_cmd=$(which matlab 2>/dev/null)
+        matlab_cmd=$(command -v matlab 2>/dev/null)
         
         # Mac: check the Applications directory
         if [ -z "$matlab_cmd" ] && [ "$WB_OS" = "mac" ]; then

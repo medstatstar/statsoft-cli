@@ -1,4 +1,4 @@
-# Setup script for OriginLab Origin
+﻿# Setup script for OriginLab Origin
 # Scientific Graphing and Data Analysis Software
 # Reference: https://www.originlab.com/
 
@@ -96,7 +96,9 @@ if ($originExe) {
   Write-Lang "Origin not found. Please install from https:" "/www.originlab.com/" -Color Yellow
 }
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (Test-Path $configPath) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
     if ($originExe) {

@@ -3,14 +3,13 @@ name: statsoft-cli
 slug: statsoft-cli
 displayName: 统计软件接入助手 / Statsoft-CLI
 cn_name: 统计软件接入助手
-version: "2.7.1"
+version: "2.8.2"
 summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
 license: MIT
 description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML, etc.), bilingual. Core value: activating historical code assets for AI workflow automation."
 triggers:
   - "SPSS"
   - "SPSS Statistics"
-  - "R"
   - "R命令行"
   - "Stata"
   - "SAS"
@@ -18,17 +17,24 @@ triggers:
   - "连接统计软件"
   - "statsoft-cli"
   - "connect statistical software"
+required_commands: [python, bash, powershell]
 metadata:
   {
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.7.1",
+    "version": "2.8.2",
     "license": "MIT",
     "tags": ["Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
     "repository": "https://github.com/medstatstar/statsoft-cli"
   }
+permissions:
+  scope: "user-space-only"
+  network: "off"
+  network_note: "Offline by default; only CRAN / Anaconda repo access for local dependency install, requires explicit confirmation."
+  filesystem: "read-only to its own files; writes only config.json under skill root with explicit opt-in"
+  data: "no external data transmission"
 ---
 
 ## Language
@@ -57,19 +63,45 @@ Covers 34+ statistical / data-science packages, auto-routed by platform; non-Win
 
 Full platform matrix in `references/platform-support.md`; extended config in `ADDITIONAL_SOFTWARE.md`.
 
+## Router Paths
+
+When gate 0 classifies a request as **Simple** (clear tool + action), route straight to the canonical per-tool entry script. These are the 6 primary entry points; the rest are auto-discovered from the platform matrix:
+
+- `scripts/windows-only/SPSS/setup_spss.ps1` — SPSS Statistics (Windows)
+- `scripts/windows-only/statsoft-r.ps1` — R CLI wrapper / data conversion (Windows)
+- `scripts/cross-platform/R/setup_r.sh` — R (cross-platform)
+- `scripts/cross-platform/Stata/setup_stata.sh` — Stata (cross-platform)
+- `scripts/windows-only/statsoft-sas.ps1` — SAS (Windows)
+- `scripts/cross-platform/SAS/setup_sas.sh` — SAS (cross-platform)
+
+## Clarification Gate (gate 0) — friendly menu policy
+
+Per ct-base §13 (the same pattern ct-advisor implements as its gate 0), this skill **triages the user's first message before opening any menu** and **defaults to the friendliest path**. The interactive menus (scan-confirmation, config-mode selection) are only shown when step-by-step confirmation genuinely helps — never forced onto a simple request.
+
+Classify the first message into one of three paths:
+
+- **Simple** — specific, single-intent, answerable directly (e.g. "Connect SPSS 26", "Convert data.sav to data.dta", "Run my Stata do-file batch"). → Detect / act in one pass. **Do NOT pop the scan or config menu.** If the tool and target are clear, route straight to detection / configuration (detect-only by default) and report; optionally offer a deeper step ("want me to also scan for the rest?") rather than demanding a choice.
+- **Complex** — multi-decision or "set up everything / I'm not sure what's installed" (Example 4 in the README). → Present the **routing menu** (auto-scan vs specify-paths) and confirm step by step. Only open the full menu when step-by-step confirmation genuinely helps.
+- **Vague** — need unclear / user undecided (Example 5, "I want to use statistical software but don't know where to start"). → Enter **grill-me clarify mode**: ask 1–3 conclusion-changing questions per round (which tools are installed? what do you want to do — run old scripts / convert data / build new analysis? headless or GUI?), branch-by-branch, until the right tool is locked — never dump the 34-tool list or pick for the user.
+
+**Default to the friendliest path**: when in doubt between simple and complex, give a short direct detection + an optional deeper-menu offer instead of forcing a menu. When the user's first message already names a clear target (a specific tool + action), **skip the menu entirely** and go straight to detection / configuration.
+
+> The clarification strings themselves follow the locale switch (`$script:isZH` / `SCRIPT_LANG`), so menus and probes render in Chinese on a `zh-*` system and English otherwise — consistent with ct-base §13.3 (this skill's script-embedded locale mechanism is the equivalent of `i18n.py`).
+
 ## Execution Workflow
 
-1. **Detect Platform** — cross-platform `source scripts/cross-platform/_platform-detect.sh` (sets `$PLATFORM`/`$OS`/`$ARCH`); Windows handled inside `.ps1` scripts, no source
-2. **Pre-scan Confirmation** — before any scan, MUST prompt and wait:
+1. **Detect Platform** — cross-platform `source scripts/cross-platform/_platform-detect.sh` (sets `WB_OS` / `WB_ARCH`; Windows handled inside `.ps1` scripts, no source)
+2. **Pre-scan Confirmation** (only when gate 0 classifies the request as **Complex**) — before a full scan, prompt and wait:
    - Prompt (English by default; auto-switched to Chinese on a `zh-*` locale): "⚠️ Auto-scan may take a while (~30s on Windows). If you have ≤3 packages, specify paths to skip. Your choice?" Options: A) Auto-scan  B) Specify paths
    - A → step 3; B → skip scan, go to step 4
 3. **System Scan** (only if A) — batch-detect installed software:
    - Windows: `scripts/windows-only/scan/scan_all.ps1`; Mac/Linux: `scripts/cross-platform/scan/scan_all.sh`
    - Output JSON: `{"R":{"installed":true,"path":"...","version":"..."},...}`
-   - By default only the `installed` boolean is returned; path / version disclosed only with `STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1`+interactive y (note: `STATSOFT_REVEAL` controls per-software setup-time output only, not batch scan results)
+   - **Batch scan** (`scan_all.*`): without explicit consent it is **skipped entirely** (prints a notice, exits 0, no JSON). With consent (set `STATSOFT_AUTO_WRITE` to `1` or `STATSOFT_CONFIRM` to `1` plus an interactive `y`) it returns the full `{path, version}` JSON. `STATSOFT_REVEAL` does **not** affect the batch scan.
+   - **Per-software setup** (`setup_*.sh` / `setup_*.ps1`): reports `installed=true` with path / version **hidden by default**; `STATSOFT_REVEAL` set to `1` reveals them in the setup output — this is the only thing `REVEAL` controls.
 4. **Select Config Mode** — batch / specified / single-software (calls individual `setup_*.ps1` or `setup_*.sh`)
 5. **Detect & Setup** — route to the platform script; non-Windows auto-hides incompatible software
-6. **Save Config** — detect-only by default; writes `config.json` only with explicit authorization (`STATSOFT_AUTO_WRITE=1` or `STATSOFT_CONFIRM=1` + interactive y)
+6. **Save Config** — detect-only by default; writes `config.json` only with explicit authorization (set `STATSOFT_AUTO_WRITE` to `1` or `STATSOFT_CONFIRM` to `1` plus an interactive `y`)
 7. **Output Summary** — per `references/completion-prompts.md` template
 
 ## Default-Deny Gates
@@ -78,11 +110,11 @@ All persistence and sensitive operations are **off by default** and require expl
 
 | Gate | Effect | Default |
 |------|--------|---------|
-| `STATSOFT_AUTO_WRITE=1` | Persist `config.json` (non-interactive / agent context) | off |
-| `STATSOFT_CONFIRM=1` + TTY y | Persist after interactive confirmation | off |
-| `STATSOFT_REVEAL=1` | Reveal path / version details during detection | off |
-| `STATSOFT_VERIFY=1` | Allow launching third-party binaries for version / verification | off |
-| `STATSOFT_CMDSTAN_RUN=1` | Allow compiling & running user Stan models (untrusted native code) | off |
+| `STATSOFT_AUTO_WRITE` set to `1` | Persist `config.json` (non-interactive / agent context) | off |
+| `STATSOFT_CONFIRM` set to `1` + TTY y | Persist after interactive confirmation | off |
+| `STATSOFT_REVEAL` set to `1` | Reveal path / version in **per-software setup** output only (batch `scan_all` needs consent, not `REVEAL`) | off |
+| `STATSOFT_VERIFY` set to `1` | Allow launching third-party binaries for version / verification | off |
+| `STATSOFT_CMDSTAN_RUN` set to `1` | Allow compiling & running user Stan models (untrusted native code) | off |
 
 All writes go through `scripts/common/write_config.py`: accepts only the canonical `config.json` under the skill root, and before writing takes a timestamped backup (`config.json.bak.yyyymmdd_hhmmss`) then atomic-replaces.
 

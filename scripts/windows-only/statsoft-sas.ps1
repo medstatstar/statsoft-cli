@@ -1,4 +1,4 @@
-# statsoft-sas.ps1 — SAS EXECUTION wrapper (NOT a setup/detection tool).
+﻿# statsoft-sas.ps1 — SAS EXECUTION wrapper (NOT a setup/detection tool).
 # This script INVOKES the third-party SAS binary and CREATES temporary/log files.
 # It does NOT modify config.json or environment variables.
 #
@@ -93,7 +93,9 @@ function Resolve-SafeLogPath {
 }
 
 # 读取配置
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (-not (Test-Path $configPath)) {
     Write-Error "$(if ($script:isZH) { '配置文件不存在' } else { 'Config file not found' }): $configPath"
     exit 1

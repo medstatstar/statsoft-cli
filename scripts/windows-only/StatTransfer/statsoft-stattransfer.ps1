@@ -1,4 +1,4 @@
-# statsoft-stattransfer.ps1 — StatTransfer CLI wrapper
+﻿# statsoft-stattransfer.ps1 — StatTransfer CLI wrapper
 #
 # Usage:
 #   statsoft-stattransfer version                              # show version
@@ -33,7 +33,9 @@ function Write-Lang {
 }
 
 # Read config
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (-not (Test-Path $configPath)) {
     Write-Error (if ($script:isZH){"配置文件不存在: $configPath。请先配置 StatTransfer"}else{"Config file not found: $configPath. Please configure StatTransfer first"})
     exit 1

@@ -1,4 +1,4 @@
-# setup_eviews.ps1 - EViews statistical software environment detection and configuration script
+﻿# setup_eviews.ps1 - EViews statistical software environment detection and configuration script
 # EViews: econometrics software, Windows-only, with a batch mode
 
 # ============================================================

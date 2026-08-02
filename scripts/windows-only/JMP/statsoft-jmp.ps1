@@ -1,4 +1,4 @@
-# statsoft-jmp.ps1 — JMP CLI wrapper (advanced mode)
+﻿# statsoft-jmp.ps1 — JMP CLI wrapper (advanced mode)
 # Usage:
 #   statsoft-jmp run <jsl_file> [--log-file <path>] [--silent]
 #   statsoft-jmp data-info <jmp_file> [--vars var1 var2]
@@ -51,7 +51,9 @@ function Test-SafePath {
 }
 
 # Read config
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (-not (Test-Path $configPath)) {
     Write-Error (if ($script:isZH){"配置文件不存在: $configPath。请先运行 setup_jmp.ps1"}else{"Config file not found: $configPath. Please run setup_jmp.ps1 first."})
     exit 1

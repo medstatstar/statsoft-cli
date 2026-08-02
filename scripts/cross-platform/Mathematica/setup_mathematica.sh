@@ -35,7 +35,7 @@ INSTALL_DIR=""
 detect_mathematica() {
     # Check PATH first
     if command -v wolframscript &>/dev/null; then
-        WOLFRAMSCRIPT="$(which wolframscript)"
+        WOLFRAMSCRIPT="$(command -v wolframscript)"
         INSTALL_DIR="$(dirname "$(dirname "$WOLFRAMSCRIPT")")"
         if statsoft_reveal; then
             LANG_ZH "[OK] Found wolframscript: $WOLFRAMSCRIPT" "[OK] Found wolframscript: $WOLFRAMSCRIPT"

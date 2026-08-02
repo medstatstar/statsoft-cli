@@ -1,4 +1,4 @@
-# setup_modeler.ps1 — Detect and configure SPSS Modeler
+﻿# setup_modeler.ps1 — Detect and configure SPSS Modeler
 
 # ============================================================
 # Language Detection
@@ -53,7 +53,9 @@ function Save-StatSoftConfig {
 }
 
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 # Load existing config (ordered)
 $config = [ordered]@{}

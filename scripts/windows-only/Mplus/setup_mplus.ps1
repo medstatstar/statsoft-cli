@@ -1,4 +1,4 @@
-# setup_mplus.ps1 — Detect and configure Mplus (Windows/Mac)
+﻿# setup_mplus.ps1 — Detect and configure Mplus (Windows/Mac)
 
 # ============================================================
 # Language Detection
@@ -51,7 +51,9 @@ $statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
 $statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
 
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 # Load existing config (ordered)
 $config = [ordered]@{}
@@ -119,7 +121,7 @@ $config["Mplus"] = [ordered]@{
     "path"      = (Split-Path $mplusExe -Parent)
     "exe"       = $mplusExe
     "version"   = $ver
-    "platform"  = "win"
+    "platform"  = "windows"
 }
 
 Save-StatSoftConfig -ConfigPath $configPath -Config $config

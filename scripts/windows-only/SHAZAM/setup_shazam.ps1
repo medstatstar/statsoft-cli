@@ -1,4 +1,4 @@
-# Setup script for SHAZAM Econometrics Software (Windows)
+﻿# Setup script for SHAZAM Econometrics Software (Windows)
 # Reference: https://www.econometrics.com/
 
 # ============================================================
@@ -86,7 +86,9 @@ if ($shazamExe) {
 $canPersist = ($env:STATSOFT_AUTO_WRITE -eq '1') -or ($env:STATSOFT_CONFIRM -eq '1' -and -not [Console]::IsInputRedirected)
 
 if ($shazamExe -and $canPersist) {
-    $configPath = Join-Path $PSScriptRoot "..\config.json"
+    $configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
     $config | Add-Member -NotePropertyName "SHAZAM" -NotePropertyValue @{
         installed = $true

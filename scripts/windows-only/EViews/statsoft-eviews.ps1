@@ -1,4 +1,4 @@
-# statsoft-eviews.ps1 — EViews CLI wrapper
+﻿# statsoft-eviews.ps1 — EViews CLI wrapper
 # Usage:
 #   statsoft-eviews run <prg_file>
 #   statsoft-eviews version
@@ -40,7 +40,9 @@ function Test-UserAuthorizedToRun {
 }
 
 # Initialization
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 $config = $null
 $eviewsExe = $null
 

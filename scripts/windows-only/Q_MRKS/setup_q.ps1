@@ -1,4 +1,4 @@
-# setup_q.ps1 — Detect and configure Q Research (MRKS, Windows)
+﻿# setup_q.ps1 — Detect and configure Q Research (MRKS, Windows)
 
 # ============================================================
 # Language Detection
@@ -51,7 +51,9 @@ $statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
 $statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
 
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 # Load existing config (ordered)
 $config = [ordered]@{}
@@ -120,7 +122,7 @@ if (-not $canPersist) {
         "path"      = (Split-Path $qExe -Parent)
         "exe"       = $qExe
         "version"   = $ver
-        "platform"  = "win"
+        "platform"  = "windows"
     }
 
     Save-StatSoftConfig -ConfigPath $configPath -Config $config

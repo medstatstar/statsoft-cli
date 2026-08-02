@@ -1,4 +1,4 @@
-# setup_mathematica.ps1 — Detect and configure Mathematica (Windows)
+﻿# setup_mathematica.ps1 — Detect and configure Mathematica (Windows)
 # Supports Mathematica 12.0+ (Wolfram Language / WolframScript)
 
 # ============================================================
@@ -131,7 +131,9 @@ if ($statsoftReveal) {
     Write-Lang "Mathematica detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)." "Mathematica detected (paths/versions hidden; set STATSOFT_REVEAL=1 to reveal)."
 }
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (Test-Path $configPath) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
 } else {

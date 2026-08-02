@@ -15,9 +15,15 @@ import sys
 import os
 import re
 
-# SDI-3: Host scan (drive enumeration) and install-dir disclosure require STATSOFT_REVEAL=1
-if os.environ.get("STATSOFT_REVEAL") != "1":
-    print("Detection disabled; set STATSOFT_REVEAL=1 to scan SPSS installations and print install path.")
+# EXECUTION GATE (default-deny, SDI-1/SDI-4): running SPSS syntax launches the
+# third-party SPSS engine to execute user-supplied .sps code. Require the
+# execution opt-in STATSOFT_VERIFY=1 — NOT the disclosure gate STATSOFT_REVEAL,
+# which only governs install-path/version disclosure. The caller
+# (statsoft-spss.ps1) enforces the same gate; this is defense-in-depth at the
+# helper boundary so an authorized run is never wrongly blocked by a missing
+# REVEAL, and an unauthorized run can never slip through.
+if os.environ.get("STATSOFT_VERIFY") != "1":
+    print("Execution denied (default-deny): set STATSOFT_VERIFY=1 to run SPSS syntax via the third-party SPSS engine.")
     sys.exit(1)
 
 # Output helper (English-only; the Chinese argument is kept for call-site parity

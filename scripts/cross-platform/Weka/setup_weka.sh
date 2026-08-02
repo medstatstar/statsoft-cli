@@ -20,7 +20,7 @@ CONFIG_PATH="$(dirname "$0")/../../config.json"
 
 WEKA_DIR=""
 if command -v weka &>/dev/null; then
-    WEKA_DIR="$(dirname "$(which weka)")"
+    WEKA_DIR="$(dirname "$(command -v weka)")"
 elif [ -n "${WEKA_HOME:-}" ] && [ -d "$WEKA_HOME" ]; then
     WEKA_DIR="$WEKA_HOME"
 elif [ -d "/usr/share/weka" ]; then

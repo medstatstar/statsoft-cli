@@ -1,4 +1,4 @@
-# setup_minitab.ps1 — Detect and configure Minitab (Windows)
+﻿# setup_minitab.ps1 — Detect and configure Minitab (Windows)
 # Minitab is Windows-primary; detection only — `mtb.exe /run` launches the Minitab GUI, not headless.
 
 # ============================================================
@@ -51,7 +51,9 @@ function Save-StatSoftConfig {
 $statsoftReveal = ($env:STATSOFT_REVEAL -eq '1')
 $statsoftVerify = ($env:STATSOFT_VERIFY -eq '1')
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 
 # Load existing config (ordered)
 $config = [ordered]@{}
@@ -163,7 +165,7 @@ $config["Minitab"] = [ordered]@{
     "path"      = (Split-Path $mtbExe -Parent)
     "exe"       = $mtbExe
     "version"   = $ver
-    "platform"  = "win"
+    "platform"  = "windows"
 }
 
 Save-StatSoftConfig -ConfigPath $configPath -Config $config

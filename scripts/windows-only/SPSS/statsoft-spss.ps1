@@ -1,4 +1,4 @@
-# statsoft-spss.ps1 — SPSS CLI wrapper
+﻿# statsoft-spss.ps1 — SPSS CLI wrapper
 # Invocation priority:
 #   1) stats.com console build -> -production silent -nologo (preferred, no splash)
 #   2) SPSS bundled Python -> StartSPSS() + Submit() + StopSPSS (fallback, no splash)
@@ -30,7 +30,9 @@ $scriptDir  = Split-Path $MyInvocation.MyCommand.Path -Parent
 $helperPy   = Join-Path $scriptDir "spss_helper.py"
 
         # Read config
-$configPath = Join-Path $scriptDir "..\..\config.json"
+$configPath = Join-Path $scriptDir "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $scriptDir "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $scriptDir "..\..\config.json" }
 $statsPython = $null
 $statsExe = $null
 $statsCom = $null

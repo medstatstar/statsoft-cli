@@ -59,7 +59,7 @@ function Write-JsonOutput($obj) {
 }
 
 function Add-RResult($name, $installed, $path, $version) {
-    if ($installed -or $null -eq $installed) {
+    if ($installed) {
         if ($reveal) {
             $results[$name] = @{
                 installed = $true
@@ -431,12 +431,12 @@ if (Want "AMOS") {
 }
 
 # Q (MRKS)
-if (Want "Q (MRKS)") {
+if (Want "Q_MRKS") {
     $regQ = Get-NsisSoftware "Q Research"
     $regQ2 = Get-NsisSoftwareWow64 "Q Research"
     $foundQ = $regQ
     if (-not $foundQ) { $foundQ = $regQ2 }
-    Add-RResult "Q (MRKS)" $foundQ $foundQ.Path $foundQ.Version
+    Add-RResult "Q_MRKS" $foundQ $foundQ.Path $foundQ.Version
 }
 
 # Origin

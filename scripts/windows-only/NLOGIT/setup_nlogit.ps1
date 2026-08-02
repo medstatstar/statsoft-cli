@@ -1,4 +1,4 @@
-# Setup script for NLOGIT
+﻿# Setup script for NLOGIT
 # Discrete choice and multinomial logit modeling
 # Reference: https://limdep.com/nlogit.html
 
@@ -80,7 +80,9 @@ if ($nlogitExe) {
   Write-Lang "NLOGIT not found. Please install from https:" "/limdep.com/" -Color Yellow
 }
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 if ($nlogitExe) {
     $config | Add-Member -NotePropertyName "NLOGIT" -NotePropertyValue @{

@@ -1,4 +1,4 @@
-# Setup script for NCSS
+﻿# Setup script for NCSS
 # NCSS Statistical Software
 # Reference: https://www.ncss.com/
 
@@ -86,7 +86,9 @@ if ($ncssExe) {
   Write-Lang "NCSS not found. Please install from https:" "/www.ncss.com/" -Color Yellow
 }
 
-$configPath = Join-Path $PSScriptRoot "..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (Test-Path $configPath) {
     $config = Get-Content $configPath -Raw | ConvertFrom-Json
     if ($ncssExe) {

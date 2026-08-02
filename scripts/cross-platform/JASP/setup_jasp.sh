@@ -21,7 +21,7 @@ CONFIG_PATH="$(dirname "$0")/../../config.json"
 
 JASP_BIN=""
 if command -v jasp &>/dev/null; then
-    JASP_BIN="$(which jasp)"
+    JASP_BIN="$(command -v jasp)"
 elif [ -n "${JASP_HOME:-}" ] && [ -d "$JASP_HOME" ]; then
     JASP_BIN="$JASP_HOME/jasp"
 elif [ -f "/Applications/JASP.app/Contents/MacOS/jasp" ]; then

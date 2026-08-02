@@ -44,7 +44,7 @@ detect_minitab() {
         
         # Check PATH
         if [ -z "$minitab_cmd" ]; then
-            minitab_cmd=$(which mtb 2>/dev/null)
+            minitab_cmd=$(command -v mtb 2>/dev/null)
         fi
     elif [ "$WB_OS" = "mac" ]; then
         # Mac: Minitab is mainly accessed via the cloud version or remote access

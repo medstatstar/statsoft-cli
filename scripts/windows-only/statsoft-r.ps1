@@ -1,4 +1,4 @@
-# statsoft-r.ps1 — R CLI 包装器（高级模式）
+﻿# statsoft-r.ps1 — R CLI 包装器（高级模式）
 # 用法:
 #   statsoft-r run <r_file> [--log-file <path>]
 #   statsoft-r install <package> [--repo <url>]
@@ -50,17 +50,27 @@ function Write-Lang-Warning {
 }
 
 # 读取配置
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 if (-not (Test-Path $configPath)) {
     Write-Error "$(if ($script:isZH) { '配置文件不存在' } else { 'Config file not found' }): $configPath"
     exit 1
 }
 
 $config = Get-Content $configPath | ConvertFrom-Json
-$rPath = $config.R.Path
+# Resolve R path: prefer the configured R.Path; fall back to auto-detection;
+# otherwise fail with a clear, friendly message (never a raw null-binding error).
+$rPath = $null
+if ($config.R -and $config.R.Path -and ($config.R.Path.Trim()) -ne "") {
+    $rPath = $config.R.Path
+} else {
+    $detected = Get-Command Rscript -ErrorAction SilentlyContinue
+    if ($detected) { $rPath = $detected.Source }
+}
 
-if (-not (Test-Path $rPath)) {
-    Write-Error "$(if ($script:isZH) { 'Rscript.exe 不存在' } else { 'Rscript.exe not found' }): $rPath"
+if (-not $rPath -or -not (Test-Path $rPath)) {
+    Write-Error "$(if ($script:isZH) { '未配置或未检测到 Rscript.exe，请先运行 R 的检测/配置（setup_r）' } else { 'Rscript.exe not configured or detected; run R setup (setup_r) first' })"
     exit 1
 }
 
@@ -115,7 +125,22 @@ switch ($Command) {
             return
         }
 
-        & $rPath -e "install.packages('$package', repos='$Repo', quiet=TRUE)" 2>&1
+        # SECURITY (B15): pass the package name + repo as command-line ARGUMENTS
+        # to a temp R script — NEVER interpolate them into an `R -e` expression,
+        # which would let a crafted `$package`/`$Repo` inject arbitrary R code.
+        $installScript = @"
+args <- commandArgs(trailingOnly=TRUE)
+pkg <- args[1]
+repo <- args[2]
+install.packages(pkg, repos=repo, quiet=TRUE)
+"@
+        $tempInstall = Join-Path ([System.IO.Path]::GetTempPath()) ("statsoft_install_" + [System.Guid]::NewGuid().ToString("N") + ".R")
+        try {
+            $installScript | Set-Content $tempInstall -Encoding UTF8
+            & $rPath $tempInstall "$package" "$Repo" 2>&1
+        } finally {
+            Remove-Item $tempInstall -ErrorAction SilentlyContinue
+        }
 
         if ($LASTEXITCODE -eq 0) {
             Write-Lang "包 '$package' 安装完成" "Package '$package' installed successfully" -Color Green
@@ -147,7 +172,18 @@ switch ($Command) {
                     Write-Lang "已跳过安装，请手动安装 haven 后重试" "Skipped. Please install haven manually and retry" -Color Yellow
                     return
                 }
-                & $rPath -e "install.packages('haven', repos='https://cran.r-project.org', quiet=TRUE)" 2>&1
+                $havenScript = @"
+args <- commandArgs(trailingOnly=TRUE)
+repo <- args[1]
+install.packages('haven', repos=repo, quiet=TRUE)
+"@
+                $tempHaven = Join-Path ([System.IO.Path]::GetTempPath()) ("statsoft_haven_" + [System.Guid]::NewGuid().ToString("N") + ".R")
+                try {
+                    $havenScript | Set-Content $tempHaven -Encoding UTF8
+                    & $rPath $tempHaven "$Repo" 2>&1
+                } finally {
+                    Remove-Item $tempHaven -ErrorAction SilentlyContinue
+                }
             }
         }
 

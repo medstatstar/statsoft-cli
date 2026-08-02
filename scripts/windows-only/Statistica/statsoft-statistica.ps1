@@ -1,4 +1,4 @@
-# statsoft-statistica.ps1 — Statistica CLI wrapper
+﻿# statsoft-statistica.ps1 — Statistica CLI wrapper
 # Usage:
 #   statsoft-statistica run <svb_file>
 #   statsoft-statistica version
@@ -40,7 +40,9 @@ function Test-UserAuthorizedToRun {
 }
 
 # Init
-$configPath = "$PSScriptRoot\..\config.json"
+$configPath = Join-Path $PSScriptRoot "config.json"
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
+if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\..\config.json" }
 $config = $null
 $statisticaExe = $null
 

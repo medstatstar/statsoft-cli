@@ -20,7 +20,7 @@ CONFIG_PATH="$(dirname "$0")/../../config.json"
 
 KNIME_BIN=""
 if command -v knime &>/dev/null; then
-    KNIME_BIN="$(which knime)"
+    KNIME_BIN="$(command -v knime)"
 elif [ -n "${KNIME_HOME:-}" ] && [ -d "$KNIME_HOME" ]; then
     KNIME_BIN="$KNIME_HOME/knime"
 elif [ -f "/Applications/KNIME 5.1.app/Contents/MacOS/knime" ]; then
