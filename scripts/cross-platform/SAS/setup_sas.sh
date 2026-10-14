@@ -9,6 +9,11 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 source "$ROOT_DIR/_platform-detect.sh"
 
+# Prevent MSYS/Git-Bash from converting single-letter slash flags (e.g. /b, /e)
+# into Windows drive letters (B:/, E:/) on Windows — that breakage makes Stata/SAS
+# fall back to an interactive GUI. Harmless on macOS/Linux.
+export MSYS_NO_PATHCONV=1
+
 # ============================================================
 # Language Detection
 # ============================================================

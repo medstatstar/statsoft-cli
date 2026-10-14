@@ -76,12 +76,21 @@ def _minimal_env(extra_path=None):
     tokens, proxy credentials, or agent-specific secrets) into a third-party
     interpreter. Only a small allow-list needed for process startup is copied;
     PATH may be extended via extra_path.
+
+    PYTHONPATH is **deliberately excluded**: SPSS's bundled Python is 3.4, while
+    agent shells (e.g. WorkBuddy Bash) may inject
+    ``PYTHONPATH=<app>/cli/vendor/shim`` whose ``sitecustomize.py`` uses
+    ``os.fspath`` (added in 3.6). Forwarding it makes the SPSS interpreter abort
+    at startup with
+    ``AttributeError: 'module' object has no attribute 'fspath'``. The bundled
+    runner sets up its own site-packages via ``sys.path``, so it never needs the
+    parent's PYTHONPATH.
     """
     _ALLOWED = (
         "PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP",
         "USERPROFILE", "HOME", "LANG", "LC_ALL", "PYTHONIOENCODING",
         "COMSPEC", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
-        "OS", "PATHEXT", "PYTHONPATH",
+        "OS", "PATHEXT",
     )
     env = {}
     for k in _ALLOWED:

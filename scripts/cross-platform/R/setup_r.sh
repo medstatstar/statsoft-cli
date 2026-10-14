@@ -10,6 +10,11 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 # Source platform detection
 source "$ROOT_DIR/_platform-detect.sh"
 
+# Prevent MSYS/Git-Bash from converting single-letter slash flags (e.g. /b, /e)
+# into Windows drive letters (B:/, E:/) on Windows — that breakage can make tools
+# fall back to an interactive GUI. Harmless on macOS/Linux.
+export MSYS_NO_PATHCONV=1
+
 # ============================================================
 # Language Detection
 # ============================================================

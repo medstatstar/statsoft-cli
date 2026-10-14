@@ -1,12 +1,12 @@
 ---
 name: statsoft-cli
 slug: statsoft-cli
-displayName: 统计软件接入助手 / Statsoft-CLI
+displayName: Statsoft-CLI / 统计软件接入助手
 cn_name: 统计软件接入助手
-version: "2.8.2"
+version: "2.8.4"
 summary: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
 license: MIT
-description: "跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。 / Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML, etc.), bilingual. Core value: activating historical code assets for AI workflow automation."
+description: "Cross-platform statistical software CLI integration for AI Agent; 34+ packages (R/Stata/SAS/SPSS/Python/Bayesian/ML, etc.), bilingual. Core value: activating historical code assets for AI workflow automation. / 跨平台统计软件 CLI 集成，面向 AI Agent；覆盖 34+ 款软件（R/Stata/SAS/SPSS/Python/贝叶斯/ML等），双语。核心价值：激活历史代码资产，用于 AI 工作流自动化。"
 triggers:
   - "SPSS"
   - "SPSS Statistics"
@@ -23,7 +23,7 @@ metadata:
     "openclaw": { "emoji": "🛠️", "icon": "assets/icon.svg" },
     "authors": ["medstatstar", "phoe-zip"],
     "contributors": ["medstatstar", "phoe-zip"],
-    "version": "2.8.2",
+    "version": "2.8.4",
     "license": "MIT",
     "tags": ["Statistical Software", "CLI", "R", "SPSS", "Stata", "SAS", "Bayesian", "Machine Learning", "Econometrics", "SEM", "Data Mining"],
     "homepage": "https://github.com/medstatstar/statsoft-cli",
@@ -137,6 +137,21 @@ This skill performs high-risk operations; understand the risk levels before use:
 | Network access | 🟡 Medium |
 
 **Pre-flight**: ✅ review all scripts; ✅ confirm config.json changes (auto-backup); ✅ confirm any downloads; ✅ inspect generated commands for sensitive projects.
+
+## Known Issues & Pitfalls (SPSS, Windows)
+
+Two real failures reproduced when running SPSS on a host where the agent shell
+injects its own `PYTHONPATH` (e.g. WorkBuddy Bash injects
+`PYTHONPATH=<app>/cli/vendor/shim` with a `sitecustomize.py` using Python 3.6+
+`os.fspath`). Recorded here so the agent never repeats them.
+
+Detailed root-cause + exact fix commands for the 3 reproduced SPSS failures (PYTHONPATH/`os.fspath` crash; `OUTPUT EXPORT` unavailable in headless mode; `SAVE OUTFILE` must point at an existing directory) → `references/known_issues.md`.
+
+| # | Error / failure | Cause | Fix |
+|---|-----------------|-------|-----|
+| 1 | `AttributeError: 'module' object has no attribute 'fspath'` on `spss.StartSPSS()` | Injected `PYTHONPATH` shim uses 3.6+ `os.fspath`; SPSS bundled Python is 3.4 | Use `spss_helper.py` (drops `PYTHONPATH`); manual calls prefix `PYTHONPATH=` |
+| 2 | `OUTPUT EXPORT` / `OUTPUT SAVE` to `.spv`/`.pdf` fails in headless mode | No output-viewer document in the no-GUI backend | Use `stats.exe --production "job.spj"` |
+| 3 | `SAVE OUTFILE` fails / skill self-test fails | Absolute path to a non-existent directory | Use a relative path (working dir = `tests/`) |
 
 ## Reference Files
 

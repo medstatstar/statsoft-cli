@@ -21,6 +21,13 @@ function Write-Lang {
     else { Write-Host $EN -ForegroundColor $Color }
 }
 
+# Headless launcher (no GUI popup) — single enforcement point for the skill default.
+$__d = $PSScriptRoot
+while ($__d -and -not (Test-Path (Join-Path $__d "common/invoke_hidden.ps1"))) {
+    $__p = Split-Path $__d -Parent; if ($__p -eq $__d) { break }; $__d = $__p
+}
+. (Join-Path $__d "common/invoke_hidden.ps1")
+
 function Test-UserAuthorizedToRun {
     # Execution authorization gate — FAIL-CLOSED (default deny).
     # Proceed ONLY when an explicit opt-in is present:
@@ -78,11 +85,12 @@ switch ($Command) {
             exit 1
         }
         Write-Lang "运行 EViews 程序（.prg 为可执行代码，将由 EViews 执行）: $FilePath" "Running EViews program (.prg is executable code run by EViews): $FilePath" -Color Cyan
-        & $eviewsExe /b $FilePath
-        if ($LASTEXITCODE -eq 0) {
+        $result = Invoke-StatExe -FilePath $eviewsExe -ArgumentList "/b",$FilePath
+        if ($result.ExitCode -eq 0) {
             Write-Lang "EViews 执行完成" "EViews execution complete" -Color Green
         } else {
-            Write-Warning (if ($script:isZH){"EViews 退出码: $LASTEXITCODE"}else{"EViews exit code: $LASTEXITCODE"})
+            Write-Warning (if ($script:isZH){"EViews 退出码: $($result.ExitCode)"}else{"EViews exit code: $($result.ExitCode)"})
+            if ($result.StdErr) { Write-Host $result.StdErr -ForegroundColor Red }
         }
     }
     "version" {

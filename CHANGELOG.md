@@ -1,5 +1,58 @@
 # Changelog
 
+## v2.8.4 (2026-10-14)
+
+Headless execution overhaul (no GUI popups by default) + Stata 19.5 MP integration.
+
+- **New shared headless launcher `scripts/common/invoke_hidden.ps1`** (`Invoke-StatExe`):
+  every third-party binary is launched via `cmd.exe /c` with `WindowStyle=Hidden`
+  and stdout/stderr redirected to temp files (read back and surfaced). Rationale:
+  `Start-Process` crashes in host shells that inject duplicate env keys differing
+  only by case (HTTPS_PROXY/https_proxy); `CreateNoWindow` strips the window
+  station from GUI-subsystem children and makes Stata fail (exit 1) — Hidden only.
+- **All 5 executors** (Stata / SAS / EViews / Statistica / StatTransfer) migrated
+  from direct `& $exe` calls to `Invoke-StatExe`; GraphPad `open` intentionally
+  keeps GUI launch (Prism has no CLI mode, documented in-file).
+- **Stata log handling fixed**: Stata `/e do` writes its log to the process
+  working directory, not beside the do-file — `run` now sets `-WorkingDirectory`
+  to the do-file's folder and auto-displays the log after execution.
+- **BOM fix**: PS 5.1 `Set-Content -Encoding UTF8` writes a UTF-8 BOM; Stata
+  treats it as part of the first command so `log using` silently fails.
+  Temp .do/.sas files now written BOM-less via
+  `[System.IO.File]::WriteAllText(..., UTF8Encoding($false))`.
+- **MSYS path-conversion guard**: `setup_stata.sh` / `setup_sas.sh` / `setup_r.sh`
+  export `MSYS_NO_PATHCONV=1` (Windows Git Bash converts single-letter switches
+  like `/e` to drive paths `E:/`, causing `r(199)` + GUI fallback).
+- **Stata 19.5 MP linked** in `config.json` (`C:\Tools\Stata19\StataMP-64.exe`,
+  MP, version 19.5; machine-local file, gitignored).
+- **Packaging hygiene (§16.8 recheck)**: untracked `tests/` (was git-tracked,
+  leaking into the package model), ignore `config.json.bak.*` and `*.log`,
+  removed `verify.log` leftover.
+
+## v2.8.3 (2026-09-03)
+
+SPSS-on-Windows robustness: two real failures reproduced when the agent shell
+injects a parent `PYTHONPATH` (WorkBuddy Bash injects `<app>/cli/vendor/shim` with
+a `sitecustomize.py` using 3.6+ `os.fspath`), plus the skill's own self-test fix.
+
+- **SPSS bundled Python `os.fspath` crash (root-cause fix)**: `_minimal_env()` in
+  `scripts/windows-only/SPSS/spss_helper.py` forwarded `PYTHONPATH` into the SPSS
+  bundled-Python subprocess, so the injected shim's `sitecustomize.py` (3.6+) broke
+  SPSS 26's Python 3.4 with `AttributeError: 'module' object has no attribute
+  'fspath'`. Removed `PYTHONPATH` from the env allow-list (`run-internal` /
+  `show-version` no longer inherit it); the bundled runner still sets up its own
+  site-packages via `sys.path`, so behaviour is unchanged. Agent no longer needs the
+  manual `PYTHONPATH=` prefix when going through `spss_helper.py`.
+- **SKILL.md Known Issues & Pitfalls (SPSS, Windows)**: documented the three
+  failures as an error table — (1) `PYTHONPATH`/`os.fspath` crash + the `PYTHONPATH=`
+  prefix workaround + "bundled Python 3.4 has no f-strings, use `%s`/`.format()`";
+  (2) `OUTPUT EXPORT` / `OUTPUT SAVE` unavailable in the no-viewer headless backend,
+  must use `stats.exe --production "job.spj"`; (3) `SAVE OUTFILE` must use a path
+  whose directory exists (relative path, working dir = `tests/`).
+- **`tests/test-syntax.sps`**: `SAVE OUTFILE` changed from a hard-coded
+  `C:/Users/WintoneFileSrv/...` (non-existent → self-test always failed) to a
+  relative `test-data.sav` (working dir = `tests/`).
+
 ## v2.8.2 (2026-08-02)
 
 Ten-round bug-hardening cycle (design 10 simple→complex cases, execute fixes, repeat). Round 1 fixes the empirically-confirmed defects from the case design:

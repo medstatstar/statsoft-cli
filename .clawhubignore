@@ -1,0 +1,64 @@
+# statsoft-cli packaging exclusions
+# ClawHub publish respects .clawhubignore; keep in sync with .gitignore.
+
+# Secrets / API keys
+.env
+*.env
+.env.*
+*.key
+*.secret
+*.token
+secrets.json
+config.json
+
+# Tests (never ship)
+tests/
+tests/**
+
+# Python cruft
+__pycache__/
+*.pyc
+
+# Runtime caches / scan artifacts
+out/
+scan_*.json
+scan_*.txt
+scan_*.err
+*.zip
+*.tar.gz
+
+# ── 补 .gitignore 已有项 ──
+*.bak
+*.bak_*
+*.swo
+*.swp
+.DS_Store
+.idea/
+.vscode/
+Thumbs.db
+_user_meta.json
+config.json.bak_*
+
+# ── ct-base 统一基线（ClawHub 不读 .gitignore，须自列全量）──
+credentials.json
+config.local.json
+*.pyo
+out_live/
+outputs/
+*.cache
+adapters/coze/
+adapters/coze_project/
+**/coze_contract.md
+**/refiner_contract.md
+**/coze_system_prompt_v*.md
+**/ops.md
+scripts/tests/
+
+# ── 补齐双份 ignore 差异项（2026-08-29）──
+*.py[cod]
+*.so
+*.egg-info/
+
+# ── 运行遗留与配置备份（2026-10-14 §16.8 复查补齐，与 .gitignore 同步）──
+config.json.bak.*
+*.log

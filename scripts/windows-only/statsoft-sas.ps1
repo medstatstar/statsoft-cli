@@ -57,6 +57,13 @@ function Write-Lang-Warning {
     }
 }
 
+# Headless launcher (no GUI popup) — single enforcement point for the skill default.
+$__d = $PSScriptRoot
+while ($__d -and -not (Test-Path (Join-Path $__d "common/invoke_hidden.ps1"))) {
+    $__p = Split-Path $__d -Parent; if ($__p -eq $__d) { break }; $__d = $__p
+}
+. (Join-Path $__d "common/invoke_hidden.ps1")
+
 function Test-UserAuthorizedToRun {
     # Execution authorization gate — FAIL-CLOSED (default deny).
     # Proceed ONLY when an explicit opt-in is present:
@@ -128,12 +135,13 @@ switch ($Command) {
         Write-Lang "执行 SAS 程序: $sasFile" "Executing SAS program: $sasFile" -Color Cyan
         Write-Lang "日志输出（将写入当前目录）: $logPath" "Log output (written to current directory): $logPath" -Color Gray
         
-        & $sasPath -batch -nosplash -sysin $sasFile -log $logPath -print $printPath
-        
-        if ($LASTEXITCODE -eq 0) {
+        $result = Invoke-StatExe -FilePath $sasPath -ArgumentList "-batch","-nosplash","-sysin",$sasFile,"-log",$logPath,"-print",$printPath
+
+        if ($result.ExitCode -eq 0) {
             Write-Lang "SAS 执行完成" "SAS execution complete" -Color Green
         } else {
-            Write-Lang-Warning "SAS 退出码: $LASTEXITCODE" "SAS exit code: $LASTEXITCODE"
+            Write-Lang-Warning "SAS 退出码: $($result.ExitCode)" "SAS exit code: $($result.ExitCode)"
+            if ($result.StdErr) { Write-Host $result.StdErr -ForegroundColor Red }
         }
     }
     
@@ -154,13 +162,18 @@ switch ($Command) {
         Write-Lang "执行 SAS（proc contents），将创建临时文件并在结束后删除" "Executing SAS (proc contents); a temporary file is created and deleted afterward." -Color Cyan
         try {
             # Inspect the USER-SUPPLIED SAS file (not a hardcoded dataset like sashelp.class).
-        $safeFile = $sasFile.Replace('\', '/')
-        @"
+            $safeFile = $sasFile.Replace('\', '/')
+            # Write WITHOUT a UTF-8 BOM (some SAS runtimes treat the BOM as part of the
+            # first statement).
+            $sasContent = @"
 proc contents data="$safeFile" details;
 run;
-"@ | Set-Content $tempSas -Encoding UTF8
+"@
+            [System.IO.File]::WriteAllText($tempSas, $sasContent, (New-Object System.Text.UTF8Encoding($false)))
 
-            & $sasPath -batch -nosplash -sysin $tempSas 2>&1
+            $result = Invoke-StatExe -FilePath $sasPath -ArgumentList "-batch","-nosplash","-sysin",$tempSas
+            if ($result.StdOut) { Write-Host $result.StdOut }
+            if ($result.ExitCode -ne 0 -and $result.StdErr) { Write-Host $result.StdErr -ForegroundColor Red }
         }
         finally {
             # Always clean up the temp file, even on failure/interrupt.

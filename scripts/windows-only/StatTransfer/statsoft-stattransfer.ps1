@@ -32,6 +32,13 @@ function Write-Lang {
     else { Write-Host $EN -ForegroundColor $Color }
 }
 
+# Headless launcher (no GUI popup) — single enforcement point for the skill default.
+$__d = $PSScriptRoot
+while ($__d -and -not (Test-Path (Join-Path $__d "common/invoke_hidden.ps1"))) {
+    $__p = Split-Path $__d -Parent; if ($__p -eq $__d) { break }; $__d = $__p
+}
+. (Join-Path $__d "common/invoke_hidden.ps1")
+
 # Read config
 $configPath = Join-Path $PSScriptRoot "config.json"
 if (-not (Test-Path $configPath)) { $configPath = Join-Path $PSScriptRoot "..\config.json" }
@@ -84,7 +91,9 @@ function Test-StatTransferAuthorized {
 switch ($Command) {
     "version" {
         Write-Lang "=== StatTransfer 版本信息 ===" "=== StatTransfer Version Info ===" -Color Cyan
-        & $stExePath --version 2>&1
+        $result = Invoke-StatExe -FilePath $stExePath -ArgumentList "--version"
+        if ($result.StdOut) { Write-Host $result.StdOut }
+        if ($result.StdErr) { Write-Host $result.StdErr -ForegroundColor Red }
         Write-Host ""
         Write-Lang "配置路径: $($config.StatTransfer.Path)" "Config path: $($config.StatTransfer.Path)" -Color Gray
         Write-Lang "配置版本: $($config.StatTransfer.Version)" "Config version: $($config.StatTransfer.Version)" -Color Gray
@@ -180,27 +189,17 @@ switch ($Command) {
         # (New-TemporaryFile creates a random name in %TEMP%), disclosed here
         # and always removed in the finally block below — no predictable temp
         # filename that other local users/processes could pre-place or read.
-        $stderrFile = (New-TemporaryFile).FullName
-        Write-Lang "  临时错误日志（执行后自动删除）: $stderrFile" "  Temp stderr (auto-deleted): $stderrFile" -Color Gray
         try {
-            $process = Start-Process -FilePath $stExePath `
-                -ArgumentList $cmdArgs `
-                -NoNewWindow `
-                -Wait `
-                -PassThru `
-                -RedirectStandardError $stderrFile
+            $result = Invoke-StatExe -FilePath $stExePath -ArgumentList $cmdArgs
 
             $duration = (Get-Date) - $startTime
             Write-Host ""
             Write-Lang "完成 (耗时: $($duration.TotalSeconds.ToString('F1'))秒)" "Done (duration: $($duration.TotalSeconds.ToString('F1'))s)" -Color Green
-            Write-Lang "退出码: $($process.ExitCode)" "Exit code: $($process.ExitCode)" -Color Gray
+            Write-Lang "退出码: $($result.ExitCode)" "Exit code: $($result.ExitCode)" -Color Gray
 
-            if ($process.ExitCode -ne 0 -and (Test-Path $stderrFile)) {
-                $stderrContent = Get-Content $stderrFile -Raw
-                if ($stderrContent -and $stderrContent.Trim()) {
-                    Write-Lang "错误信息:" "Error details:" -Color Red
-                    Write-Host $stderrContent -ForegroundColor Red
-                }
+            if ($result.ExitCode -ne 0 -and $result.StdErr) {
+                Write-Lang "错误信息:" "Error details:" -Color Red
+                Write-Host $result.StdErr -ForegroundColor Red
             }
         } finally {
             Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
@@ -268,12 +267,12 @@ switch ($Command) {
             Write-Host "  -> $($file.Name) -> $outFile" -ForegroundColor White -NoNewline
 
             try {
-                & $stExePath $file.FullName $outFile 2>&1 | Out-Null
-                if ($LASTEXITCODE -eq 0) {
+                $result = Invoke-StatExe -FilePath $stExePath -ArgumentList $file.FullName,$outFile
+                if ($result.ExitCode -eq 0) {
                     Write-Host " ✓" -ForegroundColor Green
                     $successCount++
                 } else {
-                    Write-Host " ✗ ExitCode: $LASTEXITCODE" -ForegroundColor Red
+                    Write-Host " ✗ ExitCode: $($result.ExitCode)" -ForegroundColor Red
                     $failCount++
                 }
             } catch {
